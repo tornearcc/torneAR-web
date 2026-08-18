@@ -1,26 +1,100 @@
 @import "tailwindcss";
 
+/*
+ * Tokens portados 1:1 de tornear/tailwind.config.js (no la paleta zinc
+ * genérica) — la app usa una escala propia (surface-lowest #0E0E0E,
+ * no un zinc-950 #09090b) y este dashboard comparte marca con ella.
+ * Tailwind v4 no usa tailwind.config.ts: los tokens se declaran acá como
+ * CSS custom properties y Tailwind genera las utilidades (`bg-surface-low`,
+ * `text-neutral-on-surface`, etc.) automáticamente a partir de `@theme`.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #131313;
+  --foreground: #e5e2e1;
+
+  --brand-primary: #53e076;
+  --brand-primary-container: #1db954;
+  --brand-primary-fixed: #72fe8f;
+  --brand-inverse-primary: #006e2d;
+  --brand-gold: #fabd32;
+  --brand-gold-dim: #c9962a;
+
+  --surface-lowest: #0e0e0e;
+  --surface-base: #131313;
+  --surface-low: #1c1b1b;
+  --surface-container: #201f1f;
+  --surface-high: #2a2a2a;
+  --surface-variant: #353534;
+  --surface-bright: #3a3939;
+
+  --neutral-on-surface: #e5e2e1;
+  --neutral-on-surface-variant: #bccbb9;
+  --neutral-outline: #869585;
+  --neutral-outline-variant: #3d4a3d;
+  --neutral-inverse-surface: #e5e2e1;
+  --neutral-inverse-on-surface: #313030;
+
+  --info-secondary: #8ccdff;
+  --info-secondary-container: #2899d8;
+  --info-on-secondary: #00344e;
+
+  --warning-tertiary: #fabd32;
+  --warning-tertiary-container: #cf9800;
+  --warning-on-tertiary: #412d00;
+
+  --danger-error: #ffb4ab;
+  --danger-error-container: #93000a;
+  --danger-on-error: #690005;
+  --danger-on-error-container: #ffdad6;
+  --danger-alert-orange: #e8821a;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-primary-container: var(--brand-primary-container);
+  --color-brand-primary-fixed: var(--brand-primary-fixed);
+  --color-brand-inverse-primary: var(--brand-inverse-primary);
+  --color-brand-gold: var(--brand-gold);
+  --color-brand-gold-dim: var(--brand-gold-dim);
+
+  --color-surface-lowest: var(--surface-lowest);
+  --color-surface-base: var(--surface-base);
+  --color-surface-low: var(--surface-low);
+  --color-surface-container: var(--surface-container);
+  --color-surface-high: var(--surface-high);
+  --color-surface-variant: var(--surface-variant);
+  --color-surface-bright: var(--surface-bright);
+
+  --color-neutral-on-surface: var(--neutral-on-surface);
+  --color-neutral-on-surface-variant: var(--neutral-on-surface-variant);
+  --color-neutral-outline: var(--neutral-outline);
+  --color-neutral-outline-variant: var(--neutral-outline-variant);
+  --color-neutral-inverse-surface: var(--neutral-inverse-surface);
+  --color-neutral-inverse-on-surface: var(--neutral-inverse-on-surface);
+
+  --color-info-secondary: var(--info-secondary);
+  --color-info-secondary-container: var(--info-secondary-container);
+  --color-info-on-secondary: var(--info-on-secondary);
+
+  --color-warning-tertiary: var(--warning-tertiary);
+  --color-warning-tertiary-container: var(--warning-tertiary-container);
+  --color-warning-on-tertiary: var(--warning-on-tertiary);
+
+  --color-danger-error: var(--danger-error);
+  --color-danger-error-container: var(--danger-error-container);
+  --color-danger-on-error: var(--danger-on-error);
+  --color-danger-on-error-container: var(--danger-on-error-container);
+  --color-danger-alert-orange: var(--danger-alert-orange);
+
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-barlow-condensed);
+  --font-epic: var(--font-epilogue);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }
