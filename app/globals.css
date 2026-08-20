@@ -1,4 +1,16 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+
+/*
+ * El dashboard es dark-only: la única paleta que existe (ver :root) es
+ * oscura. Los componentes de shadcn traen refinamientos bajo `dark:`
+ * (`dark:data-[state=active]:bg-input/30` en tabs, `dark:bg-input/30` en
+ * botones outline). Con el default de Tailwind v4 esos estilos dependerían
+ * de `prefers-color-scheme` del sistema operativo — o sea, el mismo
+ * dashboard oscuro se vería distinto según la config de cada admin.
+ * Redefinir el variant como siempre-activo los vuelve incondicionales.
+ */
+@custom-variant dark (&);
 
 /*
  * Tokens portados 1:1 de tornear/tailwind.config.js (no la paleta zinc
@@ -47,6 +59,39 @@
   --danger-on-error: #690005;
   --danger-on-error-container: #ffdad6;
   --danger-alert-orange: #e8821a;
+
+  /*
+   * Puente shadcn/ui → tokens de marca.
+   *
+   * Los componentes de shadcn están escritos contra un vocabulario fijo
+   * (`bg-background`, `text-muted-foreground`, `border-border`…). En vez de
+   * adoptar su paleta zinc por defecto, cada nombre suyo se re-apunta acá a
+   * un token de arriba. Consecuencia: un componente copiado de shadcn sale
+   * con la marca de torneAR sin editar una sola clase.
+   *
+   * El dashboard es dark-only a propósito (decisión de Fase 1): no hay
+   * bloque `prefers-color-scheme` ni `[data-theme]` — una sola paleta.
+   */
+  --card: var(--surface-container);
+  --card-foreground: var(--neutral-on-surface);
+  /* Overlays un escalón más claro que las cards: si compartieran superficie,
+     un dropdown abierto sobre una card no tendría borde perceptible. */
+  --popover: var(--surface-high);
+  --popover-foreground: var(--neutral-on-surface);
+  --primary: var(--brand-primary);
+  --primary-foreground: var(--brand-inverse-primary);
+  --secondary: var(--surface-high);
+  --secondary-foreground: var(--neutral-on-surface);
+  --muted: var(--surface-low);
+  --muted-foreground: var(--neutral-on-surface-variant);
+  --accent: var(--surface-high);
+  --accent-foreground: var(--neutral-on-surface);
+  --destructive: var(--danger-error);
+  --destructive-foreground: var(--danger-on-error);
+  --border: var(--neutral-outline-variant);
+  --input: var(--neutral-outline-variant);
+  --ring: var(--brand-primary);
+  --radius: 0.5rem;
 }
 
 @theme inline {
@@ -92,9 +137,101 @@
   --font-sans: var(--font-inter);
   --font-display: var(--font-barlow-condensed);
   --font-epic: var(--font-epilogue);
+
+  /* Utilidades que esperan los componentes de shadcn/ui (ver puente en :root). */
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+/*
+ * Animaciones de entrada — CSS puro, sin framer-motion.
+ *
+ * `@starting-style` es lo que hace que esto funcione sin JS: define el estado
+ * del PRIMER frame tras el montaje. Como el App Router remonta el subárbol de
+ * la página en cada navegación, alcanza con poner `.page-enter` en el wrapper
+ * para que cada pestaña entre animada. Con una animación por keyframes en su
+ * lugar, el elemento re-animaría en cualquier re-render que lo remonte.
+ */
+.page-enter {
+  transition:
+    opacity 260ms ease-out,
+    translate 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  opacity: 1;
+  translate: 0 0;
+}
+
+@starting-style {
+  .page-enter {
+    opacity: 0;
+    translate: 0 8px;
+  }
+}
+
+/* Escalonado opcional para grillas de cards: `.page-enter-stagger > *`. */
+.page-enter-stagger > * {
+  transition:
+    opacity 300ms ease-out,
+    translate 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(var(--stagger-index, 0) * 45ms);
+  opacity: 1;
+  translate: 0 0;
+}
+
+@starting-style {
+  .page-enter-stagger > * {
+    opacity: 0;
+    translate: 0 10px;
+  }
+}
+
+/* Barrido de los skeletons (ver components/ui/Skeleton.tsx). */
+@keyframes skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/*
+ * Respeta la preferencia del sistema. `!important` porque las transiciones
+ * de arriba y las utilidades `animate-*` de Tailwind ganan por especificidad
+ * o por orden de cascada.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .page-enter,
+  .page-enter-stagger > * {
+    transition: none !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
 }

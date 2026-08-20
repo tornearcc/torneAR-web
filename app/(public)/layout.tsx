@@ -6,21 +6,17 @@ import Link from "next/link";
 // importar nada de lib/supabase.
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-full flex-col">
+    <div className="flex min-h-screen flex-col">
       <header className="border-b border-neutral-outline-variant">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
           <Link href="/" className="flex items-center gap-2">
             <Image
-              src="/logo-tornear.png"
+              src="/TorneAR_Logo_Nombre_1.png"
               alt="torneAR"
-              width={36}
-              height={36}
-              className="h-9 w-9"
+              width={192}
+              height={192}
               priority
             />
-            <span className="font-display text-xl uppercase tracking-wide text-neutral-on-surface">
-              torneAR
-            </span>
           </Link>
         </div>
       </header>

@@ -1,70 +1,95 @@
 "use client";
 
 import {
+  Area,
+  AreaChart,
   CartesianGrid,
-  Line,
-  LineChart,
+  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
 
-export interface SignupsTimeseriesRow {
+import { AXIS_PROPS, CHART_COLORS, GRID_PROPS, formatDay } from "./chart-theme";
+import { ChartTooltip } from "./ChartTooltip";
+import { ChartEmpty } from "./ChartEmpty";
+
+export interface GrowthPointRow {
   day: string;
   signups: number;
+  teams: number;
 }
 
-// Mismo hex que --brand-primary en app/globals.css — ver nota de
-// LogsChart.tsx sobre por qué se hardcodea en vez de usar var(--color-*).
-const BRAND_PRIMARY = "#53e076";
+const SERIES_NAME: Record<string, string> = {
+  signups: "Usuarios",
+  teams: "Equipos",
+};
 
-function formatDay(value: string) {
-  return new Date(`${value}T00:00:00Z`).toLocaleDateString("es-AR", {
-    day: "2-digit",
-    month: "2-digit",
-    timeZone: "UTC",
-  });
-}
+/**
+ * Altas de usuarios y equipos en el mismo eje.
+ *
+ * Las dos series comparten eje Y aunque estén en órdenes de magnitud
+ * distintos (decenas de usuarios contra unidades de equipos). Es deliberado:
+ * un eje derecho independiente haría parecer que un equipo nuevo "vale" lo
+ * mismo que veinte altas. Con un eje común la proporción real se lee sola, y
+ * el área de equipos queda encima para que no desaparezca bajo la otra.
+ */
+export function GrowthChart({ data }: { data: GrowthPointRow[] }) {
+  const hasData = data.some((d) => d.signups > 0 || d.teams > 0);
 
-export function GrowthChart({ data }: { data: SignupsTimeseriesRow[] }) {
-  const hasSignups = data.some((d) => d.signups > 0);
-
-  if (!hasSignups) {
-    return (
-      <div className="flex h-64 items-center justify-center rounded-lg border border-neutral-outline-variant bg-surface-container text-neutral-on-surface-variant">
-        Sin altas en este período.
-      </div>
-    );
+  if (!hasData) {
+    return <ChartEmpty message="Sin altas en este período." />;
   }
 
   return (
     <div className="h-72 rounded-lg border border-neutral-outline-variant bg-surface-container p-4">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#3d4a3d" vertical={false} />
-          <XAxis dataKey="day" tickFormatter={formatDay} stroke="#bccbb9" fontSize={12} tickLine={false} />
-          <YAxis allowDecimals={false} stroke="#bccbb9" fontSize={12} tickLine={false} width={32} />
+        <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id="growth-signups" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={CHART_COLORS.brandPrimary} stopOpacity={0.35} />
+              <stop offset="100%" stopColor={CHART_COLORS.brandPrimary} stopOpacity={0} />
+            </linearGradient>
+            <linearGradient id="growth-teams" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={CHART_COLORS.info} stopOpacity={0.35} />
+              <stop offset="100%" stopColor={CHART_COLORS.info} stopOpacity={0} />
+            </linearGradient>
+          </defs>
+
+          <CartesianGrid {...GRID_PROPS} vertical={false} />
+          <XAxis dataKey="day" tickFormatter={formatDay} {...AXIS_PROPS} />
+          <YAxis allowDecimals={false} width={32} {...AXIS_PROPS} />
           <Tooltip
-            labelFormatter={(value) => formatDay(String(value))}
-            formatter={(value) => [value, "Altas"]}
-            contentStyle={{
-              background: "#201f1f",
-              border: "1px solid #3d4a3d",
-              borderRadius: 8,
-              color: "#e5e2e1",
-              fontSize: 13,
-            }}
+            cursor={{ stroke: CHART_COLORS.outline, strokeDasharray: "3 3" }}
+            content={
+              <ChartTooltip
+                labelFormatter={(value) => formatDay(String(value))}
+                nameFormatter={(name) => SERIES_NAME[name] ?? name}
+              />
+            }
           />
-          <Line
+          <Legend
+            formatter={(value) => SERIES_NAME[value] ?? value}
+            wrapperStyle={{ fontSize: 12, color: CHART_COLORS.onSurfaceVariant }}
+          />
+          <Area
             type="monotone"
             dataKey="signups"
-            stroke={BRAND_PRIMARY}
+            stroke={CHART_COLORS.brandPrimary}
             strokeWidth={2}
-            dot={false}
+            fill="url(#growth-signups)"
             activeDot={{ r: 4 }}
           />
-        </LineChart>
+          <Area
+            type="monotone"
+            dataKey="teams"
+            stroke={CHART_COLORS.info}
+            strokeWidth={2}
+            fill="url(#growth-teams)"
+            activeDot={{ r: 4 }}
+          />
+        </AreaChart>
       </ResponsiveContainer>
     </div>
   );

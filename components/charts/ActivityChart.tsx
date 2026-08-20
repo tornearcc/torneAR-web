@@ -1,6 +1,18 @@
 "use client";
 
-import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+
+import { AXIS_PROPS, CHART_COLORS, GRID_PROPS } from "./chart-theme";
+import { ChartTooltip } from "./ChartTooltip";
 
 export interface MatchesByStatusRow {
   status: string;
@@ -18,16 +30,15 @@ const STATUS_LABEL: Record<string, string> = {
   CANCELADO: "Cancelado",
 };
 
-// Mismos hex que app/globals.css — ver nota de LogsChart.tsx.
 const STATUS_COLOR: Record<string, string> = {
-  PENDIENTE: "#fabd32", // warning-tertiary
-  CONFIRMADO: "#8ccdff", // info-secondary
-  EN_VIVO: "#53e076", // brand-primary
-  FINALIZADO: "#869585", // neutral-outline
-  EN_DISPUTA: "#ffb4ab", // danger-error
-  WO_A: "#e8821a", // danger-alert-orange
-  WO_B: "#e8821a",
-  CANCELADO: "#3d4a3d", // neutral-outline-variant
+  PENDIENTE: CHART_COLORS.warn,
+  CONFIRMADO: CHART_COLORS.info,
+  EN_VIVO: CHART_COLORS.brandPrimary,
+  FINALIZADO: CHART_COLORS.outline,
+  EN_DISPUTA: CHART_COLORS.error,
+  WO_A: CHART_COLORS.alertOrange,
+  WO_B: CHART_COLORS.alertOrange,
+  CANCELADO: CHART_COLORS.outlineVariant,
 };
 
 export function ActivityChart({ data }: { data: MatchesByStatusRow[] }) {
@@ -45,31 +56,27 @@ export function ActivityChart({ data }: { data: MatchesByStatusRow[] }) {
     <div className="h-80 rounded-lg border border-neutral-outline-variant bg-surface-container p-4">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} layout="vertical" margin={{ top: 8, right: 16, left: 8, bottom: 8 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#3d4a3d" horizontal={false} />
-          <XAxis type="number" allowDecimals={false} stroke="#bccbb9" fontSize={12} tickLine={false} />
+          <CartesianGrid {...GRID_PROPS} horizontal={false} />
+          <XAxis type="number" allowDecimals={false} {...AXIS_PROPS} />
           <YAxis
             type="category"
             dataKey="status"
             tickFormatter={(value) => STATUS_LABEL[value] ?? value}
-            stroke="#bccbb9"
-            fontSize={12}
-            tickLine={false}
             width={100}
+            {...AXIS_PROPS}
           />
           <Tooltip
-            formatter={(value) => [value, "Partidos"]}
-            labelFormatter={(value) => STATUS_LABEL[String(value)] ?? String(value)}
-            contentStyle={{
-              background: "#201f1f",
-              border: "1px solid #3d4a3d",
-              borderRadius: 8,
-              color: "#e5e2e1",
-              fontSize: 13,
-            }}
+            cursor={{ fill: CHART_COLORS.surfaceHigh, fillOpacity: 0.45 }}
+            content={
+              <ChartTooltip
+                labelFormatter={(value) => STATUS_LABEL[String(value)] ?? String(value)}
+                nameFormatter={() => "Partidos"}
+              />
+            }
           />
-          <Bar dataKey="matches_count">
+          <Bar dataKey="matches_count" radius={[0, 4, 4, 0]}>
             {data.map((entry) => (
-              <Cell key={entry.status} fill={STATUS_COLOR[entry.status] ?? "#869585"} />
+              <Cell key={entry.status} fill={STATUS_COLOR[entry.status] ?? CHART_COLORS.outline} />
             ))}
           </Bar>
         </BarChart>

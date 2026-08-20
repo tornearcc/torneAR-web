@@ -1,6 +1,9 @@
 import Link from "next/link";
+
 import { createClient } from "@/lib/supabase/server";
 import { VersionForm } from "@/components/admin/VersionForm";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { PageTransition } from "@/components/ui/PageTransition";
 
 export default async function VersionsPage() {
   const supabase = await createClient();
@@ -11,23 +14,19 @@ export default async function VersionsPage() {
     .order("platform");
 
   return (
-    <div className="flex flex-col gap-8">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="font-display text-2xl uppercase text-neutral-on-surface">
-            Versiones
-          </h1>
-          <p className="text-sm text-neutral-on-surface-variant">
-            Force update por plataforma.
-          </p>
-        </div>
-        <Link
-          href="/dashboard/settings"
-          className="rounded-md border border-neutral-outline px-3 py-2 text-sm font-semibold text-neutral-on-surface transition hover:bg-surface-container"
-        >
-          ← Configuración
-        </Link>
-      </div>
+    <PageTransition>
+      <PageHeader
+        title="Versiones"
+        description="Force update por plataforma."
+        actions={
+          <Link
+            href="/dashboard/settings"
+            className="rounded-md border border-neutral-outline px-3 py-2 text-sm font-semibold text-neutral-on-surface transition hover:bg-surface-container"
+          >
+            ← Configuración
+          </Link>
+        }
+      />
 
       {error ? (
         <p className="rounded-lg border border-danger-error bg-danger-error-container p-4 text-sm text-danger-on-error-container">
@@ -40,6 +39,6 @@ export default async function VersionsPage() {
           ))}
         </div>
       )}
-    </div>
+    </PageTransition>
   );
 }

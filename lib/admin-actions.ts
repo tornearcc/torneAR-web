@@ -1,0 +1,281 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+
+import { requireAdminAction } from "@/lib/admin-guard";
+import { createClient } from "@/lib/supabase/route-handler";
+import type { ActionResult } from "@/lib/admin-queues-actions";
+import type { Database } from "@/types/supabase";
+
+/**
+ * Mutaciones de moderación, configuración, versiones y usuarios.
+ *
+ * Reemplazan a los Route Handlers de `app/api/admin/*`, que quedaron
+ * eliminados. Unifican el patrón con el de `admin-queues-actions.ts`: una
+ * Server Action por operación, `ActionResult` en vez de excepciones, y
+ * `revalidatePath` en lugar de `router.refresh()` desde el cliente.
+ *
+ * Lo que se gana no es sólo consistencia. Los handlers devolvían JSON que el
+ * cliente tenía que parsear y mapear a un status HTTP, y ese mapeo
+ * (`statusForRpcError`) traducía el mensaje de la RPC a un número que después
+ * se volvía a traducir a un texto genérico en la UI — dos conversiones para
+ * terminar mostrando menos información de la que la base había dado. Acá el
+ * mensaje viaja entero.
+ */
+
+type ReportStatus = Database["public"]["Enums"]["report_status"];
+
+const VALID_REPORT_STATUSES: readonly ReportStatus[] = [
+  "PENDING",
+  "REVIEWED",
+  "DISMISSED",
+  "ACTIONED",
+];
+
+// `Array.includes` no angosta el tipo por sí solo; un type predicate explícito
+// es lo que deja `status` tipado como `ReportStatus` y no como `string`.
+function isReportStatus(value: unknown): value is ReportStatus {
+  return typeof value === "string" && (VALID_REPORT_STATUSES as readonly string[]).includes(value);
+}
+
+// ─── Moderación ──────────────────────────────────────────────────────────────
+
+export async function updateReportStatusAction(input: {
+  reportId: string;
+  status: string;
+}): Promise<ActionResult> {
+  const auth = await requireAdminAction();
+  if (!auth.ok) return { ok: false, error: auth.error };
+
+  if (!isReportStatus(input.status)) {
+    return { ok: false, error: "Estado de denuncia inválido." };
+  }
+
+  const supabase = await createClient();
+
+  // La policy de UPDATE de content_reports exige is_admin de nuevo a nivel de
+  // fila: cinturón y tirantes con el guard de arriba.
+  const { data, error } = await supabase
+    .from("content_reports")
+    .update({ status: input.status })
+    .eq("id", input.reportId)
+    .select("id")
+    .maybeSingle();
+
+  if (error) return { ok: false, error: error.message };
+  if (!data) return { ok: false, error: "La denuncia no existe." };
+
+  revalidatePath("/dashboard/moderation");
+  revalidatePath("/dashboard");
+
+  return { ok: true, message: "Denuncia actualizada." };
+}
+
+// ─── Suspensión de cuentas ───────────────────────────────────────────────────
+
+/**
+ * `profileId` es `profiles.id`, no `auth.users.id`. Las RPCs
+ * (`admin_suspend_user` / `admin_unban_user`, migraciones 20260818190000 y
+ * 20260819130000) resuelven `auth_user_id` internamente antes de tocar
+ * `auth.users`.
+ *
+ * Deliberadamente NO usa `service_role`: banear pasa por la RPC
+ * `SECURITY DEFINER` con la sesión normal del admin (§1.2 de
+ * WEB_SPECIFICATION.md — la service_role key nunca llega al navegador).
+ */
+export async function setUserSuspensionAction(input: {
+  profileId: string;
+  suspend: boolean;
+  reason?: string | null;
+}): Promise<ActionResult> {
+  const auth = await requireAdminAction();
+  if (!auth.ok) return { ok: false, error: auth.error };
+
+  const supabase = await createClient();
+  const reason = input.reason?.trim() || undefined;
+
+  const { error } = input.suspend
+    ? await supabase.rpc("admin_suspend_user", {
+        p_profile_id: input.profileId,
+        p_reason: reason,
+      })
+    : await supabase.rpc("admin_unban_user", {
+        p_profile_id: input.profileId,
+        p_reason: reason,
+      });
+
+  if (error) {
+    console.error("[admin] suspensión falló:", error.message);
+    return { ok: false, error: humanizeRpcError(error.message) };
+  }
+
+  console.info(
+    `[admin] ${input.suspend ? "suspensión" : "levantamiento"} por ${auth.session.profile.username}: ${input.profileId}`,
+  );
+
+  revalidatePath("/dashboard/moderation");
+  revalidatePath("/dashboard/users");
+
+  return {
+    ok: true,
+    message: input.suspend
+      ? "Usuario suspendido: pierde el acceso a la app."
+      : "Suspensión levantada: el usuario vuelve a tener acceso.",
+  };
+}
+
+// ─── Rol de administrador ────────────────────────────────────────────────────
+
+export async function setAdminFlagAction(input: {
+  profileId: string;
+  isAdmin: boolean;
+  /** Username tipeado en el diálogo, revalidado acá. */
+  confirmation: string;
+  expectedUsername: string;
+}): Promise<ActionResult> {
+  const auth = await requireAdminAction();
+  if (!auth.ok) return { ok: false, error: auth.error };
+
+  // La confirmación por tipeo se revalida server-side y no sólo en el diálogo:
+  // esto es escalación de privilegios, y un cliente manipulado no debería
+  // poder saltearla. Las guardas de fondo (no sobre uno mismo, no al último
+  // admin) viven igual dentro de la RPC.
+  if (input.confirmation.trim() !== input.expectedUsername) {
+    return {
+      ok: false,
+      error: `Para confirmar hay que escribir exactamente el usuario: "${input.expectedUsername}".`,
+    };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_set_admin_flag", {
+    p_profile_id: input.profileId,
+    p_is_admin: input.isAdmin,
+  });
+
+  if (error) {
+    console.error("[admin] admin_set_admin_flag falló:", error.message);
+    return { ok: false, error: humanizeRpcError(error.message) };
+  }
+
+  revalidatePath("/dashboard/users");
+
+  return {
+    ok: true,
+    message: input.isAdmin
+      ? `@${input.expectedUsername} ahora es administrador.`
+      : `@${input.expectedUsername} ya no es administrador.`,
+  };
+}
+
+// ─── Configuración ───────────────────────────────────────────────────────────
+
+export async function updateSettingAction(input: {
+  key: string;
+  value: number;
+}): Promise<ActionResult> {
+  const auth = await requireAdminAction();
+  if (!auth.ok) return { ok: false, error: auth.error };
+
+  if (!Number.isFinite(input.value)) {
+    return { ok: false, error: "El valor tiene que ser un número." };
+  }
+
+  const supabase = await createClient();
+
+  // El GRANT de app_settings sólo permite UPDATE(value) — ni con is_admin se
+  // puede tocar `description` desde acá (migración 20260818180000).
+  const { data, error } = await supabase
+    .from("app_settings")
+    .update({ value: input.value })
+    .eq("key", input.key)
+    .select("key")
+    .maybeSingle();
+
+  if (error) return { ok: false, error: error.message };
+  if (!data) return { ok: false, error: "El parámetro no existe." };
+
+  revalidatePath("/dashboard/settings");
+
+  return { ok: true, message: `"${input.key}" actualizado a ${input.value}.` };
+}
+
+// ─── Versiones ───────────────────────────────────────────────────────────────
+
+const VALID_PLATFORMS = ["ios", "android"] as const;
+type Platform = (typeof VALID_PLATFORMS)[number];
+
+const EDITABLE_VERSION_FIELDS = [
+  "min_required_version",
+  "latest_version",
+  "update_url",
+] as const;
+
+export async function updateVersionAction(input: {
+  platform: string;
+  fields: Partial<Record<(typeof EDITABLE_VERSION_FIELDS)[number], string>>;
+}): Promise<ActionResult> {
+  const auth = await requireAdminAction();
+  if (!auth.ok) return { ok: false, error: auth.error };
+
+  if (!(VALID_PLATFORMS as readonly string[]).includes(input.platform)) {
+    return { ok: false, error: "La plataforma debe ser ios o android." };
+  }
+
+  // Tipado como el `Update` de la tabla y no como `Record<string, string>`:
+  // el cliente de Supabase rechaza propiedades que no existan en la tabla, y
+  // un índice de string genérico las permitiría todas.
+  const update: Database["public"]["Tables"]["app_versions"]["Update"] = {};
+  for (const field of EDITABLE_VERSION_FIELDS) {
+    const value = input.fields[field];
+    if (value === undefined) continue;
+    if (typeof value !== "string" || value.trim() === "") {
+      return { ok: false, error: `${field} debe ser un texto no vacío.` };
+    }
+    update[field] = value.trim();
+  }
+
+  if (Object.keys(update).length === 0) {
+    return { ok: false, error: "No hay ningún campo para actualizar." };
+  }
+
+  const supabase = await createClient();
+
+  // Los CHECK de la tabla (semver-lite y update_url ~ '^https://', migración
+  // 20260804122000) son la validación real de fondo; lo de arriba sólo filtra
+  // basura obvia para devolver un mensaje más claro que un CHECK crudo.
+  const { data, error } = await supabase
+    .from("app_versions")
+    .update(update)
+    .eq("platform", input.platform as Platform)
+    .select("platform")
+    .maybeSingle();
+
+  if (error) return { ok: false, error: error.message };
+  if (!data) return { ok: false, error: "La plataforma no existe." };
+
+  revalidatePath("/dashboard/settings/versions");
+
+  return { ok: true, message: `Versiones de ${input.platform} actualizadas.` };
+}
+
+/**
+ * Traduce los prefijos estables de error de las RPCs a algo legible.
+ *
+ * Las RPCs del proyecto comunican el tipo de error con un prefijo en el
+ * mensaje (misma convención que `checkin_team`: `MATCH_NOT_FOUND`,
+ * `LOCATION_REQUIRED`, etc.). Se mapean los conocidos y se deja pasar el resto
+ * tal cual — un mensaje crudo es más útil que un "algo salió mal".
+ */
+function humanizeRpcError(message: string): string {
+  if (message.includes("NOT_AUTHORIZED")) return "No tenés permisos para esta acción.";
+  if (message.includes("PROFILE_NOT_FOUND")) return "El perfil no existe.";
+  if (message.includes("CANNOT_SUSPEND_SELF")) return "No podés suspenderte a vos mismo.";
+  if (message.includes("CANNOT_CHANGE_SELF")) {
+    return "No podés cambiar tu propio rol de administrador.";
+  }
+  if (message.includes("LAST_ADMIN")) {
+    return "No se puede revocar al último administrador que queda.";
+  }
+  return message;
+}

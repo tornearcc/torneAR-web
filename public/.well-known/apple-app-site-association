@@ -1,0 +1,16 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appIDs": ["<APPLE_TEAM_ID>.com.agussala2003.tornear"],
+        "components": [
+          {
+            "/": "/i/*",
+            "comment": "Links de referido — abren la app directo si está instalada"
+          }
+        ]
+      }
+    ]
+  }
+}
