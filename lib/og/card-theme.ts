@@ -26,3 +26,12 @@ export const OG_COLORS = {
  * primer corte del Content Factory.
  */
 export const OG_SIZE = { width: 1080, height: 1350 } as const;
+
+/**
+ * 1080×1920 (9:16) — Instagram/WhatsApp Stories, a pantalla completa y sin
+ * recorte. Convive con `OG_SIZE` en vez de reemplazarlo: las cinco tarjetas
+ * del Content Factory siguen siendo de feed (4:5), y la de "Compartir
+ * Partido" nace directamente como story porque es el jugador quien la
+ * comparte desde su teléfono, no la cuenta de la marca desde el feed.
+ */
+export const OG_STORY_SIZE = { width: 1080, height: 1920 } as const;

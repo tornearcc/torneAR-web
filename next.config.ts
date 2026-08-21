@@ -22,13 +22,17 @@ function supabaseImageHost(): string | null {
 const storageHost = supabaseImageHost();
 
 const nextConfig: NextConfig = {
-  // `assets/fonts/*.ttf` los lee `lib/og/fonts.ts` con `fs.readFileSync` para
-  // el Content Factory (/api/og/[template]). `assets/` no es `public/`, así
-  // que el output file tracing de Vercel no lo detecta solo: sin esto, el
-  // build funciona local pero la función serverless deployada no encuentra
-  // los archivos y cada imagen sale con la tarjeta de "faltan las fuentes".
+  // `assets/**` lo lee /api/og/[template] con `fs.readFileSync`: las fuentes
+  // `.ttf` del Content Factory (lib/og/fonts.ts) y las imágenes de marca de
+  // la story de Compartir Partido (lib/og/local-asset.ts). `assets/` no es
+  // `public/`, así que el output file tracing de Vercel no lo detecta solo:
+  // sin esto, el build funciona local pero la función serverless deployada no
+  // encuentra los archivos y cada imagen sale con la tarjeta de error.
+  //
+  // El glob es la carpeta entera y no `assets/fonts/**` + `assets/og/**` para
+  // que sumar un asset nuevo no obligue a acordarse de tocar este archivo.
   outputFileTracingIncludes: {
-    "/api/og/[template]": ["./assets/fonts/**"],
+    "/api/og/[template]": ["./assets/**"],
   },
 
   images: {
