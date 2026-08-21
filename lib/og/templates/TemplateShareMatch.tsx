@@ -460,7 +460,7 @@ export function TemplateShareMatch({
               tw="flex text-[#53e076]"
               style={{ ...FONT_BODY, fontWeight: 700, fontSize: 28, letterSpacing: 2 }}
             >
-              MIRÁ LAS ESTADÍSTICAS EN TORNEAR.APP
+              MIRÁ LAS ESTADÍSTICAS EN TORNEAR.VERCEL.APP
             </span>
           </div>
         </div>
