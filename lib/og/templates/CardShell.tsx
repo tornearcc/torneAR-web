@@ -43,7 +43,7 @@ export function CardShell({
   from: string;
   to: string;
   /**
-   * Línea final de la tarjeta. `tornear.app/i/<username>` sólo para tarjetas
+   * Línea final de la tarjeta. `tornear.vercel.app/i/<username>` sólo para tarjetas
    * de un JUGADOR: `app/(public)/i/[username]` existe únicamente para
    * perfiles, y los equipos y los partidos no tienen página pública propia —
    * mostrar un link que no lleva a ningún lado sería peor que no mostrarlo.

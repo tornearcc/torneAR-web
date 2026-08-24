@@ -28,7 +28,7 @@ export function TemplateMVP({
       eyebrow="MVP DE LA SEMANA"
       from={from}
       to={to}
-      handle={`tornear.app/i/${highlight.username}`}
+      handle={`tornear.vercel.app/i/${highlight.username}`}
     >
       <CardImage image={image} size={320} radius={999} />
 

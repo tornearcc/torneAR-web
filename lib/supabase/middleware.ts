@@ -9,9 +9,9 @@ import type { Database } from "@/types/supabase";
  * Host-only por diseño (§5 de WEB_SPECIFICATION.md): nunca se setea
  * `options.domain`. Sin ese atributo, el navegador scopea la cookie
  * exclusivamente al host que respondió — en producción eso es
- * `admin.tornear.app`, así que `tornear.app` (la landing pública) nunca
+ * `tornear.vercel.app`, así que `tornear.vercel.app` (la landing pública) nunca
  * puede leer la cookie de sesión del admin. Si algún día se setea
- * `domain: '.tornear.app'` acá, esa separación deja de ser real.
+ * `domain: '.tornear.vercel.app'` acá, esa separación deja de ser real.
  * Omitir `domain` también es lo único que funciona sin lógica por-entorno
  * en localhost y en preview de Vercel (`*.vercel.app`) durante desarrollo.
  */

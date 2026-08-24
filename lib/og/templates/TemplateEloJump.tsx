@@ -7,7 +7,7 @@ import { CardImage, CardShell } from "@/lib/og/templates/CardShell";
  * Tarjeta "Mayor salto de ELO". Reglas de Satori y marco compartido: ver
  * `CardShell.tsx`.
  *
- * El pie es `tornear.app` a secas y no `/i/<algo>`: esa ruta es del perfil
+ * El pie es `tornear.vercel.app` a secas y no `/i/<algo>`: esa ruta es del perfil
  * de un jugador y los equipos no tienen página pública propia.
  */
 export function TemplateEloJump({
@@ -22,7 +22,7 @@ export function TemplateEloJump({
   to: string;
 }) {
   return (
-    <CardShell eyebrow="MAYOR SALTO DE ELO" from={from} to={to} handle="tornear.app">
+    <CardShell eyebrow="MAYOR SALTO DE ELO" from={from} to={to} handle="tornear.vercel.app">
       <CardImage image={image} size={280} radius={40} />
 
       <span

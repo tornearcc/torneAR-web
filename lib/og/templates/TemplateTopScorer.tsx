@@ -34,7 +34,7 @@ export function TemplateTopScorer({
       eyebrow="GOLEADOR DE LA SEMANA"
       from={from}
       to={to}
-      handle={`tornear.app/i/${highlight.username}`}
+      handle={`tornear.vercel.app/i/${highlight.username}`}
     >
       <CardImage image={image} size={280} radius={999} />
 

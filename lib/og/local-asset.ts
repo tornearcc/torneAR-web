@@ -9,7 +9,7 @@ import { join } from "node:path";
  * ─── Por qué `assets/og/` y no `public/` ──────────────────────────────────
  * Satori no descarga nada por su cuenta de forma confiable dentro de una
  * función serverless: para un `<img src="/algo.png">` no hay origen que
- * resolver, y un `<img src="https://admin.tornear.app/algo.png">` obliga a
+ * resolver, y un `<img src="https://tornear.vercel.app/algo.png">` obliga a
  * la función a pedirse una imagen a sí misma — un round-trip extra por
  * render que además se rompe en los Preview Deployments de Vercel, donde ese
  * origen está detrás de la protección de deployment y devuelve el HTML del
