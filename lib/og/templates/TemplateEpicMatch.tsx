@@ -31,7 +31,7 @@ const SCORE_WIDTH = 280;
  * `gap` del shell bajado a 20: esta tarjeta tiene cuatro bloques verticales
  * (eyebrow, cruce, total, subtítulo) contra los tres de las demás.
  *
- * El pie es `tornear.app` a secas: `/i/<username>` es la ruta del perfil de
+ * El pie es `tornear.vercel.app` a secas: `/i/<username>` es la ruta del perfil de
  * un JUGADOR, y un partido no tiene página pública propia.
  */
 export function TemplateEpicMatch({
@@ -48,7 +48,7 @@ export function TemplateEpicMatch({
   to: string;
 }) {
   return (
-    <CardShell eyebrow="EL PARTIDAZO" from={from} to={to} handle="tornear.app" gap={20}>
+    <CardShell eyebrow="EL PARTIDAZO" from={from} to={to} handle="tornear.vercel.app" gap={20}>
       {/* `CardShell` deja a los hijos en columna, así que el cruce abre su
           propio contenedor con las dos filas adentro. */}
       <div style={{ display: "flex", flexDirection: "column", width: "100%", gap: 22 }}>

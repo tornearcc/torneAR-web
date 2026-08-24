@@ -3,7 +3,7 @@ import { InstallRedirect } from "./InstallRedirect";
 import { buildAppDeepLink, resolveUtmParams } from "./deep-link";
 
 // Deferred deep linking (Fase 6.1 del roadmap, cierra R1/R2): esta es la
-// página a la que cae un usuario que tocó https://tornear.app/i/<username>
+// página a la que cae un usuario que tocó https://tornear.vercel.app/i/<username>
 // sin la app instalada, o en un dispositivo donde el SO no interceptó el
 // Universal Link. Cero llamadas a Supabase — el username es solo texto
 // para el copy, no se valida contra profiles acá (mismo criterio que

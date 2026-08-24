@@ -33,7 +33,7 @@ export function TemplateZoneLeaders({
   to: string;
 }) {
   return (
-    <CardShell eyebrow="LÍDERES DE ZONA" from={from} to={to} handle="tornear.app" gap={18}>
+    <CardShell eyebrow="LÍDERES DE ZONA" from={from} to={to} handle="tornear.vercel.app" gap={18}>
       <span
         style={{
           fontFamily: "Barlow Condensed",
