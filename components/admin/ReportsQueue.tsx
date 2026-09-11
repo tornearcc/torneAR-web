@@ -7,7 +7,11 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { setUserSuspensionAction, updateReportStatusAction } from "@/lib/admin-actions";
+import {
+  removeReportedContentAction,
+  setUserSuspensionAction,
+  updateReportStatusAction,
+} from "@/lib/admin-actions";
 import { cn } from "@/lib/utils";
 import type { Database } from "@/types/supabase";
 
@@ -29,9 +33,33 @@ export interface ModerationReport {
   status: ReportStatus;
   created_at: string;
   reporter: ProfileSummary | null;
-  /** Sólo se resuelve para reported_entity_type === 'USER' (ver page.tsx). */
+  /**
+   * Copia del texto denunciado, congelada al momento de la denuncia por
+   * `submit_content_report`. Es `null` en las denuncias anteriores a la
+   * migración 20260911150000, que se hicieron con el INSERT directo.
+   */
+  content_snapshot: string | null;
+  /**
+   * Autor del contenido, resuelto por el servidor. Es a quien se suspende si
+   * la denuncia prospera. `null` para MATCH y TEAM, que no tienen autor único,
+   * y para las denuncias viejas.
+   */
   reportedUser: ProfileSummary | null;
 }
+
+/**
+ * Tipos sobre los que la RPC sabe eliminar contenido.
+ *
+ * USER y MATCH quedan afuera porque no hay «contenido» que sacar: ahí la
+ * medida es suspender la cuenta. La RPC lo rechaza igual, pero ofrecer un
+ * botón que siempre falla es peor que no ofrecerlo.
+ */
+const REMOVABLE_ENTITY_TYPES: ReadonlySet<ReportRow["reported_entity_type"]> = new Set([
+  "MESSAGE",
+  "MARKET_TEAM_POST",
+  "MARKET_PLAYER_POST",
+  "TEAM",
+]);
 
 const STATUS_LABEL: Record<ReportStatus, string> = {
   PENDING: "Pendiente",
@@ -50,10 +78,17 @@ const STATUS_BADGE_CLASS: Record<ReportStatus, string> = {
 const ENTITY_LABEL: Record<ReportRow["reported_entity_type"], string> = {
   USER: "Usuario",
   MATCH: "Partido",
+  MESSAGE: "Mensaje",
+  MARKET_TEAM_POST: "Oferta de equipo",
+  MARKET_PLAYER_POST: "Oferta de jugador",
+  TEAM: "Equipo",
 };
 
 /** Las dos mitades del circuito de moderación de cuentas. */
 type AccountAction = "suspend" | "unban";
+
+/** Eliminar contenido es la tercera medida, y la única irreversible. */
+type ModerationAction = AccountAction | "remove";
 
 export function ReportsQueue({
   reports,
@@ -70,7 +105,7 @@ export function ReportsQueue({
   suspendedProfileIds: string[];
 }) {
   const [dialog, setDialog] = useState<
-    { report: ModerationReport; action: AccountAction } | null
+    { report: ModerationReport; action: ModerationAction } | null
   >(null);
   const [isPending, startTransition] = useTransition();
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -101,9 +136,23 @@ export function ReportsQueue({
     const { report, action } = dialog;
     const label = report.reportedUser ? `@${report.reportedUser.username}` : report.reported_entity_id;
 
+    if (action === "remove") {
+      startTransition(async () => {
+        const result = await removeReportedContentAction({ reportId: report.id });
+
+        if (result.ok) {
+          setDialog(null);
+          toast.success("Contenido eliminado", { description: result.message });
+        } else {
+          toast.error("No se pudo eliminar", { description: result.error });
+        }
+      });
+      return;
+    }
+
     startTransition(async () => {
       const result = await setUserSuspensionAction({
-        profileId: report.reported_entity_id,
+        profileId: report.reportedUser?.id ?? report.reported_entity_id,
         suspend: action === "suspend",
         reason:
           action === "suspend"
@@ -141,6 +190,7 @@ export function ReportsQueue({
               <th className="px-4 py-3 font-medium">Estado</th>
               <th className="px-4 py-3 font-medium">Denunciante</th>
               <th className="px-4 py-3 font-medium">Entidad</th>
+              <th className="px-4 py-3 font-medium">Contenido denunciado</th>
               <th className="px-4 py-3 font-medium">Motivo</th>
               <th className="px-4 py-3 font-medium">Fecha</th>
               <th className="px-4 py-3 font-medium">Acciones</th>
@@ -148,7 +198,12 @@ export function ReportsQueue({
           </thead>
           <tbody>
             {reports.map((report) => {
-              const isSuspended = suspended.has(report.reported_entity_id);
+              // El sujeto de la suspensión es el AUTOR del contenido, que para
+              // una denuncia de perfil coincide con la entidad denunciada pero
+              // para un mensaje o una oferta no.
+              const isSuspended = report.reportedUser
+                ? suspended.has(report.reportedUser.id)
+                : false;
               const busy = isPending && busyId === report.id;
 
               return (
@@ -182,11 +237,25 @@ export function ReportsQueue({
                         {report.reported_entity_id.slice(0, 8)}…
                       </span>
                     )}
-                    {report.reported_entity_type === "USER" && isSuspended ? (
+                    {isSuspended ? (
                       <span className="ml-2 rounded-full bg-danger-error-container px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-danger-on-error-container">
                         Suspendido
                       </span>
                     ) : null}
+                  </td>
+                  {/* El texto denunciado, no sólo su id. Es lo que vuelve la
+                      cola accionable de un vistazo: sin esto hay que salir a
+                      buscar el contenido a mano, con 24 horas de plazo encima. */}
+                  <td className="max-w-sm px-4 py-3 text-neutral-on-surface-variant">
+                    {report.content_snapshot ? (
+                      <span className="line-clamp-3 whitespace-pre-wrap break-words italic">
+                        “{report.content_snapshot}”
+                      </span>
+                    ) : (
+                      // Las denuncias anteriores a la migración 20260911150000
+                      // se guardaron sin copia del texto.
+                      <span className="text-xs text-neutral-outline">Sin copia guardada</span>
+                    )}
                   </td>
                   <td className="max-w-xs px-4 py-3 text-neutral-on-surface-variant">
                     {report.reason}
@@ -221,7 +290,26 @@ export function ReportsQueue({
                           dos estados son mutuamente excluyentes, así que
                           mostrarlos juntos sólo agrega la chance de tocar el
                           equivocado. */}
-                      {report.reported_entity_type === "USER" ? (
+                      {/* Eliminar el contenido y suspender la cuenta son las
+                          dos medidas que pide la guideline 1.2, y son
+                          independientes: se puede sacar una publicación sin
+                          echar a nadie, y al revés. */}
+                      {REMOVABLE_ENTITY_TYPES.has(report.reported_entity_type) ? (
+                        <Button
+                          size="xs"
+                          disabled={isPending || report.status === "ACTIONED"}
+                          onClick={() => setDialog({ report, action: "remove" })}
+                          className="bg-danger-error-container text-danger-on-error-container hover:bg-danger-error-container/85"
+                        >
+                          Eliminar contenido
+                        </Button>
+                      ) : null}
+
+                      {/* El autor sale de `reported_profile_id`, resuelto en el
+                          servidor, así que se puede suspender a quien escribió
+                          un mensaje o publicó una oferta, no sólo a un perfil
+                          denunciado directamente. */}
+                      {report.reportedUser ? (
                         <Button
                           size="xs"
                           disabled={isPending}
@@ -248,7 +336,13 @@ export function ReportsQueue({
       <ConfirmDialog
         open={dialog !== null}
         onOpenChange={(open) => !open && setDialog(null)}
-        title={dialog?.action === "suspend" ? "¿Suspender usuario?" : "¿Levantar la suspensión?"}
+        title={
+          dialog?.action === "remove"
+            ? "¿Eliminar el contenido denunciado?"
+            : dialog?.action === "suspend"
+              ? "¿Suspender usuario?"
+              : "¿Levantar la suspensión?"
+        }
         message={
           dialog ? (
             <>
@@ -267,12 +361,26 @@ export function ReportsQueue({
         // devuelve a la app a alguien que un admin decidió sacar: no es
         // "deshacer", es otra decisión de moderación y merece la misma pausa.
         impact={
-          dialog?.action === "suspend"
-            ? "El usuario pierde el acceso a la app de inmediato."
-            : "El usuario recupera el acceso completo a la app."
+          dialog?.action === "remove"
+            ? // Se nombra el efecto REAL por tipo: «eliminar» significa cosas
+              // distintas y el admin tiene que saber cuál está por ejecutar.
+              dialog.report.reported_entity_type === "MESSAGE"
+              ? "El mensaje se borra de la conversación. No se puede deshacer."
+              : dialog.report.reported_entity_type === "TEAM"
+                ? "Se reemplazan el nombre y el escudo del equipo. El equipo y su historial siguen existiendo."
+                : "La publicación deja de estar activa y sale del Mercado."
+            : dialog?.action === "suspend"
+              ? "El usuario pierde el acceso a la app de inmediato."
+              : "El usuario recupera el acceso completo a la app."
         }
-        confirmLabel={dialog?.action === "suspend" ? "Suspender" : "Levantar"}
-        tone={dialog?.action === "suspend" ? "danger" : "primary"}
+        confirmLabel={
+          dialog?.action === "remove"
+            ? "Eliminar"
+            : dialog?.action === "suspend"
+              ? "Suspender"
+              : "Levantar"
+        }
+        tone={dialog?.action === "unban" ? "primary" : "danger"}
         loading={isPending}
         onConfirm={handleConfirm}
       />
