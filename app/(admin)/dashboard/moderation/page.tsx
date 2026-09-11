@@ -13,6 +13,11 @@ type ReportStatus = Database["public"]["Enums"]["report_status"];
 const STATUS_OPTIONS = [
   { value: "PENDING", label: "Pendientes" },
   { value: "REVIEWED", label: "Revisadas" },
+  // ACTIONED estaba declarado en el enum desde 20260818140000 y nunca se
+  // usaba. Ahora lo escribe `admin_remove_reported_content`, y es la
+  // diferencia que importa demostrar: «un humano lo miró» contra «se tomó una
+  // medida».
+  { value: "ACTIONED", label: "Accionadas" },
   { value: "DISMISSED", label: "Desestimadas" },
   { value: "all", label: "Todas" },
 ] as const;
@@ -55,6 +60,8 @@ export default async function ModerationPage({
       reason,
       status,
       created_at,
+      content_snapshot,
+      reported_profile_id,
       reporter:profiles!content_reports_reporter_id_fkey (
         id,
         username,
@@ -78,29 +85,41 @@ export default async function ModerationPage({
     .order("created_at", { ascending: true })
     .range(offset, offset + PAGE_SIZE - 1);
 
-  // `reported_entity_id` es polimórfico (USER o MATCH, sin FK real — §3.3), así
-  // que PostgREST no lo puede embeber. Se resuelve con un segundo SELECT
-  // batcheado (no N+1) sólo para las denuncias de tipo USER: sin esto, el botón
-  // de suspender mostraría nada más que un UUID truncado, y banear a alguien sin
-  // poder confirmar de un vistazo a quién es un riesgo real de click equivocado.
-  const userReportIds = Array.from(
+  // El AUTOR del contenido denunciado. Antes se resolvía sólo para las
+  // denuncias de tipo USER, mirando `reported_entity_id`: era lo único que se
+  // podía, porque ese campo es polimórfico y sin FK real (§3.3), así que
+  // PostgREST no lo puede embeber.
+  //
+  // Desde la migración 20260911150000 existe `reported_profile_id`, que el
+  // servidor completa al crear la denuncia. Eso permite resolver también al
+  // autor de un mensaje o de una publicación, que es a quien hay que poder
+  // suspender. Se sigue haciendo con un segundo SELECT batcheado —no N+1— y no
+  // con un embed, porque la columna nueva sí tiene FK pero convivirían dos
+  // formas de resolver lo mismo según la antigüedad de la fila.
+  const reportedProfileIds = Array.from(
     new Set(
       (data ?? [])
-        .filter((report) => report.reported_entity_type === "USER")
-        .map((report) => report.reported_entity_id),
+        .map((report) =>
+          // Las denuncias anteriores a esa migración no tienen el autor
+          // resuelto; para las de tipo USER la entidad ES el perfil, así que
+          // se puede recuperar igual.
+          report.reported_profile_id ??
+          (report.reported_entity_type === "USER" ? report.reported_entity_id : null),
+        )
+        .filter((id): id is string => id !== null),
     ),
   );
 
   const reportedUsersById = new Map<string, { id: string; username: string; full_name: string }>();
   let suspendedProfileIds: string[] = [];
 
-  if (userReportIds.length > 0) {
+  if (reportedProfileIds.length > 0) {
     const [profilesResult, suspensionResult] = await Promise.all([
-      supabase.from("profiles").select("id, username, full_name").in("id", userReportIds),
+      supabase.from("profiles").select("id, username, full_name").in("id", reportedProfileIds),
       // NO se puede leer con un SELECT: vive en `auth.users.banned_until`, y
       // Supabase no expone el schema `auth` a PostgREST. De ahí la RPC
       // `admin_get_suspension_status`, que además valida is_admin adentro.
-      supabase.rpc("admin_get_suspension_status", { p_profile_ids: userReportIds }),
+      supabase.rpc("admin_get_suspension_status", { p_profile_ids: reportedProfileIds }),
     ]);
 
     for (const profile of profilesResult.data ?? []) {
@@ -123,19 +142,22 @@ export default async function ModerationPage({
     }
   }
 
-  const reports: ModerationReport[] = (data ?? []).map((report) => ({
-    ...report,
-    reportedUser:
-      report.reported_entity_type === "USER"
-        ? (reportedUsersById.get(report.reported_entity_id) ?? null)
-        : null,
-  }));
+  const reports: ModerationReport[] = (data ?? []).map((report) => {
+    const authorId =
+      report.reported_profile_id ??
+      (report.reported_entity_type === "USER" ? report.reported_entity_id : null);
+
+    return {
+      ...report,
+      reportedUser: authorId ? (reportedUsersById.get(authorId) ?? null) : null,
+    };
+  });
 
   return (
     <PageTransition className="gap-6">
       <PageHeader
         title="Moderación"
-        description="Denuncias de usuarios sobre perfiles y partidos."
+        description="Denuncias sobre perfiles, mensajes, publicaciones del Mercado, equipos y partidos."
         actions={
           <Link
             href="/dashboard/moderation/feedback"

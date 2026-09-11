@@ -124,6 +124,53 @@ export async function setUserSuspensionAction(input: {
   };
 }
 
+// ─── Eliminación de contenido denunciado ─────────────────────────────────────
+
+/**
+ * Elimina el contenido de una denuncia y la deja en ACTIONED.
+ *
+ * Es la otra mitad de lo que la guideline 1.2 de la App Store exige ante una
+ * denuncia: «removing the content and ejecting the user». Suspender ya estaba
+ * (`setUserSuspensionAction`); sin esto, el contenido denunciado quedaba
+ * publicado aunque la cuenta estuviera suspendida.
+ *
+ * Qué significa eliminar depende del tipo y lo decide la RPC, no esta acción:
+ * un mensaje se borra, una publicación se desactiva —borrarla arrastraría las
+ * postulaciones— y de un equipo se neutralizan nombre y escudo, porque su
+ * historial deportivo es compartido con los rivales. Ver la migración
+ * 20260911170000.
+ *
+ * Mismo criterio que la suspensión: pasa por la RPC `SECURITY DEFINER` con la
+ * sesión normal del admin, nunca con `service_role` (§1.2 de
+ * WEB_SPECIFICATION.md).
+ */
+export async function removeReportedContentAction(input: {
+  reportId: string;
+}): Promise<ActionResult> {
+  const auth = await requireAdminAction();
+  if (!auth.ok) return { ok: false, error: auth.error };
+
+  const supabase = await createClient();
+
+  const { error } = await supabase.rpc("admin_remove_reported_content", {
+    p_report_id: input.reportId,
+  });
+
+  if (error) {
+    console.error("[admin] eliminación de contenido falló:", error.message);
+    return { ok: false, error: humanizeRpcError(error.message) };
+  }
+
+  console.info(
+    `[admin] contenido eliminado por ${auth.session.profile.username}: denuncia ${input.reportId}`,
+  );
+
+  revalidatePath("/dashboard/moderation");
+  revalidatePath("/dashboard");
+
+  return { ok: true, message: "Contenido eliminado y denuncia marcada como accionada." };
+}
+
 // ─── Rol de administrador ────────────────────────────────────────────────────
 
 export async function setAdminFlagAction(input: {
@@ -276,6 +323,10 @@ function humanizeRpcError(message: string): string {
   }
   if (message.includes("LAST_ADMIN")) {
     return "No se puede revocar al último administrador que queda.";
+  }
+  if (message.includes("REPORT_NOT_FOUND")) return "La denuncia ya no existe.";
+  if (message.includes("NO_CONTENT_TO_REMOVE")) {
+    return "Esta denuncia no tiene contenido que eliminar. La medida acá es suspender la cuenta.";
   }
   return message;
 }
