@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { PhoneFrame } from "@/components/landing/PhoneFrame";
+import { PitchLines } from "@/components/landing/PitchLines";
+import { StoreButtons } from "@/components/landing/StoreButtons";
 import { OG_IMAGE } from "@/lib/site-metadata";
-import { APP_STORE_URL } from "@/lib/store-links";
 import { buildAppDeepLink, resolveUtmParams } from "./deep-link";
 import { sanitizeInviteName } from "./invite-name";
 
@@ -65,50 +67,60 @@ export default async function ReferralLandingPage({ params, searchParams }: Invi
   const appDeepLink = buildAppDeepLink(username, resolveUtmParams(query));
 
   return (
-    <section className="mx-auto flex max-w-lg flex-col items-center gap-8 px-6 py-20 text-center">
-      <p className="font-display text-sm uppercase tracking-widest text-brand-primary">
-        Invitación de torneAR
-      </p>
+    <section className="relative isolate overflow-hidden">
+      <PitchLines />
 
-      <h1 className="font-display text-4xl uppercase leading-tight text-neutral-on-surface sm:text-5xl">
-        <span className="break-words text-brand-primary">{inviter}</span> te invitó a jugar
-      </h1>
+      <div className="mx-auto grid max-w-6xl items-center gap-14 px-5 pt-10 pb-16 sm:px-8 lg:grid-cols-[1.15fr_0.85fr] lg:gap-10 lg:pt-20 lg:pb-24">
+        <div className="flex min-w-0 flex-col items-start gap-6">
+          <p className="inline-flex items-center gap-2 rounded-full border border-brand-gold/40 bg-brand-gold/10 px-3 py-1 font-display text-sm font-bold tracking-widest text-brand-gold uppercase">
+            Invitación
+          </p>
 
-      <p className="max-w-sm text-lg text-neutral-on-surface-variant">
-        Armá tu equipo, desafiá rivales y subí en el ranking.
-      </p>
+          <h1 className="font-display w-full text-5xl leading-[0.92] font-extrabold tracking-tight text-neutral-on-surface uppercase [overflow-wrap:anywhere] sm:text-7xl">
+            <span className="text-brand-primary">{inviter}</span>
+            <br />
+            te invitó a jugar
+          </h1>
 
-      {/* El código es el username y lo pide la app en el onboarding
-          ("¿Tenés un código de invitación?"). Si la app se baja desde la
-          tienda, el `ref` del link se pierde en el camino y ese campo llega
-          vacío: tipearlo a mano es la única forma de quedar vinculados. */}
-      <div className="w-full rounded-lg border border-neutral-outline-variant bg-surface-container p-4">
-        <p className="text-xs uppercase tracking-widest text-neutral-on-surface-variant">
-          Código de invitación
-        </p>
-        <p className="font-display mt-1 break-all text-2xl text-brand-primary">{username}</p>
-        <p className="mt-2 text-sm text-neutral-on-surface-variant">
-          Si al registrarte no aparece completo, escribilo en «¿Tenés un código de invitación?».
-        </p>
+          <p className="max-w-md text-lg text-neutral-on-surface-variant">
+            Bajate torneAR: cada partido que juegues queda cargado y suma a la tabla de tu zona.
+          </p>
+
+          <StoreButtons />
+
+          {/* El código es el username y lo pide la app en el onboarding
+              ("¿Tenés un código de invitación?"). Si la app se baja desde la
+              tienda, el `ref` del link se pierde en el camino y ese campo llega
+              vacío: tipearlo a mano es la única forma de quedar vinculados. */}
+          <div className="w-full max-w-md rounded-xl border border-neutral-outline-variant bg-surface-container p-4">
+            <p className="text-xs font-bold tracking-widest text-neutral-outline uppercase">Código de invitación</p>
+            <p className="font-display mt-1 text-3xl font-extrabold break-all text-brand-primary">{username}</p>
+            <p className="mt-2 text-sm text-neutral-on-surface-variant">
+              Si al registrarte no aparece completo, escribilo en «¿Tenés un código de invitación?».
+            </p>
+          </div>
+
+          <a
+            href={appDeepLink}
+            className="text-sm text-neutral-on-surface-variant underline underline-offset-4 hover:text-neutral-on-surface"
+          >
+            ¿Ya tenés la app? Abrila acá
+          </a>
+        </div>
+
+        <div className="relative mx-auto w-full max-w-[17rem] lg:max-w-[21rem]">
+          <div
+            aria-hidden="true"
+            className="absolute inset-x-4 top-16 bottom-16 -z-10 rounded-full bg-brand-primary/20 blur-3xl"
+          />
+          <PhoneFrame
+            src="/landing/ranking.jpg"
+            alt="Ranking de torneAR: tabla de mejores equipos y goleadores de la temporada"
+            sizes="(min-width: 1024px) 336px, 272px"
+            className="w-full -rotate-3"
+          />
+        </div>
       </div>
-
-      <a
-        href={APP_STORE_URL}
-        className="flex w-full items-center justify-center rounded-lg bg-brand-primary px-8 py-5 text-lg font-semibold text-brand-inverse-primary"
-      >
-        Descargar la App
-      </a>
-
-      <a
-        href={appDeepLink}
-        className="text-sm text-neutral-on-surface-variant underline-offset-4 hover:text-neutral-on-surface hover:underline"
-      >
-        ¿Ya tenés la app? Abrila acá
-      </a>
-
-      <p className="text-sm text-neutral-on-surface-variant">
-        Gratis para iPhone.
-      </p>
     </section>
   );
 }
