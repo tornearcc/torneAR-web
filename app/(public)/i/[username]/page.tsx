@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { APP_STORE_URL } from "@/lib/store-links";
 import { InstallRedirect } from "./InstallRedirect";
 import { buildAppDeepLink, resolveUtmParams } from "./deep-link";
 
@@ -59,9 +60,8 @@ export default async function ReferralLandingPage({
       </div>
 
       <a
-        href="#"
-        aria-disabled="true"
-        className="flex w-full items-center justify-center rounded-lg bg-brand-primary px-8 py-5 text-lg font-semibold text-brand-inverse-primary opacity-60 pointer-events-none"
+        href={APP_STORE_URL}
+        className="flex w-full items-center justify-center rounded-lg bg-brand-primary px-8 py-5 text-lg font-semibold text-brand-inverse-primary"
       >
         Descargar la App
       </a>
@@ -74,7 +74,7 @@ export default async function ReferralLandingPage({
       </a>
 
       <p className="text-sm text-neutral-on-surface-variant">
-        Próximamente disponible — torneAR está en Beta cerrada.
+        Gratis para iPhone.
       </p>
     </section>
   );

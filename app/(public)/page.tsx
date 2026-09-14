@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { APP_STORE_URL } from "@/lib/store-links";
 
 const FEATURES = [
   {
@@ -36,11 +37,16 @@ const STEPS = [
   },
 ];
 
-const STATS = [
-  { value: "+500", label: "Equipos en beta cerrada" },
-  { value: "+1200", label: "Partidos coordinados" },
-  { value: "15", label: "Ciudades activas" },
-];
+function AppStoreButton() {
+  return (
+    <a
+      href={APP_STORE_URL}
+      className="flex items-center justify-center rounded-lg bg-brand-primary px-6 py-3 font-semibold text-brand-inverse-primary"
+    >
+      Descargar en App Store
+    </a>
+  );
+}
 
 export default function LandingPage() {
   return (
@@ -64,25 +70,10 @@ export default function LandingPage() {
           pelota.
         </p>
 
-        <div className="flex flex-col gap-4 sm:flex-row">
-          <a
-            href="#"
-            aria-disabled="true"
-            className="flex items-center justify-center rounded-lg bg-brand-primary px-6 py-3 font-semibold text-brand-inverse-primary opacity-60 pointer-events-none"
-          >
-            Descargar en App Store
-          </a>
-          <a
-            href="#"
-            aria-disabled="true"
-            className="flex items-center justify-center rounded-lg border border-neutral-outline px-6 py-3 font-semibold text-neutral-on-surface opacity-60 pointer-events-none"
-          >
-            Descargar en Google Play
-          </a>
-        </div>
+        <AppStoreButton />
 
         <p className="text-sm text-neutral-on-surface-variant">
-          Próximamente disponible — torneAR está en Beta cerrada.
+          Gratis para iPhone.
         </p>
       </section>
 
@@ -136,26 +127,23 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Cierre con el CTA repetido. Reemplaza la franja de estadísticas
+          ("+500 equipos", "+1200 partidos", "15 ciudades"), que no eran
+          números reales: con los reales no hay cifra que mostrar todavía, y
+          un número inventado en la página a la que apunta la campaña es peor
+          que ninguno. */}
       <section
-        aria-labelledby="stats-heading"
+        aria-labelledby="closing-heading"
         className="border-t border-neutral-outline-variant bg-surface-container"
       >
-        <div className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
-          <h2 id="stats-heading" className="sr-only">
-            Estadísticas
+        <div className="mx-auto flex max-w-5xl flex-col items-center gap-6 px-6 py-16 text-center sm:py-20">
+          <h2
+            id="closing-heading"
+            className="font-display text-2xl uppercase text-neutral-on-surface sm:text-3xl"
+          >
+            La tabla recién arranca. Que tu equipo esté desde el principio.
           </h2>
-          <div className="grid gap-8 text-center sm:grid-cols-3">
-            {STATS.map((stat) => (
-              <div key={stat.label} className="flex flex-col gap-1">
-                <span className="font-display text-4xl text-brand-primary sm:text-5xl">
-                  {stat.value}
-                </span>
-                <span className="text-sm text-neutral-on-surface-variant">
-                  {stat.label}
-                </span>
-              </div>
-            ))}
-          </div>
+          <AppStoreButton />
         </div>
       </section>
     </>
