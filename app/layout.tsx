@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Barlow_Condensed, Epilogue } from "next/font/google";
+import { OG_IMAGE, SITE_DESCRIPTION, SITE_URL } from "@/lib/site-metadata";
 import "./globals.css";
 
 // Mismas 3 familias que tornear/tailwind.config.js (font-ui/display/epic),
@@ -23,9 +24,28 @@ const epilogue = Epilogue({
 });
 
 export const metadata: Metadata = {
+  // Vuelve absolutas las URLs relativas de `openGraph.images` y
+  // `twitter.images`, que las previews de WhatsApp y X exigen completas.
+  metadataBase: new URL(SITE_URL),
   title: "torneAR",
-  description:
-    "torneAR — organizá torneos y partidos de fútbol amateur, con equipos, resultados y un ranking que importa.",
+  description: SITE_DESCRIPTION,
+  // Default de todo el sitio. Una página que declare su propio `openGraph`
+  // reemplaza este objeto entero (la mezcla es superficial): por eso la
+  // imagen vive en `lib/site-metadata.ts` y no sólo acá.
+  openGraph: {
+    title: "torneAR — El fútbol amateur, ahora con algo en juego",
+    description: SITE_DESCRIPTION,
+    siteName: "torneAR",
+    locale: "es_AR",
+    type: "website",
+    images: [OG_IMAGE],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "torneAR — El fútbol amateur, ahora con algo en juego",
+    description: SITE_DESCRIPTION,
+    images: [OG_IMAGE.url],
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

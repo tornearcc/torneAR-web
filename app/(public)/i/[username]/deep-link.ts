@@ -3,13 +3,12 @@
  * `normalizeUniversalLink` construye del lado del móvil
  * (`tornear/lib/deep-linking.ts`) cuando el SO sí intercepta el Universal
  * Link. Acá hace falta un equivalente propio porque, si el SO NO lo
- * interceptó (falta el entitlement, o el navegador no lo intentó), esta
- * página cae como fallback y arma el mismo link a mano.
+ * interceptó (el navegador no lo intentó), esta página cae como fallback y
+ * ofrece el mismo link a mano en "¿Ya tenés la app? Abrila acá".
  *
- * Un solo helper para los dos call sites de esta carpeta (`page.tsx` y
- * `InstallRedirect.tsx`) — no se comparte con el móvil: son runtimes
- * distintos y la duplicación de esta única función es más barata que
- * publicar un paquete, mismo criterio que `lib/dispute-scores.ts`.
+ * No se comparte con el móvil: son runtimes distintos y la duplicación de
+ * esta única función es más barata que publicar un paquete, mismo criterio
+ * que `lib/dispute-scores.ts`.
  */
 
 export interface DeepLinkUtm {
