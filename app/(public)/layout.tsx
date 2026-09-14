@@ -9,18 +9,21 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-40 border-b border-neutral-outline-variant/60 bg-surface-base/85 backdrop-blur-md">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-5 sm:px-8">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">
           <Link href="/" aria-label="torneAR — inicio" className="flex items-center">
-            {/* width/height con la proporción REAL del archivo (2048×682 ≈ 3:1)
-                y `w-auto`: si no coinciden, el `height: auto` del preflight de
-                Tailwind recalcula un solo lado y next/image avisa en consola. */}
+            {/* `logo-header.png` es `TorneAR_Logo_Nombre_1.png` sin el aire
+                transparente que traía alrededor (con ese margen, un logo de
+                44px de caja se veía de ~26px) y bajado a 450×128: pesa 13 KB
+                contra 393 KB del original. width/height con esa proporción
+                (≈3.5:1) y `w-auto`, para que el `height: auto` del preflight
+                de Tailwind no recalcule un solo lado y next/image avise. */}
             <Image
-              src="/TorneAR_Logo_Nombre_1.png"
+              src="/logo-header.png"
               alt="torneAR"
-              width={150}
+              width={176}
               height={50}
               priority
-              className="h-8 w-auto"
+              className="h-9 w-auto sm:h-10"
             />
           </Link>
 
