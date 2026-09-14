@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { AppleLogo } from "@/components/landing/StoreButtons";
 import { APP_STORE_URL } from "@/lib/store-links";
 
 // Zona pública: cero sesión, cero cliente de Supabase (§0 de
@@ -25,11 +24,24 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             />
           </Link>
 
+          {/* Sin logo de Apple: las guías de Apple sólo lo permiten dentro del
+              badge oficial (ver components/landing/StoreButtons.tsx). */}
           <a
             href={APP_STORE_URL}
             className="inline-flex items-center gap-1.5 rounded-lg bg-brand-primary px-3 py-1.5 text-sm font-bold text-surface-lowest transition hover:bg-brand-primary-fixed"
           >
-            <AppleLogo className="size-4" />
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2.5}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="size-4"
+            >
+              <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />
+            </svg>
             Descargar
           </a>
         </div>

@@ -1,26 +1,44 @@
+import Image from "next/image";
 import { APP_STORE_URL } from "@/lib/store-links";
 
 /*
  * Botones de tienda de la zona pública (landing e invitaciones).
  *
- * Los logos van como SVG inline y no como imagen: son dos paths de pocos
- * bytes, heredan el color del texto con `currentColor` y no suman un request
- * en una página que se abre con datos móviles.
+ * ─── App Store: badge OFICIAL, no un botón propio ──────────────────────────
+ * `public/badges/app-store-es-mx-black.svg` es el artwork de Apple tal cual,
+ * bajado de toolbox.marketingtools.apple.com (variante Latinoamérica, negra).
+ * Las guías de marketing de Apple prohíben recrearlo o modificarlo y usar el
+ * logo de Apple suelto — por eso no hay un botón armado con la manzana, ni acá
+ * ni en el header. Lo que se respeta de esas guías:
+ *   · negro, que es el obligatorio cuando convive con otra tienda;
+ *   · primero en la fila;
+ *   · alto ≥ 40px en pantalla (se usa 52px);
+ *   · espacio libre de 1/4 del alto alrededor (13px: el `gap-4` deja 16px).
+ * Si Apple publica una versión nueva, se reemplaza el archivo: nunca se edita.
  */
 
-export function AppleLogo({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" className={className}>
-      <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701" />
-    </svg>
-  );
-}
+/** Alto común: Apple y Google piden que los badges de tienda que conviven midan lo mismo. */
+const BADGE_HEIGHT = "h-[52px]";
 
-function GooglePlayLogo({ className }: { className?: string }) {
+export function AppStoreBadge() {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" className={className}>
-      <path d="M22.018 13.298l-3.919 2.218-3.515-3.493 3.543-3.521 3.891 2.202a1.49 1.49 0 0 1 0 2.594zM1.337.924a1.486 1.486 0 0 0-.112.568v21.017c0 .217.045.419.124.6l11.155-11.087L1.337.924zm12.207 10.065l3.258-3.238L3.45.195a1.466 1.466 0 0 0-.946-.179l11.04 10.973zm0 2.067l-11 10.933c.298.036.612-.016.906-.183l13.324-7.54-3.23-3.21z" />
-    </svg>
+    <a
+      href={APP_STORE_URL}
+      className="inline-flex shrink-0 rounded-[9px] transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-primary"
+    >
+      {/* `unoptimized`: es un SVG vectorial de 12 KB, el optimizador de Next no
+          procesa SVG y rasterizarlo sólo lo haría más pesado. width/height con
+          la proporción del artwork (≈3:1) y alto fijado por clase + `w-auto`,
+          para que next/image no avise que se modificó un solo lado. */}
+      <Image
+        src="/badges/app-store-es-mx-black.svg"
+        alt="Descargar en el App Store"
+        width={156}
+        height={52}
+        unoptimized
+        className={`${BADGE_HEIGHT} w-auto`}
+      />
+    </a>
   );
 }
 
@@ -42,46 +60,35 @@ function LockIcon({ className }: { className?: string }) {
   );
 }
 
-export function AppStoreButton() {
-  return (
-    <a
-      href={APP_STORE_URL}
-      className="inline-flex items-center gap-3 rounded-xl bg-brand-primary py-2.5 pr-6 pl-4 text-surface-lowest shadow-[0_12px_40px_-12px_rgba(83,224,118,0.7)] transition hover:bg-brand-primary-fixed active:scale-[0.98]"
-    >
-      <AppleLogo className="size-8 shrink-0" />
-      <span className="flex flex-col text-left leading-none">
-        <span className="text-xs font-medium">Descargala en la</span>
-        <span className="font-display text-[1.65rem] font-extrabold uppercase">App Store</span>
-      </span>
-    </a>
-  );
-}
-
 /**
- * Bloqueado a propósito: la app todavía no está publicada en Google Play.
- * Es un `span` y no un link, así que no hay href que un tap pueda seguir.
+ * Bloqueado a propósito: la app todavía no está publicada en Google Play. Es
+ * un `span`, sin href que un tap pueda seguir.
+ *
+ * Sin el badge ni el ícono de Google Play: sus guías de marca los reservan
+ * para apps que ya están disponibles en la tienda. Nombrarla en texto para
+ * avisar que viene sí está permitido. Cuando se publique, este componente se
+ * reemplaza por el badge oficial de Google, con el mismo alto que el de Apple.
  */
 export function GooglePlaySoonButton() {
   return (
     <span
       aria-disabled="true"
       title="Todavía no está disponible en Google Play"
-      className="inline-flex cursor-not-allowed items-center gap-3 rounded-xl border border-dashed border-neutral-outline-variant bg-surface-container/60 py-2.5 pr-4 pl-4 text-neutral-outline select-none"
+      className={`inline-flex ${BADGE_HEIGHT} shrink-0 cursor-not-allowed items-center gap-2.5 rounded-[9px] border border-dashed border-neutral-outline-variant bg-surface-container/60 px-4 text-neutral-outline select-none`}
     >
-      <GooglePlayLogo className="size-7 shrink-0 opacity-60" />
+      <LockIcon className="size-4 shrink-0 opacity-70" />
       <span className="flex flex-col text-left leading-none">
-        <span className="text-xs font-medium">Próximamente en</span>
-        <span className="font-display text-[1.65rem] font-extrabold uppercase">Google Play</span>
+        <span className="text-[11px] font-medium">Próximamente en</span>
+        <span className="font-display text-xl font-extrabold uppercase">Google Play</span>
       </span>
-      <LockIcon className="ml-1 size-4 shrink-0 opacity-70" />
     </span>
   );
 }
 
 export function StoreButtons({ className = "" }: { className?: string }) {
   return (
-    <div className={`flex flex-wrap items-center gap-3 ${className}`}>
-      <AppStoreButton />
+    <div className={`flex flex-wrap items-center gap-4 ${className}`}>
+      <AppStoreBadge />
       <GooglePlaySoonButton />
     </div>
   );
