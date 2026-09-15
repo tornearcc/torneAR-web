@@ -5,12 +5,13 @@ import type { Database } from "@/types/supabase";
 
 /**
  * Lecturas de los tres módulos de gestión migrados de la app móvil
- * (`tornear/app/admin/{season,wo-review,dispute-review}.tsx`).
+ * (`tornear/app/admin/{season,dispute-review}.tsx`; la revisión de WO se
+ * eliminó de la app y vive sólo acá, D-48).
  *
  * Toda la lógica ya vive en Postgres: `transition_season`, `resolve_wo_claim`
  * y `admin_resolve_dispute` son RPCs `SECURITY DEFINER` que validan `is_admin`
  * puertas adentro. Acá sólo se llaman y se mapean a los tipos que consume la
- * UI — el mismo mapeo que hacen `tornear/lib/{season,wo,dispute}-admin-data.ts`,
+ * UI — el mismo mapeo que hacen `tornear/lib/{season,dispute}-admin-data.ts`,
  * a propósito, para que las dos superficies muestren lo mismo.
  */
 
@@ -125,22 +126,62 @@ export async function fetchPendingWoClaims(): Promise<WoClaimsSnapshot> {
 }
 
 /**
- * URL pública de una evidencia de WO.
+ * Vigencia de las URLs firmadas de evidencia: 1 hora.
  *
- * El bucket `wo_evidences` es público (`storage.buckets.public = true`), así
- * que la URL se arma sin firmar y sin red — `getPublicUrl` es construcción de
- * string. Las policies de SELECT sobre `storage.objects` restringen la lectura
- * a la evidencia propia vía la Storage API, pero el path `/object/public/` no
- * pasa por RLS; por eso el admin puede ver la foto de un reclamo ajeno. Es el
- * mismo camino que usa la app móvil (`getSupabaseStorageUrl`).
+ * La página se renderiza en cada request, así que recargar vuelve a firmar. El
+ * límite real es el link "Ver en tamaño completo" y las imágenes que cargan al
+ * hacer scroll: con un minuto se rompen a mitad de una revisión. Más de una
+ * hora alarga la vida de una URL que se filtre (historial, un chat), y una URL
+ * firmada sigue valiendo aunque al admin le saquen el permiso.
  */
-export async function resolveWoEvidenceUrl(photoPath: string | null): Promise<string | null> {
-  if (!photoPath) return null;
-  if (photoPath.startsWith("http")) return photoPath;
+const WO_EVIDENCE_URL_TTL_SECONDS = 60 * 60;
 
-  const supabase = await createClient();
-  const { data } = supabase.storage.from("wo_evidences").getPublicUrl(photoPath);
-  return data?.publicUrl || null;
+export type WoEvidence =
+  | { kind: "none" }
+  | { kind: "url"; url: string }
+  | { kind: "error" };
+
+/**
+ * Evidencias de WO listas para mostrar, en el mismo orden que `photoPaths`.
+ *
+ * El bucket `wo_evidences` es privado (D-48): la única forma de ver una foto es
+ * una URL firmada. Storage firma con la sesión del admin y sólo si la policy
+ * "Admins leen las evidencias de WO" le permite leer el objeto; sin ella, un
+ * admin no puede firmar la evidencia de un reclamo ajeno.
+ *
+ * Una sola llamada a `createSignedUrls` para toda la cola, no una por reclamo.
+ * Un path que no se pudo firmar vuelve como `error` y no como `none`: "no hay
+ * foto" y "no se pudo cargar la foto" son cosas distintas para quien decide.
+ */
+export async function resolveWoEvidence(photoPaths: (string | null)[]): Promise<WoEvidence[]> {
+  const toSign = [
+    ...new Set(photoPaths.filter((path): path is string => !!path && !path.startsWith("http"))),
+  ];
+
+  const signed = new Map<string, string>();
+
+  if (toSign.length > 0) {
+    const supabase = await createClient();
+    const { data, error } = await supabase.storage
+      .from("wo_evidences")
+      .createSignedUrls(toSign, WO_EVIDENCE_URL_TTL_SECONDS);
+
+    // Si falla la llamada entera, el mapa queda vacío y cada evidencia sale
+    // como `error`: la cola se sigue pudiendo leer y resolver.
+    if (!error) {
+      for (const item of data) {
+        if (item.path && item.signedUrl && !item.error) signed.set(item.path, item.signedUrl);
+      }
+    }
+  }
+
+  return photoPaths.map((path): WoEvidence => {
+    if (!path) return { kind: "none" };
+    // URL absoluta heredada de datos viejos: se respeta tal cual, como antes.
+    if (path.startsWith("http")) return { kind: "url", url: path };
+    const url = signed.get(path);
+    return url ? { kind: "url", url } : { kind: "error" };
+  });
 }
 
 // ─── Disputas ────────────────────────────────────────────────────────────────

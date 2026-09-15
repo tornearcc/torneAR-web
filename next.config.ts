@@ -1,26 +1,5 @@
 import type { NextConfig } from "next";
 
-/**
- * Host de Supabase Storage, derivado de la misma env var que usa el cliente.
- *
- * Se deriva en vez de hardcodearse para que el dashboard siga funcionando si
- * el proyecto se apunta a otra instancia (branch de Supabase, entorno de
- * prueba) sin tocar este archivo. Si la variable falta, la lista queda vacía
- * y `next/image` rechaza el remoto — que es el comportamiento correcto:
- * mejor una imagen que no carga que un allowlist abierto.
- */
-function supabaseImageHost(): string | null {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!url) return null;
-  try {
-    return new URL(url).hostname;
-  } catch {
-    return null;
-  }
-}
-
-const storageHost = supabaseImageHost();
-
 const nextConfig: NextConfig = {
   // `assets/**` lo lee /api/og/[template] con `fs.readFileSync`: las fuentes
   // `.ttf` del Content Factory (lib/og/fonts.ts) y las imágenes de marca de
@@ -35,19 +14,11 @@ const nextConfig: NextConfig = {
     "/api/og/[template]": ["./assets/**"],
   },
 
-  images: {
-    // Evidencias de reclamos de WO (bucket público `wo_evidences`), que la
-    // cola de revisión muestra en /dashboard/wo-claims.
-    remotePatterns: storageHost
-      ? [
-          {
-            protocol: "https",
-            hostname: storageHost,
-            pathname: "/storage/v1/object/public/**",
-          },
-        ]
-      : [],
-  },
+  // Sin `images.remotePatterns` a propósito: la única imagen remota eran las
+  // evidencias de WO, que ahora son URLs firmadas y se pintan `unoptimized`
+  // (ver components/admin/WoClaimsQueue.tsx). El resto de `next/image` usa
+  // archivos locales. Un allowlist vacío hace que el optimizador rechace
+  // cualquier remoto, que es lo correcto si nadie lo necesita.
 
   async headers() {
     return [
