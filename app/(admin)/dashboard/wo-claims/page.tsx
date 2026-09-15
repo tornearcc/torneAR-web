@@ -1,22 +1,21 @@
-import { fetchPendingWoClaims, resolveWoEvidenceUrl } from "@/lib/admin-queues-data";
+import { fetchPendingWoClaims, resolveWoEvidence } from "@/lib/admin-queues-data";
 import { WoClaimsQueue, type WoClaimWithEvidence } from "@/components/admin/WoClaimsQueue";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { PageTransition } from "@/components/ui/PageTransition";
 
-// Migrado de `tornear/app/admin/wo-review.tsx`.
+// Migrado de `tornear/app/admin/wo-review.tsx`, que se eliminó de la app (D-48):
+// esta es la única cola de reclamos de WO.
 export default async function WoClaimsPage() {
   const { claims, error } = await fetchPendingWoClaims();
 
-  // Las URLs de evidencia se resuelven en el servidor y no en el cliente:
-  // `getPublicUrl` necesita un cliente de Supabase, y crear uno en el browser
-  // sólo para concatenar un string sería mandar la sesión a hacer trabajo de
-  // template. No hay red acá — es construcción de string por reclamo.
-  const claimsWithEvidence: WoClaimWithEvidence[] = await Promise.all(
-    claims.map(async (claim) => ({
-      ...claim,
-      evidenceUrl: await resolveWoEvidenceUrl(claim.photoUrl),
-    })),
-  );
+  // Las evidencias se firman en el servidor, con la sesión del admin y en una
+  // sola llamada para toda la cola. La página ya se renderiza por request, así
+  // que cada recarga trae URLs vigentes.
+  const evidence = await resolveWoEvidence(claims.map((claim) => claim.photoUrl));
+  const claimsWithEvidence: WoClaimWithEvidence[] = claims.map((claim, i) => ({
+    ...claim,
+    evidence: evidence[i],
+  }));
 
   return (
     <PageTransition>

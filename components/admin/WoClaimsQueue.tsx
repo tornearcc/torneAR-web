@@ -9,11 +9,11 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { resolveWoClaimAction } from "@/lib/admin-queues-actions";
-import type { PendingWoClaim } from "@/lib/admin-queues-data";
+import type { PendingWoClaim, WoEvidence } from "@/lib/admin-queues-data";
 
-/** Una entrada de la cola con la URL de evidencia ya resuelta en el servidor. */
+/** Una entrada de la cola con la evidencia ya firmada en el servidor. */
 export interface WoClaimWithEvidence extends PendingWoClaim {
-  evidenceUrl: string | null;
+  evidence: WoEvidence;
 }
 
 const REASON_LABELS: Record<string, string> = {
@@ -107,20 +107,27 @@ export function WoClaimsQueue({ claims }: { claims: WoClaimWithEvidence[] }) {
             </div>
 
             <div className="mt-4">
-              {claim.evidenceUrl ? (
+              {claim.evidence.kind === "url" ? (
                 // La evidencia es la prueba sobre la que se decide: se abre en
-                // pestaña nueva a tamaño completo, que es exactamente lo que en
-                // el celular no se podía hacer.
+                // pestaña nueva a tamaño completo. El link es una URL firmada
+                // que vence a la hora; recargar la página la renueva.
                 <a
-                  href={claim.evidenceUrl}
+                  href={claim.evidence.url}
                   target="_blank"
                   rel="noreferrer"
                   className="group relative block h-56 overflow-hidden rounded-lg border border-neutral-outline-variant"
                 >
+                  {/* `unoptimized`: la foto va directo del navegador a Storage.
+                      Optimizada pasaría por /_next/image, que la guarda 4 h sin
+                      forma de invalidarla (default de Next 16) — más que la
+                      vigencia de la firma — y cada token nuevo sería una
+                      optimización nueva. Por lo mismo no hace falta un
+                      `remotePatterns` para /object/sign/. */}
                   <Image
-                    src={claim.evidenceUrl}
+                    src={claim.evidence.url}
                     alt={`Evidencia del reclamo de ${claim.claimingTeamName}`}
                     fill
+                    unoptimized
                     sizes="(max-width: 1024px) 100vw, 50vw"
                     className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
                   />
@@ -128,6 +135,11 @@ export function WoClaimsQueue({ claims }: { claims: WoClaimWithEvidence[] }) {
                     Ver en tamaño completo →
                   </span>
                 </a>
+              ) : claim.evidence.kind === "error" ? (
+                <div className="flex h-24 items-center justify-center gap-2 rounded-lg bg-danger-error-container text-xs text-danger-on-error-container">
+                  <ImageOff className="size-4" aria-hidden="true" />
+                  No se pudo cargar la evidencia. Recargá la página.
+                </div>
               ) : (
                 <div className="flex h-24 items-center justify-center gap-2 rounded-lg bg-surface-high text-xs text-neutral-outline">
                   <ImageOff className="size-4" aria-hidden="true" />
