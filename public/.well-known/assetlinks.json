@@ -4,7 +4,12 @@
     "target": {
       "namespace": "android_app",
       "package_name": "com.agussala2003.tornear",
-      "sha256_cert_fingerprints": ["<SHA256_CERT_FINGERPRINT>"]
+      "sha256_cert_fingerprints": [
+        "06:19:0D:BE:8B:CA:6B:01:DB:A0:B4:D9:77:2C:20:3A:79:5B:5B:B7:38:99:E6:E2:50:BB:C7:B2:D2:48:9F:F1",
+        "F8:33:69:9A:96:98:4A:75:D6:3E:14:DB:C6:FD:F5:89:87:70:C1:3D:70:81:93:D6:00:39:62:1F:A7:48:20:CC",
+        "EF:3A:81:0C:8D:FC:62:08:9E:C2:15:A0:96:6E:B7:DF:40:94:B1:AC:7C:58:62:09:D4:1A:CE:06:51:5E:B6:12",
+        "32:07:DC:3F:C9:65:65:4F:04:F4:4E:2D:C4:13:D3:D8:3D:10:A0:AC:42:95:10:1A:06:B6:2D:94:4F:57:6F:B7"
+      ]
     }
   }
 ]
