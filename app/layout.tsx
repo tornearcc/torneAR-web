@@ -27,6 +27,15 @@ export const metadata: Metadata = {
   // Vuelve absolutas las URLs relativas de `openGraph.images` y
   // `twitter.images`, que las previews de WhatsApp y X exigen completas.
   metadataBase: new URL(SITE_URL),
+  // Verificación de propiedad del dominio en Google Search Console, que es el
+  // requisito para que `tornear.vercel.app` cuente como dominio autorizado en
+  // la pantalla de consentimiento de Google (Google Auth Platform → Branding).
+  // Sin esto la revisión de marca no avanza, y el diálogo de login sigue
+  // mostrando el host de Supabase en vez del nombre de la app.
+  // Va como meta tag y no como archivo suelto en public/: Next lo emite solo y
+  // queda versionado. No borrar: si el tag desaparece, Search Console revoca la
+  // verificación y la marca vuelve a quedar sin verificar.
+  verification: { google: "44OiJwFVQB-414DHuc0tJbJ2eY_2OBH3-k6brEFNP2U" },
   title: "torneAR",
   description: SITE_DESCRIPTION,
   // Default de todo el sitio. Una página que declare su propio `openGraph`
