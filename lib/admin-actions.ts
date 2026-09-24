@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { requireAdminAction } from "@/lib/admin-guard";
+import { removeReportedAvatar, type AvatarRemovalStage } from "@/lib/avatar-removal";
 import { createClient } from "@/lib/supabase/route-handler";
 import type { ActionResult } from "@/lib/admin-queues-actions";
 import type { Database } from "@/types/supabase";
@@ -171,6 +172,69 @@ export async function removeReportedContentAction(input: {
   return { ok: true, message: "Contenido eliminado y denuncia marcada como accionada." };
 }
 
+/**
+ * "Quitar foto" en una denuncia de perfil: saca la foto del perfil y borra el
+ * archivo del bucket `avatars`. La denuncia pasa a ACTIONED sólo si el
+ * archivo quedó borrado; si falla algo en el medio queda PENDING y el mismo
+ * botón reintenta sin volver a tocar el perfil. El detalle de los pasos está
+ * en `lib/avatar-removal.ts`.
+ *
+ * Igual que el resto: sesión del admin, nunca `service_role`. El borrado del
+ * archivo pasa por las policies "Admins leen/borran avatares"
+ * (migración 20260924140000).
+ */
+export async function removeReportedAvatarAction(input: {
+  reportId: string;
+}): Promise<ActionResult> {
+  const auth = await requireAdminAction();
+  if (!auth.ok) return { ok: false, error: auth.error };
+
+  const supabase = await createClient();
+  const result = await removeReportedAvatar(supabase, {
+    reportId: input.reportId,
+    adminAuthUserId: auth.session.user.id,
+  });
+
+  if (!result.ok) {
+    console.error(`[admin] quitar foto falló en "${result.stage}":`, result.error);
+    return { ok: false, error: avatarRemovalErrorMessage(result.stage, result.error) };
+  }
+
+  console.info(
+    `[admin] foto quitada por ${auth.session.profile.username}: denuncia ${input.reportId}` +
+      (result.retried ? " (reintento del borrado del archivo)" : ""),
+  );
+
+  revalidatePath("/dashboard/moderation");
+  revalidatePath("/dashboard");
+
+  return {
+    ok: true,
+    message: result.path
+      ? "La foto se quitó del perfil y se borró el archivo. Denuncia marcada como accionada."
+      : "La foto se quitó del perfil (era una URL externa: no había archivo en el bucket). Denuncia marcada como accionada.",
+  };
+}
+
+/**
+ * Qué decirle al admin según dónde se cortó. Salvo en `rpc`, la foto ya no
+ * está en el perfil: lo que falta es el archivo o el cierre de la denuncia, y
+ * el mismo botón lo retoma.
+ */
+function avatarRemovalErrorMessage(stage: AvatarRemovalStage, error: string): string {
+  const retry = "La denuncia sigue pendiente: tocá «Quitar foto» de nuevo para reintentar.";
+  switch (stage) {
+    case "rpc":
+      return humanizeRpcError(error);
+    case "lookup":
+      return `La foto se quitó del perfil, pero no se pudo leer qué archivo borrar (${error}). ${retry}`;
+    case "storage":
+      return `La foto se quitó del perfil, pero el archivo no se pudo borrar del bucket (${error}). ${retry}`;
+    case "status":
+      return `La foto y el archivo se borraron, pero no se pudo marcar la denuncia (${error}). ${retry}`;
+  }
+}
+
 // ─── Rol de administrador ────────────────────────────────────────────────────
 
 export async function setAdminFlagAction(input: {
@@ -326,7 +390,7 @@ function humanizeRpcError(message: string): string {
   }
   if (message.includes("REPORT_NOT_FOUND")) return "La denuncia ya no existe.";
   if (message.includes("NO_CONTENT_TO_REMOVE")) {
-    return "Esta denuncia no tiene contenido que eliminar. La medida acá es suspender la cuenta.";
+    return "Esta denuncia no tiene contenido que eliminar (en un perfil: no tiene foto). La medida acá es suspender la cuenta.";
   }
   return message;
 }

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { EmptyState } from "@/components/ui/EmptyState";
 import {
+  removeReportedAvatarAction,
   removeReportedContentAction,
   setUserSuspensionAction,
   updateReportStatusAction,
@@ -87,8 +88,11 @@ const ENTITY_LABEL: Record<ReportRow["reported_entity_type"], string> = {
 /** Las dos mitades del circuito de moderación de cuentas. */
 type AccountAction = "suspend" | "unban";
 
-/** Eliminar contenido es la tercera medida, y la única irreversible. */
-type ModerationAction = AccountAction | "remove";
+/**
+ * Eliminar contenido es la tercera medida, y la única irreversible. En una
+ * denuncia de perfil, el contenido es la foto: "remove-avatar".
+ */
+type ModerationAction = AccountAction | "remove" | "remove-avatar";
 
 export function ReportsQueue({
   reports,
@@ -135,6 +139,23 @@ export function ReportsQueue({
     if (!dialog) return;
     const { report, action } = dialog;
     const label = report.reportedUser ? `@${report.reportedUser.username}` : report.reported_entity_id;
+
+    if (action === "remove-avatar") {
+      startTransition(async () => {
+        const result = await removeReportedAvatarAction({ reportId: report.id });
+
+        if (result.ok) {
+          setDialog(null);
+          toast.success("Foto quitada", { description: result.message });
+        } else {
+          // El diálogo se cierra igual: la denuncia sigue pendiente y el mismo
+          // botón retoma desde donde se cortó (el mensaje lo dice).
+          setDialog(null);
+          toast.error("No se pudo completar", { description: result.error, duration: 12000 });
+        }
+      });
+      return;
+    }
 
     if (action === "remove") {
       startTransition(async () => {
@@ -305,6 +326,21 @@ export function ReportsQueue({
                         </Button>
                       ) : null}
 
+                      {/* En una denuncia de perfil lo único que se puede sacar
+                          sin suspender es la foto. Queda disponible mientras
+                          la denuncia no esté ACTIONED: si el borrado del
+                          archivo falló, este mismo botón lo reintenta. */}
+                      {report.reported_entity_type === "USER" ? (
+                        <Button
+                          size="xs"
+                          disabled={isPending || report.status === "ACTIONED"}
+                          onClick={() => setDialog({ report, action: "remove-avatar" })}
+                          className="bg-danger-error-container text-danger-on-error-container hover:bg-danger-error-container/85"
+                        >
+                          Quitar foto
+                        </Button>
+                      ) : null}
+
                       {/* El autor sale de `reported_profile_id`, resuelto en el
                           servidor, así que se puede suspender a quien escribió
                           un mensaje o publicó una oferta, no sólo a un perfil
@@ -339,7 +375,9 @@ export function ReportsQueue({
         title={
           dialog?.action === "remove"
             ? "¿Eliminar el contenido denunciado?"
-            : dialog?.action === "suspend"
+            : dialog?.action === "remove-avatar"
+              ? "¿Quitar la foto de perfil?"
+              : dialog?.action === "suspend"
               ? "¿Suspender usuario?"
               : "¿Levantar la suspensión?"
         }
@@ -369,14 +407,18 @@ export function ReportsQueue({
               : dialog.report.reported_entity_type === "TEAM"
                 ? "Se reemplazan el nombre y el escudo del equipo. El equipo y su historial siguen existiendo."
                 : "La publicación deja de estar activa y sale del Mercado."
-            : dialog?.action === "suspend"
-              ? "El usuario pierde el acceso a la app de inmediato."
-              : "El usuario recupera el acceso completo a la app."
+            : dialog?.action === "remove-avatar"
+              ? "La foto sale del perfil y se borra el archivo del bucket. La cuenta sigue activa. La URL puede seguir respondiendo hasta una hora por la caché de la CDN."
+              : dialog?.action === "suspend"
+                ? "El usuario pierde el acceso a la app de inmediato."
+                : "El usuario recupera el acceso completo a la app."
         }
         confirmLabel={
           dialog?.action === "remove"
             ? "Eliminar"
-            : dialog?.action === "suspend"
+            : dialog?.action === "remove-avatar"
+              ? "Quitar foto"
+              : dialog?.action === "suspend"
               ? "Suspender"
               : "Levantar"
         }
