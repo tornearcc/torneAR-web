@@ -293,6 +293,83 @@ export async function setAdminFlagAction(input: {
   };
 }
 
+// ─── Género del perfil (soporte) ─────────────────────────────────────────────
+
+export type ProfileGender = "M" | "F" | "X";
+
+const PROFILE_GENDERS: readonly ProfileGender[] = ["M", "F", "X"];
+
+function isProfileGender(value: unknown): value is ProfileGender {
+  return typeof value === "string" && (PROFILE_GENDERS as readonly string[]).includes(value);
+}
+
+/**
+ * Género actual de un perfil. Desde 20260925160000 (F3) `authenticated` ya no
+ * lee `profiles.gender` de otra persona —tampoco un admin con su sesión—, así
+ * que se consulta por la RPC `admin_get_profile_gender`, que exige is_admin.
+ */
+export async function getProfileGenderAction(input: {
+  profileId: string;
+}): Promise<{ ok: true; gender: ProfileGender | null } | { ok: false; error: string }> {
+  const auth = await requireAdminAction();
+  if (!auth.ok) return { ok: false, error: auth.error };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_get_profile_gender", {
+    p_profile_id: input.profileId,
+  });
+
+  if (error) return { ok: false, error: humanizeRpcError(error.message) };
+  return { ok: true, gender: isProfileGender(data) ? data : null };
+}
+
+/**
+ * Corrige el género de un perfil a pedido de su titular. En la app se elige
+ * una sola vez (trigger `profiles_gender_lock`): ésta es la única vía para
+ * cambiarlo después. La RPC exige un motivo y deja `admin.set_profile_gender`
+ * en app_logs con el valor anterior y el nuevo.
+ */
+export async function setProfileGenderAction(input: {
+  profileId: string;
+  gender: string;
+  reason: string;
+}): Promise<ActionResult> {
+  const auth = await requireAdminAction();
+  if (!auth.ok) return { ok: false, error: auth.error };
+
+  if (!isProfileGender(input.gender)) {
+    return { ok: false, error: "Elegí Masculino, Femenino u Otro." };
+  }
+  const reason = input.reason.trim();
+  if (!reason) return { ok: false, error: "Indicá el motivo del cambio." };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_set_profile_gender", {
+    p_profile_id: input.profileId,
+    p_gender: input.gender,
+    p_reason: reason,
+  });
+
+  if (error) {
+    console.error("[admin] cambio de género falló:", error.message);
+    return { ok: false, error: humanizeRpcError(error.message) };
+  }
+
+  const changed = (data as { changed?: unknown } | null)?.changed === true;
+  console.info(
+    `[admin] género ${changed ? "corregido" : "sin cambios"} por ${auth.session.profile.username}: ${input.profileId}`,
+  );
+
+  revalidatePath("/dashboard/users");
+
+  return {
+    ok: true,
+    message: changed
+      ? "Género corregido. Queda registrado en los logs."
+      : "El perfil ya tenía ese género: no se cambió nada.",
+  };
+}
+
 // ─── Configuración ───────────────────────────────────────────────────────────
 
 export async function updateSettingAction(input: {
@@ -403,6 +480,8 @@ function humanizeRpcError(message: string): string {
     return "No se puede revocar al último administrador que queda.";
   }
   if (message.includes("REPORT_NOT_FOUND")) return "La denuncia ya no existe.";
+  if (message.includes("INVALID_GENDER")) return "Elegí Masculino, Femenino u Otro.";
+  if (message.includes("REASON_REQUIRED")) return "Indicá el motivo del cambio.";
   if (message.includes("NO_CONTENT_TO_REMOVE")) {
     return "Esta denuncia no tiene contenido que eliminar (en un perfil: no tiene foto). La medida acá es suspender la cuenta.";
   }

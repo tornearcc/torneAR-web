@@ -7,6 +7,7 @@ import {
   ShieldMinus,
   ShieldOff,
   UserCheck,
+  UserPen,
   UserX,
   Users as UsersIcon,
 } from "lucide-react";
@@ -21,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { ProfileGenderDialog } from "@/components/admin/ProfileGenderDialog";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { setAdminFlagAction, setUserSuspensionAction } from "@/lib/admin-actions";
 import { cn } from "@/lib/utils";
@@ -50,6 +52,7 @@ export function UsersTable({
   currentAdminProfileId: string;
 }) {
   const [pending, setPending] = useState<PendingAction | null>(null);
+  const [genderUser, setGenderUser] = useState<AdminUserRow | null>(null);
   const [isPending, startTransition] = useTransition();
 
   function handleConfirm(_notes: string, typed: string) {
@@ -203,6 +206,14 @@ export function UsersTable({
 
                             <DropdownMenuSeparator />
 
+                            {/* F3: el género sólo lo corrige soporte, a pedido del titular. */}
+                            <DropdownMenuItem onSelect={() => setGenderUser(user)}>
+                              <UserPen className="size-4" aria-hidden="true" />
+                              Corregir género
+                            </DropdownMenuItem>
+
+                            <DropdownMenuSeparator />
+
                             {user.is_admin ? (
                               <DropdownMenuItem
                                 variant="destructive"
@@ -259,6 +270,8 @@ export function UsersTable({
         }
         onConfirm={handleConfirm}
       />
+
+      <ProfileGenderDialog user={genderUser} onOpenChange={(open) => !open && setGenderUser(null)} />
     </>
   );
 }
