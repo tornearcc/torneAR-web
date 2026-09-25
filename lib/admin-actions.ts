@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { requireAdminAction } from "@/lib/admin-guard";
+import { removeReportedAvatar, type AvatarRemovalStage } from "@/lib/avatar-removal";
 import { createClient } from "@/lib/supabase/route-handler";
 import type { ActionResult } from "@/lib/admin-queues-actions";
 import type { Database } from "@/types/supabase";
@@ -171,6 +172,83 @@ export async function removeReportedContentAction(input: {
   return { ok: true, message: "Contenido eliminado y denuncia marcada como accionada." };
 }
 
+/**
+ * "Quitar foto" en una denuncia de perfil: saca la foto del perfil y borra el
+ * archivo del bucket `avatars`. La denuncia pasa a ACTIONED sólo si el
+ * archivo quedó borrado; si falla algo en el medio queda PENDING y el mismo
+ * botón reintenta sin volver a tocar el perfil. El detalle de los pasos está
+ * en `lib/avatar-removal.ts`.
+ *
+ * Igual que el resto: sesión del admin, nunca `service_role`. El borrado del
+ * archivo pasa por las policies "Admins leen/borran avatares"
+ * (migración 20260924140000).
+ */
+export async function removeReportedAvatarAction(input: {
+  reportId: string;
+}): Promise<ActionResult> {
+  const auth = await requireAdminAction();
+  if (!auth.ok) return { ok: false, error: auth.error };
+
+  const supabase = await createClient();
+  const result = await removeReportedAvatar(supabase, {
+    reportId: input.reportId,
+    adminAuthUserId: auth.session.user.id,
+  });
+
+  if (!result.ok) {
+    console.error(`[admin] quitar foto falló en "${result.stage}":`, result.error);
+    return { ok: false, error: avatarRemovalErrorMessage(result.stage, result.error) };
+  }
+
+  console.info(
+    `[admin] foto quitada por ${auth.session.profile.username}: denuncia ${input.reportId}` +
+      (result.retried ? " (reintento del borrado del archivo)" : ""),
+  );
+
+  revalidatePath("/dashboard/moderation");
+  revalidatePath("/dashboard");
+
+  return {
+    ok: true,
+    message: avatarRemovalSuccessMessage(result.path !== null, result.removedFromProfile),
+  };
+}
+
+/**
+ * Qué pasó con el perfil y con el archivo. Desde 20260925120000 "Quitar foto"
+ * apunta a la foto denunciada: si la persona ya la había cambiado, el perfil
+ * no se toca y sólo se borra el archivo viejo.
+ */
+function avatarRemovalSuccessMessage(hadFile: boolean, removedFromProfile: boolean): string {
+  const profile = removedFromProfile
+    ? "La foto denunciada se quitó del perfil"
+    : "La persona ya había cambiado la foto: el perfil no se tocó";
+  const file = hadFile
+    ? "y se borró el archivo del bucket"
+    : "(era una URL externa: no había archivo en el bucket)";
+  return `${profile} ${file}. Denuncia marcada como accionada.`;
+}
+
+/**
+ * Qué decirle al admin según dónde se cortó. Salvo en `rpc`, la foto
+ * denunciada ya no está en el perfil (o nunca estuvo, si la persona la había
+ * cambiado): lo que falta es el archivo o el cierre de la denuncia, y el mismo
+ * botón lo retoma.
+ */
+function avatarRemovalErrorMessage(stage: AvatarRemovalStage, error: string): string {
+  const retry = "La denuncia sigue pendiente: tocá «Quitar foto» de nuevo para reintentar.";
+  switch (stage) {
+    case "rpc":
+      return humanizeRpcError(error);
+    case "lookup":
+      return `No se pudo leer qué archivo borrar (${error}). ${retry}`;
+    case "storage":
+      return `El archivo de la foto denunciada no se pudo borrar del bucket (${error}). ${retry}`;
+    case "status":
+      return `El archivo se borró, pero no se pudo marcar la denuncia (${error}). ${retry}`;
+  }
+}
+
 // ─── Rol de administrador ────────────────────────────────────────────────────
 
 export async function setAdminFlagAction(input: {
@@ -326,7 +404,10 @@ function humanizeRpcError(message: string): string {
   }
   if (message.includes("REPORT_NOT_FOUND")) return "La denuncia ya no existe.";
   if (message.includes("NO_CONTENT_TO_REMOVE")) {
-    return "Esta denuncia no tiene contenido que eliminar. La medida acá es suspender la cuenta.";
+    return "Esta denuncia no tiene contenido que eliminar (en un perfil: no tiene foto). La medida acá es suspender la cuenta.";
+  }
+  if (message.includes("INVALID_AVATAR_PATH")) {
+    return "La foto registrada en la denuncia no es de la carpeta del perfil denunciado. No se borró nada: revisá la denuncia a mano.";
   }
   return message;
 }
