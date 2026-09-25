@@ -3,17 +3,20 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/supabase";
 
 /**
- * "Quitar foto" de una denuncia de perfil: sacar la foto del perfil y borrar
- * el archivo del bucket `avatars`, en ese orden y sin dejar la denuncia
- * resuelta a medias.
+ * "Quitar foto" de una denuncia de perfil: sacar la foto DENUNCIADA del perfil
+ * (si sigue siendo la actual) y borrar su archivo del bucket `avatars`, sin
+ * dejar la denuncia resuelta a medias.
  *
  * Vive fuera de la Server Action para poder correrla contra el Supabase local
- * con un cliente cualquiera (ver scripts/verify-remove-reported-avatar.mjs).
+ * con un cliente cualquiera (ver scripts/verify-remove-reported-avatar.ts).
  *
  * ── Los pasos ─────────────────────────────────────────────────────────────────
- *   1. `admin_remove_reported_content` pone `avatar_url = NULL` y registra el
- *      path en `app_logs` (`removed_avatar_path`). NO marca la denuncia: queda
- *      PENDING (migración 20260924140000).
+ *   1. `admin_remove_reported_content` apunta a la foto que se denunció
+ *      (`content_reports.reported_avatar_path`, migración 20260925120000). Si
+ *      sigue siendo la actual, pone `avatar_url = NULL`; si la persona ya la
+ *      cambió, no toca el perfil. En los dos casos registra el path en
+ *      `app_logs` (`removed_avatar_path`, `removed_from_profile`). NO marca
+ *      la denuncia: queda PENDING (migración 20260924140000).
  *   2. Se lee ese path del registro de auditoría.
  *   3. Se borra el archivo con la Storage API, con la sesión del admin (las
  *      policies "Admins leen/borran avatares" de la misma migración).
@@ -28,7 +31,14 @@ import type { Database } from "@/types/supabase";
 export type AvatarRemovalStage = "rpc" | "lookup" | "storage" | "status";
 
 export type AvatarRemovalResult =
-  | { ok: true; path: string | null; retried: boolean }
+  | {
+      ok: true;
+      /** Objeto borrado del bucket; `null` si la foto era una URL externa. */
+      path: string | null;
+      /** La foto denunciada seguía en el perfil y se sacó. `false` = la persona ya la había cambiado. */
+      removedFromProfile: boolean;
+      retried: boolean;
+    }
   | { ok: false; stage: AvatarRemovalStage; error: string };
 
 const AVATARS_BUCKET = "avatars";
@@ -50,10 +60,15 @@ export function avatarObjectPath(stored: string): string | null {
   return path ? decodeURIComponent(path) : null;
 }
 
-function readRemovedPath(details: unknown): string | null {
-  if (typeof details !== "object" || details === null) return null;
-  const value = (details as Record<string, unknown>).removed_avatar_path;
-  return typeof value === "string" && value.length > 0 ? value : null;
+function readRemoval(details: unknown): { path: string | null; removedFromProfile: boolean } {
+  if (typeof details !== "object" || details === null) return { path: null, removedFromProfile: true };
+  const record = details as Record<string, unknown>;
+  const path = typeof record.removed_avatar_path === "string" && record.removed_avatar_path.length > 0
+    ? record.removed_avatar_path
+    : null;
+  // Los registros de 20260924140000 no traen el campo: esa versión siempre
+  // sacaba la foto del perfil.
+  return { path, removedFromProfile: record.removed_from_profile !== false };
 }
 
 export async function removeReportedAvatar(
@@ -83,7 +98,7 @@ export async function removeReportedAvatar(
     .maybeSingle();
 
   if (logError) return { ok: false, stage: "lookup", error: logError.message };
-  const storedPath = readRemovedPath(log?.details);
+  const { path: storedPath, removedFromProfile } = readRemoval(log?.details);
   if (!storedPath) {
     return {
       ok: false,
@@ -110,7 +125,7 @@ export async function removeReportedAvatar(
         return {
           ok: false,
           stage: "storage",
-          error: "El archivo sigue en el bucket: la foto ya no está en el perfil, pero se puede abrir por URL.",
+          error: "El archivo de la foto denunciada sigue en el bucket y se puede abrir por URL.",
         };
       }
     }
@@ -132,12 +147,12 @@ export async function removeReportedAvatar(
   const { error: auditError } = await supabase.from("app_logs").insert({
     level: "warn",
     message: "admin.remove_reported_avatar_file",
-    details: { report_id: reportId, removed_avatar_path: storedPath, deleted_object: path, retried },
+    details: { report_id: reportId, removed_avatar_path: storedPath, deleted_object: path, removed_from_profile: removedFromProfile, retried },
     user_id: adminAuthUserId,
   });
   if (auditError) {
     console.warn("[admin] no se pudo registrar el borrado del archivo:", auditError.message);
   }
 
-  return { ok: true, path, retried };
+  return { ok: true, path, removedFromProfile, retried };
 }

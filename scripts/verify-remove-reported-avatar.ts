@@ -18,8 +18,12 @@
  *   B. Falla real de Storage (sin la policy de DELETE, `remove` "funciona" pero
  *      no borra): la denuncia queda PENDING. La persona sube otra foto; el
  *      reintento borra el archivo denunciado y NO toca la foto nueva.
+ *   E. La persona cambió la foto después de la denuncia: se borra el archivo
+ *      de la foto denunciada y NO se toca el perfil ni la foto nueva.
  *   C. Perfil sin foto: se rechaza y la denuncia sigue PENDING.
  *   D. Foto con URL externa: sale del perfil, no hay archivo que borrar.
+ *
+ * Requiere las migraciones 20260924140000, 20260925120000 y 20260925130000.
  *
  * El caso B cambia una policy con `docker exec` sobre el contenedor de la base
  * local (LOCAL_DB_CONTAINER, por defecto `supabase_db_tornear`) y la restaura
@@ -145,7 +149,7 @@ async function main() {
     const reportId = await newReport(REPORTED.profileId);
 
     const result = await removeReportedAvatar(admin, { reportId, adminAuthUserId: ADMIN.authId });
-    check("devuelve ok", result.ok, result);
+    check("devuelve ok", result.ok && result.removedFromProfile, result);
     check("la foto sale del perfil", (await avatarOf(REPORTED.profileId)) === null);
     check("el archivo ya no está en el bucket", !(await fileExists(path)));
     check("la denuncia queda ACTIONED", (await reportStatus(reportId)) === "ACTIONED");
@@ -183,6 +187,23 @@ async function main() {
     const retry = await removeReportedAvatar(admin, { reportId, adminAuthUserId: ADMIN.authId });
     check("el reintento funciona", retry.ok && retry.retried, retry);
     check("borra el archivo denunciado", !(await fileExists(reported)));
+    check("la foto nueva sigue en el perfil", (await avatarOf(REPORTED.profileId)) === fresh);
+    check("y su archivo sigue en el bucket", await fileExists(fresh));
+    check("la denuncia queda ACTIONED", (await reportStatus(reportId)) === "ACTIONED");
+  }
+
+  console.log("E. La persona cambió la foto después de la denuncia");
+  {
+    const reported = await uploadAvatar(REPORTED.authId, `avatar-${run}-e-denunciada.jpg`);
+    await setAvatar(REPORTED.profileId, reported);
+    // La denuncia guarda la foto de ese momento (trigger de 20260925120000).
+    const reportId = await newReport(REPORTED.profileId);
+    const fresh = await uploadAvatar(REPORTED.authId, `avatar-${run}-e-nueva.jpg`);
+    await setAvatar(REPORTED.profileId, fresh);
+
+    const result = await removeReportedAvatar(admin, { reportId, adminAuthUserId: ADMIN.authId });
+    check("devuelve ok sin tocar el perfil", result.ok && !result.removedFromProfile, result);
+    check("borra el archivo de la foto denunciada", !(await fileExists(reported)));
     check("la foto nueva sigue en el perfil", (await avatarOf(REPORTED.profileId)) === fresh);
     check("y su archivo sigue en el bucket", await fileExists(fresh));
     check("la denuncia queda ACTIONED", (await reportStatus(reportId)) === "ACTIONED");

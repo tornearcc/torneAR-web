@@ -210,16 +210,30 @@ export async function removeReportedAvatarAction(input: {
 
   return {
     ok: true,
-    message: result.path
-      ? "La foto se quitó del perfil y se borró el archivo. Denuncia marcada como accionada."
-      : "La foto se quitó del perfil (era una URL externa: no había archivo en el bucket). Denuncia marcada como accionada.",
+    message: avatarRemovalSuccessMessage(result.path !== null, result.removedFromProfile),
   };
 }
 
 /**
- * Qué decirle al admin según dónde se cortó. Salvo en `rpc`, la foto ya no
- * está en el perfil: lo que falta es el archivo o el cierre de la denuncia, y
- * el mismo botón lo retoma.
+ * Qué pasó con el perfil y con el archivo. Desde 20260925120000 "Quitar foto"
+ * apunta a la foto denunciada: si la persona ya la había cambiado, el perfil
+ * no se toca y sólo se borra el archivo viejo.
+ */
+function avatarRemovalSuccessMessage(hadFile: boolean, removedFromProfile: boolean): string {
+  const profile = removedFromProfile
+    ? "La foto denunciada se quitó del perfil"
+    : "La persona ya había cambiado la foto: el perfil no se tocó";
+  const file = hadFile
+    ? "y se borró el archivo del bucket"
+    : "(era una URL externa: no había archivo en el bucket)";
+  return `${profile} ${file}. Denuncia marcada como accionada.`;
+}
+
+/**
+ * Qué decirle al admin según dónde se cortó. Salvo en `rpc`, la foto
+ * denunciada ya no está en el perfil (o nunca estuvo, si la persona la había
+ * cambiado): lo que falta es el archivo o el cierre de la denuncia, y el mismo
+ * botón lo retoma.
  */
 function avatarRemovalErrorMessage(stage: AvatarRemovalStage, error: string): string {
   const retry = "La denuncia sigue pendiente: tocá «Quitar foto» de nuevo para reintentar.";
@@ -227,11 +241,11 @@ function avatarRemovalErrorMessage(stage: AvatarRemovalStage, error: string): st
     case "rpc":
       return humanizeRpcError(error);
     case "lookup":
-      return `La foto se quitó del perfil, pero no se pudo leer qué archivo borrar (${error}). ${retry}`;
+      return `No se pudo leer qué archivo borrar (${error}). ${retry}`;
     case "storage":
-      return `La foto se quitó del perfil, pero el archivo no se pudo borrar del bucket (${error}). ${retry}`;
+      return `El archivo de la foto denunciada no se pudo borrar del bucket (${error}). ${retry}`;
     case "status":
-      return `La foto y el archivo se borraron, pero no se pudo marcar la denuncia (${error}). ${retry}`;
+      return `El archivo se borró, pero no se pudo marcar la denuncia (${error}). ${retry}`;
   }
 }
 
@@ -391,6 +405,9 @@ function humanizeRpcError(message: string): string {
   if (message.includes("REPORT_NOT_FOUND")) return "La denuncia ya no existe.";
   if (message.includes("NO_CONTENT_TO_REMOVE")) {
     return "Esta denuncia no tiene contenido que eliminar (en un perfil: no tiene foto). La medida acá es suspender la cuenta.";
+  }
+  if (message.includes("INVALID_AVATAR_PATH")) {
+    return "La foto registrada en la denuncia no es de la carpeta del perfil denunciado. No se borró nada: revisá la denuncia a mano.";
   }
   return message;
 }

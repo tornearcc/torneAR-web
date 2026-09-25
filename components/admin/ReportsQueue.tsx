@@ -408,7 +408,7 @@ export function ReportsQueue({
                 ? "Se reemplazan el nombre y el escudo del equipo. El equipo y su historial siguen existiendo."
                 : "La publicación deja de estar activa y sale del Mercado."
             : dialog?.action === "remove-avatar"
-              ? "La foto sale del perfil y se borra el archivo del bucket. La cuenta sigue activa. La URL puede seguir respondiendo hasta una hora por la caché de la CDN."
+              ? "Se borra la foto que se denunció: si sigue siendo la del perfil, sale del perfil; si la persona ya la cambió, su foto actual no se toca. La cuenta sigue activa. Una foto quitada puede seguir visible por URL hasta una hora (caché de la CDN)."
               : dialog?.action === "suspend"
                 ? "El usuario pierde el acceso a la app de inmediato."
                 : "El usuario recupera el acceso completo a la app."
