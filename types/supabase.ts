@@ -1881,6 +1881,185 @@ export type Database = {
           },
         ]
       }
+      review_prompts: {
+        Row: {
+          app_version: string
+          id: string
+          platform: string
+          profile_id: string
+          requested_at: string
+          trigger_name: string
+        }
+        Insert: {
+          app_version: string
+          id?: string
+          platform: string
+          profile_id: string
+          requested_at?: string
+          trigger_name: string
+        }
+        Update: {
+          app_version?: string
+          id?: string
+          platform?: string
+          profile_id?: string
+          requested_at?: string
+          trigger_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_prompts_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_prompts_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_prompts_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "v_player_stats"
+            referencedColumns: ["profile_id"]
+          },
+        ]
+      }
+      season_standings: {
+        Row: {
+          best_format: Database["public"]["Enums"]["team_format"] | null
+          captured_at: string
+          category: Database["public"]["Enums"]["team_category"]
+          draws: number
+          elo_rating: number
+          fair_play_score: number
+          goals_against: number
+          goals_for: number
+          in_ranking: boolean
+          is_active: boolean
+          losses: number
+          points: number
+          preferred_format: Database["public"]["Enums"]["team_format"]
+          rank_category: number | null
+          rank_zone: number | null
+          season_id: string
+          shield_url: string | null
+          team_id: string
+          team_name: string
+          wins: number
+          zone: string
+          zone_id: string | null
+        }
+        Insert: {
+          best_format?: Database["public"]["Enums"]["team_format"] | null
+          captured_at?: string
+          category: Database["public"]["Enums"]["team_category"]
+          draws: number
+          elo_rating: number
+          fair_play_score: number
+          goals_against: number
+          goals_for: number
+          in_ranking: boolean
+          is_active: boolean
+          losses: number
+          points: number
+          preferred_format: Database["public"]["Enums"]["team_format"]
+          rank_category?: number | null
+          rank_zone?: number | null
+          season_id: string
+          shield_url?: string | null
+          team_id: string
+          team_name: string
+          wins: number
+          zone: string
+          zone_id?: string | null
+        }
+        Update: {
+          best_format?: Database["public"]["Enums"]["team_format"] | null
+          captured_at?: string
+          category?: Database["public"]["Enums"]["team_category"]
+          draws?: number
+          elo_rating?: number
+          fair_play_score?: number
+          goals_against?: number
+          goals_for?: number
+          in_ranking?: boolean
+          is_active?: boolean
+          losses?: number
+          points?: number
+          preferred_format?: Database["public"]["Enums"]["team_format"]
+          rank_category?: number | null
+          rank_zone?: number | null
+          season_id?: string
+          shield_url?: string | null
+          team_id?: string
+          team_name?: string
+          wins?: number
+          zone?: string
+          zone_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "season_standings_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      season_standings_formats: {
+        Row: {
+          draws: number
+          elo_score: number
+          format: Database["public"]["Enums"]["team_format"]
+          losses: number
+          points: number
+          rank_category: number | null
+          rank_zone: number | null
+          season_id: string
+          team_id: string
+          wins: number
+        }
+        Insert: {
+          draws: number
+          elo_score: number
+          format: Database["public"]["Enums"]["team_format"]
+          losses: number
+          points: number
+          rank_category?: number | null
+          rank_zone?: number | null
+          season_id: string
+          team_id: string
+          wins: number
+        }
+        Update: {
+          draws?: number
+          elo_score?: number
+          format?: Database["public"]["Enums"]["team_format"]
+          losses?: number
+          points?: number
+          rank_category?: number | null
+          rank_zone?: number | null
+          season_id?: string
+          team_id?: string
+          wins?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "season_standings_formats_season_id_team_id_fkey"
+            columns: ["season_id", "team_id"]
+            isOneToOne: false
+            referencedRelation: "season_standings"
+            referencedColumns: ["season_id", "team_id"]
+          },
+        ]
+      }
       seasons: {
         Row: {
           created_at: string
@@ -2787,6 +2966,10 @@ export type Database = {
         }
         Returns: Json
       }
+      claim_review_prompt: {
+        Args: { p_app_version: string; p_platform: string; p_trigger: string }
+        Returns: boolean
+      }
       claim_wo: {
         Args: {
           p_match_id: string
@@ -2936,6 +3119,16 @@ export type Database = {
           played_7d: number
         }[]
       }
+      dashboard_share_summary: {
+        Args: never
+        Returns: {
+          content_type: string
+          destination: string
+          share_count: number
+          sharer_count: number
+          window_days: number
+        }[]
+      }
       dashboard_social_timeseries: {
         Args: { p_from?: string; p_platform: string; p_to?: string }
         Returns: {
@@ -2947,16 +3140,6 @@ export type Database = {
           profile_views: number
           reach: number
           views: number
-        }[]
-      }
-      dashboard_share_summary: {
-        Args: never
-        Returns: {
-          content_type: string
-          destination: string
-          share_count: number
-          sharer_count: number
-          window_days: number
         }[]
       }
       dashboard_top_referrers: {
@@ -2999,6 +3182,7 @@ export type Database = {
         Returns: number
       }
       enqueue_match_reminders: { Args: never; Returns: undefined }
+      enqueue_moderation_alerts: { Args: never; Returns: undefined }
       enqueue_season_expiry_reminder: { Args: never; Returns: undefined }
       ensure_team_ranking_row: {
         Args: {
@@ -3189,7 +3373,15 @@ export type Database = {
       get_player_career: { Args: { p_profile_id: string }; Returns: Json }
       get_player_global_stats: { Args: { p_profile_id: string }; Returns: Json }
       get_player_leaderboard: {
-        Args: { p_season_id?: string; p_stat: string; p_zone?: string }
+        Args: {
+          p_category?: Database["public"]["Enums"]["team_category"]
+          p_format?: Database["public"]["Enums"]["team_format"]
+          p_limit?: number
+          p_offset?: number
+          p_season_id?: string
+          p_stat: string
+          p_zone?: string
+        }
         Returns: {
           avatar_url: string
           full_name: string
@@ -3461,6 +3653,14 @@ export type Database = {
         Returns: Json
       }
       sweep_disputed_matches: { Args: never; Returns: Json }
+      sweep_orphan_wo_evidences: {
+        Args: { p_dry_run?: boolean; p_limit?: number }
+        Returns: {
+          objeto: string
+          request_id: number
+          subido_at: string
+        }[]
+      }
       sweep_stale_matches: { Args: never; Returns: Json }
       transfer_captaincy_and_leave: {
         Args: { p_team_id: string; p_to_profile_id: string }
@@ -3537,6 +3737,7 @@ export type Database = {
         | "WO_RECHAZADO"
         | "WO_AUTOMATICO"
         | "DISPUTA_RESUELTA"
+        | "DENUNCIA_NUEVA"
       player_position:
         | "CUALQUIERA"
         | "ARQUERO"
@@ -3740,6 +3941,7 @@ export const Constants = {
         "WO_RECHAZADO",
         "WO_AUTOMATICO",
         "DISPUTA_RESUELTA",
+        "DENUNCIA_NUEVA",
       ],
       player_position: [
         "CUALQUIERA",
