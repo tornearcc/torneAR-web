@@ -87,8 +87,10 @@ export function InstagramConnectionCard({ account }: { account: SocialAccountRow
             )}
           </div>
         ) : (
-          <p className="text-sm text-neutral-on-surface-variant">
-            Sin cuenta conectada — el termómetro no se actualiza solo hasta que autorices el acceso.
+          <p className="max-w-md text-sm text-neutral-on-surface-variant">
+            Conexión pausada: Meta rechaza el login («Invalid platform app») porque la app de
+            Meta no tiene configurado el producto de Instagram. El cron diario está apagado
+            hasta que se configure.
           </p>
         )}
 
@@ -100,24 +102,26 @@ export function InstagramConnectionCard({ account }: { account: SocialAccountRow
       </div>
 
       <div className="flex shrink-0 items-center gap-2">
-        <Button asChild variant={isConnected ? "outline" : "default"} size="sm">
-          <a href="/api/instagram/oauth/start">
-            {isConnected ? (
-              <>
+        {/* Sin cuenta conectada, "Conectar" lleva a un error de Meta (P2-8,
+            28/09): queda deshabilitado hasta configurar la app de Meta. Con una
+            cuenta ya conectada, Reconectar y Desconectar siguen como estaban. */}
+        {isConnected ? (
+          <>
+            <Button asChild variant="outline" size="sm">
+              <a href="/api/instagram/oauth/start">
                 <RefreshCw className="size-3.5" aria-hidden="true" />
                 Reconectar
-              </>
-            ) : (
-              "Conectar Instagram"
-            )}
-          </a>
-        </Button>
-
-        {isConnected ? (
-          <Button variant="ghost" size="sm" onClick={() => setConfirmOpen(true)}>
-            Desconectar
+              </a>
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setConfirmOpen(true)}>
+              Desconectar
+            </Button>
+          </>
+        ) : (
+          <Button size="sm" disabled>
+            Próximamente
           </Button>
-        ) : null}
+        )}
       </div>
 
       <ConfirmDialog
