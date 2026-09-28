@@ -2442,6 +2442,42 @@ export type Database = {
           },
         ]
       }
+      team_zone_changes: {
+        Row: {
+          changed_by: string | null
+          created_at: string
+          from_zone: string
+          id: string
+          is_admin_override: boolean
+          reason: string | null
+          season_id: string | null
+          team_id: string
+          to_zone: string
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string
+          from_zone: string
+          id?: string
+          is_admin_override?: boolean
+          reason?: string | null
+          season_id?: string | null
+          team_id: string
+          to_zone: string
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string
+          from_zone?: string
+          id?: string
+          is_admin_override?: boolean
+          reason?: string | null
+          season_id?: string | null
+          team_id?: string
+          to_zone?: string
+        }
+        Relationships: []
+      }
       teams: {
         Row: {
           category: Database["public"]["Enums"]["team_category"]
@@ -2937,6 +2973,10 @@ export type Database = {
       }
       admin_set_profile_gender: {
         Args: { p_gender: string; p_profile_id: string; p_reason: string }
+        Returns: Json
+      }
+      admin_set_team_zone: {
+        Args: { p_reason: string; p_team_id: string; p_zone: string }
         Returns: Json
       }
       admin_suspend_user: {

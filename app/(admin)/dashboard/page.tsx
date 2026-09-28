@@ -25,6 +25,7 @@ const PANELS = [
   { href: "/dashboard/content", label: "Contenido", description: "Tarjetas exportables para redes." },
   { href: "/dashboard/activity", label: "Actividad", description: "Partidos, check-ins y mercado." },
   { href: "/dashboard/health", label: "Salud", description: "Errores y explorador de logs." },
+  { href: "/dashboard/teams", label: "Equipos", description: "Zonas y excepciones al candado de zona." },
   { href: "/dashboard/users", label: "Usuarios", description: "Cuentas, suspensiones y roles." },
   { href: "/dashboard/seasons", label: "Temporadas", description: "Cierre y apertura de temporada." },
 ] as const;
