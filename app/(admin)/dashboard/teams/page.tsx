@@ -1,3 +1,4 @@
+import { requireAdminAuth } from "@/lib/admin-guard";
 import { fetchTeamsPage, resolveTeamSearch } from "@/lib/teams-data";
 import { TeamsTable } from "@/components/admin/TeamsTable";
 import { TeamsToolbar } from "@/components/admin/TeamsToolbar";
@@ -9,6 +10,11 @@ export default async function TeamsPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  // El layout también exige admin, pero en el App Router layout y página se
+  // renderizan en paralelo: sin esta guarda, la consulta corre igual sin sesión
+  // (el 28/09 la respuesta sin login llevaba «No se pudieron cargar…»).
+  await requireAdminAuth();
+
   const search = resolveTeamSearch(await searchParams);
   const result = await fetchTeamsPage(search);
 
