@@ -370,6 +370,54 @@ export async function setProfileGenderAction(input: {
   };
 }
 
+// ─── Zona de un equipo (D-55) ────────────────────────────────────────────────
+
+/**
+ * Excepción al candado de zona: desde la app, un equipo se muda una sola vez
+ * por temporada (trigger `teams_zone_rules`). Esto es para los casos reales,
+ * como un equipo que se muda de barrio. La RPC exige un motivo, no consume el
+ * cambio del equipo y deja `admin.set_team_zone` en app_logs.
+ */
+export async function setTeamZoneAction(input: {
+  teamId: string;
+  zone: string;
+  reason: string;
+}): Promise<ActionResult> {
+  const auth = await requireAdminAction();
+  if (!auth.ok) return { ok: false, error: auth.error };
+
+  const zone = input.zone.trim();
+  if (!zone) return { ok: false, error: "Elegí la zona nueva." };
+  const reason = input.reason.trim();
+  if (!reason) return { ok: false, error: "Indicá el motivo del cambio." };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_set_team_zone", {
+    p_team_id: input.teamId,
+    p_zone: zone,
+    p_reason: reason,
+  });
+
+  if (error) {
+    console.error("[admin] cambio de zona falló:", error.message);
+    return { ok: false, error: humanizeRpcError(error.message) };
+  }
+
+  const changed = (data as { changed?: unknown } | null)?.changed === true;
+  console.info(
+    `[admin] zona ${changed ? "cambiada" : "sin cambios"} por ${auth.session.profile.username}: equipo ${input.teamId} → ${zone}`,
+  );
+
+  revalidatePath("/dashboard/teams");
+
+  return {
+    ok: true,
+    message: changed
+      ? `Zona cambiada a ${zone}. Queda registrado como excepción, con el motivo.`
+      : "El equipo ya estaba en esa zona: no se cambió nada.",
+  };
+}
+
 // ─── Configuración ───────────────────────────────────────────────────────────
 
 export async function updateSettingAction(input: {
@@ -482,6 +530,8 @@ function humanizeRpcError(message: string): string {
   if (message.includes("REPORT_NOT_FOUND")) return "La denuncia ya no existe.";
   if (message.includes("INVALID_GENDER")) return "Elegí Masculino, Femenino u Otro.";
   if (message.includes("REASON_REQUIRED")) return "Indicá el motivo del cambio.";
+  if (message.includes("ZONE_UNKNOWN")) return "Esa zona no está en el catálogo.";
+  if (message.includes("TEAM_NOT_FOUND")) return "El equipo ya no existe.";
   if (message.includes("NO_CONTENT_TO_REMOVE")) {
     return "Esta denuncia no tiene contenido que eliminar (en un perfil: no tiene foto). La medida acá es suspender la cuenta.";
   }
