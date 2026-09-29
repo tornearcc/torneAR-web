@@ -1,3 +1,4 @@
+import { requireAdminAuth } from "@/lib/admin-guard";
 import Link from "next/link";
 
 import { createClient } from "@/lib/supabase/server";
@@ -43,6 +44,10 @@ export default async function ModerationPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  // Guarda propia además de la del layout: en el App Router corren en
+  // paralelo y sin esto la página consulta igual sin sesión (P2-12).
+  await requireAdminAuth();
+
   const params = await searchParams;
   const status = resolveStatus(params.status);
   const page = resolvePage(params.page);

@@ -1,3 +1,4 @@
+import { requireAdminAuth } from "@/lib/admin-guard";
 import Link from "next/link";
 import { MessageSquare } from "lucide-react";
 
@@ -29,6 +30,10 @@ export default async function FeedbackInboxPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  // Guarda propia además de la del layout: en el App Router corren en
+  // paralelo y sin esto la página consulta igual sin sesión (P2-12).
+  await requireAdminAuth();
+
   const params = await searchParams;
   const page = resolvePage(params.page);
 

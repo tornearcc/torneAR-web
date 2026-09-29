@@ -1,3 +1,4 @@
+import { requireAdminAuth } from "@/lib/admin-guard";
 import { UserPlus, Users } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
@@ -22,6 +23,10 @@ export default async function GrowthPage({
   // En Next 16 `searchParams` es una Promise — hay que await-earla antes de leer.
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  // Guarda propia además de la del layout: en el App Router corren en
+  // paralelo y sin esto la página consulta igual sin sesión (P2-12).
+  await requireAdminAuth();
+
   const params = await searchParams;
   const range = resolveDateRange(params);
 
