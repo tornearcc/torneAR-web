@@ -125,6 +125,80 @@ export async function setUserSuspensionAction(input: {
   };
 }
 
+// ─── Baja de una cuenta (P1-9) ───────────────────────────────────────────────
+
+/**
+ * Da de baja la cuenta de otra persona, por ejemplo un menor (la app es 18+,
+ * D-32). El resultado es el mismo que la baja voluntaria de la app: la RPC
+ * `admin_delete_account` (migración 20260929120000) anonimiza el perfil,
+ * encola el borrado de sus fotos, borra la credencial de Apple y banea la
+ * cuenta. Exige motivo y queda `admin.delete_account` en app_logs.
+ *
+ * Antes de la RPC se revoca el token de Apple con la edge function
+ * `apple-auth` (`targetProfileId`, sólo admins), igual que la app lo hace
+ * antes de `delete_own_account`: después la fila ya no existe. Es
+ * best-effort, como en la app: si Apple no responde, la baja sigue y el fallo
+ * queda en app_logs.
+ *
+ * No tiene vuelta atrás, así que pide tipear el usuario (revalidado acá).
+ */
+export async function deleteAccountAction(input: {
+  profileId: string;
+  reason: string;
+  confirmation: string;
+  expectedUsername: string;
+}): Promise<ActionResult> {
+  const auth = await requireAdminAction();
+  if (!auth.ok) return { ok: false, error: auth.error };
+
+  const reason = input.reason.trim();
+  if (!reason) return { ok: false, error: "Indicá el motivo de la baja." };
+
+  if (input.confirmation.trim() !== input.expectedUsername) {
+    return {
+      ok: false,
+      error: `Para confirmar hay que escribir exactamente el usuario: "${input.expectedUsername}".`,
+    };
+  }
+
+  const supabase = await createClient();
+
+  const { data: revoke, error: revokeError } = await supabase.functions.invoke<{
+    revoked?: boolean;
+    reason?: string;
+  }>("apple-auth", { body: { action: "revoke", targetProfileId: input.profileId } });
+  const appleFailed =
+    revokeError !== null ||
+    (revoke?.revoked !== true &&
+      revoke?.reason !== "no_apple_credential" &&
+      revoke?.reason !== "profile_not_found");
+  if (appleFailed) {
+    console.error("[admin] revocación de Apple falló:", revokeError?.message ?? revoke?.reason);
+  }
+
+  const { error } = await supabase.rpc("admin_delete_account", {
+    p_profile_id: input.profileId,
+    p_reason: reason,
+  });
+
+  if (error) {
+    console.error("[admin] baja de cuenta falló:", error.message);
+    return { ok: false, error: humanizeRpcError(error.message) };
+  }
+
+  console.info(`[admin] cuenta dada de baja por ${auth.session.profile.username}: ${input.profileId}`);
+
+  revalidatePath("/dashboard/users");
+  revalidatePath("/dashboard/moderation");
+
+  return {
+    ok: true,
+    message: appleFailed
+      ? "Cuenta dada de baja. No se pudo revocar el acceso con Apple: quedó registrado en Salud técnica para reintentarlo."
+      : "Cuenta dada de baja: el perfil quedó anonimizado y la persona ya no puede entrar.",
+  };
+}
+
 // ─── Eliminación de contenido denunciado ─────────────────────────────────────
 
 /**
@@ -521,6 +595,13 @@ function humanizeRpcError(message: string): string {
   if (message.includes("NOT_AUTHORIZED")) return "No tenés permisos para esta acción.";
   if (message.includes("PROFILE_NOT_FOUND")) return "El perfil no existe.";
   if (message.includes("CANNOT_SUSPEND_SELF")) return "No podés suspenderte a vos mismo.";
+  if (message.includes("CANNOT_DELETE_SELF")) {
+    return "Tu propia cuenta no se da de baja desde acá: se hace desde la app.";
+  }
+  if (message.includes("TARGET_IS_ADMIN")) {
+    return "Es administrador: primero quitale el rol y después dala de baja.";
+  }
+  if (message.includes("ALREADY_DELETED")) return "Esa cuenta ya estaba dada de baja.";
   if (message.includes("CANNOT_CHANGE_SELF")) {
     return "No podés cambiar tu propio rol de administrador.";
   }

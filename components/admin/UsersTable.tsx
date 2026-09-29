@@ -6,6 +6,7 @@ import {
   ShieldCheck,
   ShieldMinus,
   ShieldOff,
+  Trash2,
   UserCheck,
   UserPen,
   UserX,
@@ -24,7 +25,11 @@ import {
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ProfileGenderDialog } from "@/components/admin/ProfileGenderDialog";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { setAdminFlagAction, setUserSuspensionAction } from "@/lib/admin-actions";
+import {
+  deleteAccountAction,
+  setAdminFlagAction,
+  setUserSuspensionAction,
+} from "@/lib/admin-actions";
 import { cn } from "@/lib/utils";
 import type { AdminUserRow } from "@/lib/users-data";
 
@@ -36,7 +41,13 @@ const DATE_FORMATTER = new Intl.DateTimeFormat("es-AR", {
 
 type PendingAction =
   | { kind: "suspend" | "unban"; user: AdminUserRow }
-  | { kind: "grant-admin" | "revoke-admin"; user: AdminUserRow };
+  | { kind: "grant-admin" | "revoke-admin"; user: AdminUserRow }
+  | { kind: "delete"; user: AdminUserRow };
+
+/** Mismo placeholder que pone `anonymize_account` (migración 20260929120000). */
+function isDeletedAccount(user: AdminUserRow): boolean {
+  return user.username.startsWith("usuario_eliminado_");
+}
 
 export function UsersTable({
   users,
@@ -55,13 +66,20 @@ export function UsersTable({
   const [genderUser, setGenderUser] = useState<AdminUserRow | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  function handleConfirm(_notes: string, typed: string) {
+  function handleConfirm(notes: string, typed: string) {
     if (!pending) return;
     const { kind, user } = pending;
 
     startTransition(async () => {
       const result =
-        kind === "suspend" || kind === "unban"
+        kind === "delete"
+          ? await deleteAccountAction({
+              profileId: user.profile_id,
+              reason: notes,
+              confirmation: typed,
+              expectedUsername: user.username,
+            })
+          : kind === "suspend" || kind === "unban"
           ? await setUserSuspensionAction({
               profileId: user.profile_id,
               suspend: kind === "suspend",
@@ -112,13 +130,14 @@ export function UsersTable({
           <tbody>
             {users.map((user) => {
               const isSelf = user.profile_id === currentAdminProfileId;
+              const isDeleted = isDeletedAccount(user);
 
               return (
                 <tr
                   key={user.profile_id}
                   className={cn(
                     "border-b border-neutral-outline-variant last:border-0",
-                    user.is_suspended && "bg-danger-error-container/10",
+                    user.is_suspended && !isDeleted && "bg-danger-error-container/10",
                   )}
                 >
                   <td className="px-4 py-3">
@@ -135,7 +154,12 @@ export function UsersTable({
                           Admin
                         </Badge>
                       ) : null}
-                      {user.is_suspended ? (
+                      {isDeleted ? (
+                        <Badge className="bg-surface-high text-neutral-outline">
+                          <Trash2 className="size-3" aria-hidden="true" />
+                          Eliminada
+                        </Badge>
+                      ) : user.is_suspended ? (
                         <Badge className="bg-danger-error-container text-danger-on-error-container">
                           <ShieldOff className="size-3" aria-hidden="true" />
                           Suspendido
@@ -185,6 +209,8 @@ export function UsersTable({
                           <DropdownMenuItem disabled>
                             No podés actuar sobre tu propia cuenta
                           </DropdownMenuItem>
+                        ) : isDeleted ? (
+                          <DropdownMenuItem disabled>Cuenta dada de baja</DropdownMenuItem>
                         ) : (
                           <>
                             {user.is_suspended ? (
@@ -230,6 +256,21 @@ export function UsersTable({
                                 Hacer administrador
                               </DropdownMenuItem>
                             )}
+
+                            {/* A un admin primero hay que quitarle el rol
+                                (la RPC lo rechaza con TARGET_IS_ADMIN). */}
+                            {!user.is_admin ? (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  variant="destructive"
+                                  onSelect={() => setPending({ kind: "delete", user })}
+                                >
+                                  <Trash2 className="size-4" aria-hidden="true" />
+                                  Eliminar cuenta
+                                </DropdownMenuItem>
+                              </>
+                            ) : null}
                           </>
                         )}
                       </DropdownMenuContent>
@@ -262,12 +303,17 @@ export function UsersTable({
         confirmLabel={pending ? DIALOG_COPY[pending.kind].label : "Confirmar"}
         tone={pending && DIALOG_COPY[pending.kind].danger ? "danger" : "primary"}
         loading={isPending}
-        // Sólo los cambios de rol piden tipear el usuario. Suspender es
+        // Los cambios de rol y la baja piden tipear el usuario. Suspender es
         // reversible en un click; otorgar admin le da a alguien la llave del
-        // dashboard entero, incluida la de suspender a los demás.
+        // dashboard entero, y la baja no tiene vuelta atrás.
         requireTypedConfirmation={
-          pending && pending.kind.endsWith("-admin") ? pending.user.username : null
+          pending && (pending.kind.endsWith("-admin") || pending.kind === "delete")
+            ? pending.user.username
+            : null
         }
+        showNotesInput={pending?.kind === "delete"}
+        notesLabel="Motivo (obligatorio, queda en los logs)"
+        notesPlaceholder="Ej.: es menor de edad, lo dijo en el chat del partido del 12/10"
         onConfirm={handleConfirm}
       />
 
@@ -298,6 +344,13 @@ const DIALOG_COPY: Record<
       "Va a poder entrar a este dashboard y usar todo: resolver disputas, cerrar temporadas, suspender cuentas y otorgarle el rol a otros. No hay permisos parciales.",
     label: "Hacer admin",
     danger: false,
+  },
+  delete: {
+    title: "¿Eliminar la cuenta?",
+    impact:
+      "Es lo mismo que si la persona se diera de baja desde la app: el perfil queda como «Usuario eliminado», se borran sus fotos, pierde el acceso y se revoca su acceso con Apple. Los partidos y equipos quedan con el perfil anonimizado. No se puede deshacer.",
+    label: "Eliminar cuenta",
+    danger: true,
   },
   "revoke-admin": {
     title: "¿Quitar el rol de administrador?",
