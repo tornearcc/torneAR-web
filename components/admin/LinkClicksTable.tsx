@@ -5,6 +5,7 @@ const CHANNEL_LABELS: Record<string, string> = {
   dm: "Mensaje directo",
   wpp: "WhatsApp",
   story: "Historia de Instagram",
+  fb: "Grupos de Facebook",
   cancha: "Cancha (QR o cartel)",
 };
 
