@@ -2,6 +2,7 @@ import { cache } from "react";
 
 import { createClient } from "@/lib/supabase/server";
 import type { ResolvedRange } from "@/lib/date-range";
+import type { Database } from "@/types/supabase";
 
 /**
  * Lecturas de los paneles analíticos.
@@ -196,6 +197,24 @@ export async function fetchAttributionStats(
 ): Promise<Result<AttributionRow[]>> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("dashboard_attribution_stats", {
+    p_from: range.from,
+    p_to: range.to,
+  });
+
+  if (error) return { data: [], error: error.message };
+  return { data: data ?? [], error: null };
+}
+
+export type LinkClicksRow = Database["public"]["Functions"]["dashboard_link_clicks"]["Returns"][number];
+
+/**
+ * Clicks en los links de descarga `/d/<canal>` (#37), por canal y plataforma.
+ * Siempre vienen los cuatro canales, también con 0. Las descargas en sí las
+ * cuenta App Store Connect (Analytics → Campañas), no esta tabla.
+ */
+export async function fetchLinkClicks(range: ResolvedRange): Promise<Result<LinkClicksRow[]>> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("dashboard_link_clicks", {
     p_from: range.from,
     p_to: range.to,
   });
