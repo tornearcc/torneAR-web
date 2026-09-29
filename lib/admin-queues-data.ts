@@ -90,6 +90,18 @@ export interface PendingWoClaim {
   scorers: WoScorer[];
   mvpId: string | null;
   mvpName: string | null;
+  // D-61 (migración 20260929140000): plazo y versión del equipo acusado, y el
+  // check-in de cada equipo. responseDeadline es null en reclamos anteriores.
+  responseDeadline: string | null;
+  responseText: string | null;
+  /** Path dentro del bucket `wo_evidences`. */
+  responsePhotoUrl: string | null;
+  respondedAt: string | null;
+  respondedByName: string | null;
+  claimingCheckinAt: string | null;
+  opponentCheckinAt: string | null;
+  claimingCheckins: number;
+  opponentCheckins: number;
 }
 
 export interface WoClaimsSnapshot {
@@ -120,6 +132,15 @@ export async function fetchPendingWoClaims(): Promise<WoClaimsSnapshot> {
       scorers: (r.scorers as WoScorer[] | null) ?? [],
       mvpId: r.mvp_id,
       mvpName: r.mvp_name,
+      responseDeadline: r.response_deadline,
+      responseText: r.response_text,
+      responsePhotoUrl: r.response_photo_url,
+      respondedAt: r.responded_at,
+      respondedByName: r.responded_by_name,
+      claimingCheckinAt: r.claiming_checkin_at,
+      opponentCheckinAt: r.opponent_checkin_at,
+      claimingCheckins: r.claiming_checkins ?? 0,
+      opponentCheckins: r.opponent_checkins ?? 0,
     })),
     error: null,
   };
