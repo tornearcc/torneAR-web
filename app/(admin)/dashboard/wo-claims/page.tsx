@@ -16,10 +16,15 @@ export default async function WoClaimsPage() {
   // Las evidencias se firman en el servidor, con la sesión del admin y en una
   // sola llamada para toda la cola. La página ya se renderiza por request, así
   // que cada recarga trae URLs vigentes.
-  const evidence = await resolveWoEvidence(claims.map((claim) => claim.photoUrl));
+  // La foto de la respuesta del acusado (D-61) va en la misma llamada.
+  const evidence = await resolveWoEvidence([
+    ...claims.map((claim) => claim.photoUrl),
+    ...claims.map((claim) => claim.responsePhotoUrl),
+  ]);
   const claimsWithEvidence: WoClaimWithEvidence[] = claims.map((claim, i) => ({
     ...claim,
     evidence: evidence[i],
+    responseEvidence: evidence[claims.length + i],
   }));
 
   return (

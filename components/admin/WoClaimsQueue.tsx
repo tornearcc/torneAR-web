@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useState, useTransition } from "react";
-import { CalendarDays, CheckCheck, ImageOff, Star } from "lucide-react";
+import { CalendarDays, CheckCheck, Clock, ImageOff, MapPinCheck, MessageSquareQuote, Star } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,8 @@ import type { PendingWoClaim, WoEvidence } from "@/lib/admin-queues-data";
 /** Una entrada de la cola con la evidencia ya firmada en el servidor. */
 export interface WoClaimWithEvidence extends PendingWoClaim {
   evidence: WoEvidence;
+  /** Foto de la respuesta del acusado (D-61), si mandó una. */
+  responseEvidence: WoEvidence;
 }
 
 const REASON_LABELS: Record<string, string> = {
@@ -24,6 +26,23 @@ const REASON_LABELS: Record<string, string> = {
   FALTA_QUORUM: "Falta de quórum",
   OTRO: "Otro",
 };
+
+function formatDateTime(iso: string): string {
+  return new Date(iso).toLocaleString("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "America/Argentina/Buenos_Aires",
+  });
+}
+
+function checkinLabel(at: string | null, count: number): string {
+  if (!at && count === 0) return "Sin check-in";
+  const people = `${count} ${count === 1 ? "jugador" : "jugadores"}`;
+  return at ? `Check-in ${formatDateTime(at)} · ${people}` : people;
+}
 
 function formatDate(iso: string | null): string {
   if (!iso) return "Sin fecha";
@@ -39,6 +58,9 @@ export function WoClaimsQueue({ claims }: { claims: WoClaimWithEvidence[] }) {
     null,
   );
   const [isPending, startTransition] = useTransition();
+  // Hora de carga de la cola: alcanza para decidir si el acusado sigue en
+  // plazo (la base vuelve a chequearlo al aprobar, RESPONSE_PENDING).
+  const [nowTs] = useState(() => Date.now());
 
   function handleConfirm(notes: string) {
     if (!dialog) return;
@@ -187,6 +209,28 @@ export function WoClaimsQueue({ claims }: { claims: WoClaimWithEvidence[] }) {
               )}
             </p>
 
+            <p className="mb-1.5 mt-4 text-[11px] font-semibold uppercase tracking-widest text-neutral-outline">
+              Check-in
+            </p>
+            <ul className="flex flex-col gap-1 text-sm">
+              <li className="flex items-center justify-between gap-3">
+                <span className="text-neutral-on-surface">{claim.claimingTeamName}</span>
+                <span className="flex items-center gap-1 text-neutral-on-surface-variant">
+                  <MapPinCheck className="size-3.5" aria-hidden="true" />
+                  {checkinLabel(claim.claimingCheckinAt, claim.claimingCheckins)}
+                </span>
+              </li>
+              <li className="flex items-center justify-between gap-3">
+                <span className="text-neutral-on-surface">{claim.opponentTeamName}</span>
+                <span className="flex items-center gap-1 text-neutral-on-surface-variant">
+                  <MapPinCheck className="size-3.5" aria-hidden="true" />
+                  {checkinLabel(claim.opponentCheckinAt, claim.opponentCheckins)}
+                </span>
+              </li>
+            </ul>
+
+            <ResponseBlock claim={claim} nowTs={nowTs} />
+
             {/* mt-auto: con tarjetas de alto distinto en la grilla, las
                 acciones quedan alineadas al pie de cada una. */}
             <div className="mt-auto flex gap-2 pt-5">
@@ -201,7 +245,14 @@ export function WoClaimsQueue({ claims }: { claims: WoClaimWithEvidence[] }) {
               <Button
                 className="flex-1"
                 onClick={() => setDialog({ claim, approve: true })}
-                disabled={isPending}
+                // D-61: con el acusado en plazo y sin respuesta, aprobar le
+                // sacaría su derecho a contestar. Rechazar sí se puede.
+                disabled={isPending || isAwaitingResponse(claim, nowTs)}
+                title={
+                  isAwaitingResponse(claim, nowTs)
+                    ? "El equipo acusado todavía está en plazo para dar su versión"
+                    : undefined
+                }
               >
                 Aprobar
               </Button>
@@ -245,5 +296,70 @@ export function WoClaimsQueue({ claims }: { claims: WoClaimWithEvidence[] }) {
         onConfirm={handleConfirm}
       />
     </>
+  );
+}
+
+function isAwaitingResponse(claim: WoClaimWithEvidence, nowTs: number): boolean {
+  return (
+    claim.respondedAt === null &&
+    claim.responseDeadline !== null &&
+    new Date(claim.responseDeadline).getTime() > nowTs
+  );
+}
+
+/** La versión del equipo acusado (D-61), o en qué quedó su plazo. */
+function ResponseBlock({ claim, nowTs }: { claim: WoClaimWithEvidence; nowTs: number }) {
+  // Reclamos anteriores a 20260929140000: no había respuesta posible.
+  if (claim.responseDeadline === null && claim.respondedAt === null) return null;
+
+  return (
+    <div className="mt-4">
+      <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-widest text-neutral-outline">
+        Versión de {claim.opponentTeamName}
+      </p>
+      {claim.respondedAt !== null ? (
+        <div className="rounded-lg border border-neutral-outline-variant bg-surface-high p-3">
+          <p className="flex gap-2 text-sm text-neutral-on-surface">
+            <MessageSquareQuote className="mt-0.5 size-4 shrink-0 text-neutral-outline" aria-hidden="true" />
+            <span className="whitespace-pre-wrap">{claim.responseText}</span>
+          </p>
+          <p className="mt-2 text-[11px] text-neutral-on-surface-variant">
+            {claim.respondedByName ?? "Alguien del equipo"} · {formatDateTime(claim.respondedAt)}
+          </p>
+          {claim.responseEvidence.kind === "url" ? (
+            <a
+              href={claim.responseEvidence.url}
+              target="_blank"
+              rel="noreferrer"
+              className="relative mt-3 block h-40 overflow-hidden rounded-lg border border-neutral-outline-variant"
+            >
+              <Image
+                src={claim.responseEvidence.url}
+                alt={`Foto de la respuesta de ${claim.opponentTeamName}`}
+                fill
+                unoptimized
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover"
+              />
+            </a>
+          ) : claim.responseEvidence.kind === "error" ? (
+            <p className="mt-2 flex items-center gap-2 text-xs text-danger-error">
+              <ImageOff className="size-3.5" aria-hidden="true" />
+              No se pudo cargar la foto de la respuesta. Recargá la página.
+            </p>
+          ) : null}
+        </div>
+      ) : isAwaitingResponse(claim, nowTs) ? (
+        <p className="flex items-center gap-2 rounded-lg bg-warning-tertiary/10 px-3 py-2 text-xs text-warning-tertiary">
+          <Clock className="size-3.5 shrink-0" aria-hidden="true" />
+          Tiene hasta el {formatDateTime(claim.responseDeadline!)} para responder. Hasta entonces no se puede aprobar;
+          rechazar sí.
+        </p>
+      ) : (
+        <p className="text-sm text-neutral-on-surface-variant">
+          No respondió en el plazo (venció el {formatDateTime(claim.responseDeadline!)}).
+        </p>
+      )}
+    </div>
   );
 }

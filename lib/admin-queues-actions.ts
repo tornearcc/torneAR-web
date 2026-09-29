@@ -120,7 +120,8 @@ export async function resolveWoClaimAction(input: {
 
   if (error) {
     console.error("[admin] resolve_wo_claim falló:", error.message);
-    return { ok: false, error: error.message };
+    // RESPONSE_PENDING (D-61) ya trae el texto para el admin después del código.
+    return { ok: false, error: error.message.replace(/^RESPONSE_PENDING: /, "") };
   }
 
   console.info(
