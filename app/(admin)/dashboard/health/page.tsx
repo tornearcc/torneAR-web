@@ -1,3 +1,4 @@
+import { requireAdminAuth } from "@/lib/admin-guard";
 import { AlertTriangle, FileText, TriangleAlert } from "lucide-react";
 
 import { fetchLogsPage, fetchLogsTimeseries } from "@/lib/logs-data";
@@ -17,6 +18,10 @@ export default async function HealthPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  // Guarda propia además de la del layout: en el App Router corren en
+  // paralelo y sin esto la página consulta igual sin sesión (P2-12).
+  await requireAdminAuth();
+
   const params = await searchParams;
   const filters = resolveLogFilters(params);
 

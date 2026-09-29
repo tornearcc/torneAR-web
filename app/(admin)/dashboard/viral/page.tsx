@@ -1,3 +1,4 @@
+import { requireAdminAuth } from "@/lib/admin-guard";
 import { Award, Send, Share2, TrendingUp, UserPlus } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
@@ -15,6 +16,10 @@ import { EmptyState } from "@/components/ui/EmptyState";
  * aparezca el primer referido el panel se llena solo, sin tocar código.
  */
 export default async function ViralPage() {
+  // Guarda propia además de la del layout: en el App Router corren en
+  // paralelo y sin esto la página consulta igual sin sesión (P2-12).
+  await requireAdminAuth();
+
   const supabase = await createClient();
 
   const [summaryResult, referrersResult, sharesResult] = await Promise.all([
