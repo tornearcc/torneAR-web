@@ -27,6 +27,15 @@ export function buildAppDeepLink(username: string, utm: DeepLinkUtm): string {
   return `tornear://login?${parts.join("&")}`;
 }
 
+/**
+ * `tornear://team-join?code=<código>`: el mismo destino al que la app lleva
+ * `/i/<username>?e=<código>` cuando el SO intercepta el link
+ * (`normalizeUniversalLink` en `tornear/lib/deep-linking.ts`).
+ */
+export function buildTeamJoinDeepLink(code: string): string {
+  return `tornear://team-join?code=${encodeURIComponent(code)}`;
+}
+
 function firstParam(value: string | string[] | undefined): string | null {
   const raw = Array.isArray(value) ? value[0] : value;
   return raw?.trim() || null;

@@ -7,6 +7,9 @@ const CHANNEL_LABELS: Record<string, string> = {
   story: "Historia de Instagram",
   fb: "Grupos de Facebook",
   cancha: "Cancha (QR o cartel)",
+  // No se reparte a mano: es el botón del App Store de la página de
+  // invitación a un equipo (/i/<username>?e=<código>, Tanda 7).
+  equipo: "Invitación a un equipo",
 };
 
 const LINK_BASE = "tornear.vercel.app/d/";
