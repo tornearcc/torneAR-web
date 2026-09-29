@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   fetchAttributionStats,
   fetchGrowthTimeseries,
+  fetchLinkClicks,
   fetchRetentionCohorts,
   sumBy,
 } from "@/lib/analytics-data";
@@ -13,6 +14,7 @@ import { StatCard } from "@/components/charts/StatCard";
 import { GrowthChart } from "@/components/charts/GrowthChart";
 import { RetentionCohorts } from "@/components/charts/RetentionCohorts";
 import { AttributionChart } from "@/components/charts/AttributionChart";
+import { LinkClicksTable } from "@/components/admin/LinkClicksTable";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { DateRangeFilter } from "@/components/ui/DateRangeFilter";
@@ -32,12 +34,14 @@ export default async function GrowthPage({
 
   const supabase = await createClient();
 
-  const [summaryResult, seriesResult, cohortsResult, attributionResult] = await Promise.all([
-    supabase.rpc("dashboard_growth_summary").maybeSingle(),
-    fetchGrowthTimeseries(range),
-    fetchRetentionCohorts(8),
-    fetchAttributionStats(range),
-  ]);
+  const [summaryResult, seriesResult, cohortsResult, attributionResult, linkClicksResult] =
+    await Promise.all([
+      supabase.rpc("dashboard_growth_summary").maybeSingle(),
+      fetchGrowthTimeseries(range),
+      fetchRetentionCohorts(8),
+      fetchAttributionStats(range),
+      fetchLinkClicks(range),
+    ]);
 
   const summary = summaryResult.data;
   const signupsInRange = sumBy(seriesResult.data, (d) => d.signups);
@@ -124,6 +128,25 @@ export default async function GrowthPage({
           <ErrorBox context="la atribución de campañas" message={attributionResult.error} />
         ) : (
           <AttributionChart rows={attributionResult.data} />
+        )}
+      </section>
+
+      <section>
+        <h2 className="font-display mb-1 text-lg uppercase text-neutral-on-surface">
+          Links de descarga
+        </h2>
+        <p className="mb-3 max-w-3xl text-sm text-neutral-on-surface-variant">
+          Clicks del período en cada link de la campaña. Cada uno lleva a la App Store con su
+          canal marcado, así que las <strong className="text-neutral-on-surface">descargas y
+          primeras aperturas</strong> por canal se ven en App Store Connect → Analytics → Campañas
+          (Apple las muestra a partir de 5 instalaciones). Desde Android llevan a la landing,
+          porque la app todavía no está en Play. Las vistas previas de WhatsApp o Instagram no
+          cuentan como click.
+        </p>
+        {linkClicksResult.error ? (
+          <ErrorBox context="los clicks de los links" message={linkClicksResult.error} />
+        ) : (
+          <LinkClicksTable rows={linkClicksResult.data} />
         )}
       </section>
     </PageTransition>
