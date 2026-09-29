@@ -12,7 +12,8 @@ import type { Database } from "@/types/supabase";
  * Además se registra el click (`log_link_click`, migración 20260929150000)
  * para verlo al día en Crecimiento.
  *
- * - Canales: dm, wpp, story, fb (grupos de Facebook) y cancha. Canal fuera de
+ * - Canales: dm, wpp, story, fb (grupos de Facebook), cancha y equipo (botón
+ *   de la invitación a un equipo, /i/<username>?e=<código>). Canal fuera de
  *   la lista: redirige igual, sin `ct` y sin registrar.
  * - Android: la app no está publicada en Play, así que va a la landing.
  * - Bots de vista previa (WhatsApp, Instagram, X…): redirigen igual pero no
@@ -22,7 +23,7 @@ import type { Database } from "@/types/supabase";
 
 export const dynamic = "force-dynamic";
 
-const CHANNELS = ["dm", "wpp", "story", "fb", "cancha"] as const;
+const CHANNELS = ["dm", "wpp", "story", "fb", "cancha", "equipo"] as const;
 type Channel = (typeof CHANNELS)[number];
 
 const APP_STORE_URL = "https://apps.apple.com/ar/app/tornear/id6809490985";

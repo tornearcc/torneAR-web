@@ -20,10 +20,14 @@ import { APP_STORE_URL } from "@/lib/store-links";
 /** Alto común: Apple y Google piden que los badges de tienda que conviven midan lo mismo. */
 const BADGE_HEIGHT = "h-[52px]";
 
-export function AppStoreBadge() {
+/**
+ * `href` permite pasar por un link con medición (`/d/<canal>`, que redirige a
+ * esta misma ficha con `pt` y `ct` y registra el click). Sin él, va directo.
+ */
+export function AppStoreBadge({ href = APP_STORE_URL }: { href?: string }) {
   return (
     <a
-      href={APP_STORE_URL}
+      href={href}
       className="inline-flex shrink-0 rounded-[9px] transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-primary"
     >
       {/* `unoptimized`: es un SVG vectorial de 12 KB, el optimizador de Next no
@@ -85,10 +89,10 @@ export function GooglePlaySoonButton() {
   );
 }
 
-export function StoreButtons({ className = "" }: { className?: string }) {
+export function StoreButtons({ className = "", appStoreHref }: { className?: string; appStoreHref?: string }) {
   return (
     <div className={`flex flex-wrap items-center gap-4 ${className}`}>
-      <AppStoreBadge />
+      <AppStoreBadge href={appStoreHref} />
       <GooglePlaySoonButton />
     </div>
   );
