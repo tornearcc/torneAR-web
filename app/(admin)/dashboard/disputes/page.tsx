@@ -1,3 +1,4 @@
+import { requireAdminAuth } from "@/lib/admin-guard";
 import { fetchDisputedMatches } from "@/lib/admin-queues-data";
 import { DisputesQueue } from "@/components/admin/DisputesQueue";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -5,6 +6,10 @@ import { PageTransition } from "@/components/ui/PageTransition";
 
 // Migrado de `tornear/app/admin/dispute-review.tsx`.
 export default async function DisputesPage() {
+  // Guarda propia además de la del layout: en el App Router corren en
+  // paralelo y sin esto la página consulta igual sin sesión (P2-12).
+  await requireAdminAuth();
+
   const { matches, error } = await fetchDisputedMatches();
 
   const deadlocked = matches.filter((m) => m.isDeadlocked).length;

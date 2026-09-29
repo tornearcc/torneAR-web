@@ -1,3 +1,4 @@
+import { requireAdminAuth } from "@/lib/admin-guard";
 import { Download } from "lucide-react";
 
 import { formatRangeLabel, resolveDateRange } from "@/lib/date-range";
@@ -40,6 +41,10 @@ export default async function ContentPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  // Guarda propia además de la del layout: en el App Router corren en
+  // paralelo y sin esto la página consulta igual sin sesión (P2-12).
+  await requireAdminAuth();
+
   const params = await searchParams;
   const range = resolveDateRange(params);
 
