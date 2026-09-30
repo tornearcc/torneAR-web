@@ -10,6 +10,7 @@ const CHANNEL_LABELS: Record<string, string> = {
   // No se reparte a mano: es el botón del App Store de la página de
   // invitación a un equipo (/i/<username>?e=<código>, Tanda 7).
   equipo: "Invitación a un equipo",
+  x: "X / Twitter (bio de @tornear_app)",
 };
 
 const LINK_BASE = "tornear.vercel.app/d/";
