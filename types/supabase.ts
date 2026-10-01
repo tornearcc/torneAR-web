@@ -3336,6 +3336,14 @@ export type Database = {
           views: number
         }[]
       }
+      dashboard_team_squads: {
+        Args: never
+        Returns: {
+          teams_2plus_7d_ago: number
+          teams_2plus_now: number
+          teams_solo_now: number
+        }[]
+      }
       dashboard_top_referrers: {
         Args: { p_limit?: number }
         Returns: {
