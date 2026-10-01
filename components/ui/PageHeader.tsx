@@ -14,20 +14,25 @@ export function PageHeader({
   actions,
   className,
 }: {
-  title: string;
+  title: React.ReactNode;
   description?: React.ReactNode;
   actions?: React.ReactNode;
   className?: string;
 }) {
   return (
     <div className={cn("flex flex-wrap items-end justify-between gap-4", className)}>
-      <div>
-        <h1 className="font-display text-2xl uppercase text-neutral-on-surface">{title}</h1>
+      <div className="min-w-0">
+        {/* Frase normal y en Archivo: la condensada queda para los números. */}
+        <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-chalk">
+          {title}
+        </h1>
         {description ? (
-          <p className="text-sm text-neutral-on-surface-variant">{description}</p>
+          <p className="mt-1 max-w-[65ch] text-base text-chalk-dim">{description}</p>
         ) : null}
       </div>
-      {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
+      {actions ? (
+        <div className="flex max-w-full flex-wrap items-center gap-2">{actions}</div>
+      ) : null}
     </div>
   );
 }

@@ -59,7 +59,7 @@ export default async function ContentPage({
     <PageTransition>
       <PageHeader
         title="Contenido"
-        description={`Tarjetas exportables para redes · ${formatRangeLabel(range)}`}
+        description={`Tarjetas para redes con los destacados del período: ${formatRangeLabel(range)}.`}
         actions={
           // `flex-wrap` propio: el slot `actions` de `PageHeader` no envuelve,
           // y con cinco plantillas más el filtro de fechas la fila se pasa del
@@ -76,8 +76,10 @@ export default async function ContentPage({
         }
       />
 
-      <section className="flex flex-col items-center gap-4">
-        <div className="overflow-hidden rounded-lg border border-neutral-outline-variant bg-surface-container">
+      {/* La tarjeta es el protagonista: a la izquierda en la compu, con la
+          descarga al lado; arriba de todo en el celular. */}
+      <section className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,28rem)_minmax(0,1fr)] lg:gap-10">
+        <div className="overflow-hidden rounded-md border border-chalk-line">
           {/* eslint-disable-next-line @next/next/no-img-element -- imagen generada server-side por /api/og; no hay beneficio de next/image sobre un endpoint dinámico que ya sirve el tamaño final */}
           <img
             key={imageUrl}
@@ -85,21 +87,28 @@ export default async function ContentPage({
             alt={`Vista previa: ${templateLabel}`}
             width={1080}
             height={1350}
-            className="block h-auto w-full max-w-md"
+            className="block h-auto w-full"
           />
         </div>
 
-        <Button asChild>
-          <a href={imageUrl} download={filename}>
-            <Download className="size-4" aria-hidden="true" />
-            Descargar PNG
-          </a>
-        </Button>
+        <div className="flex flex-col items-start gap-4">
+          <p className="text-xl font-semibold text-chalk">{templateLabel}</p>
+          <p className="max-w-[60ch] text-[15px] text-chalk-dim">
+            Período: {formatRangeLabel(range)}. Elegí otra plantilla o rango arriba y la vista
+            previa se actualiza sola.
+          </p>
+          <Button asChild className="h-10">
+            <a href={imageUrl} download={filename}>
+              <Download className="size-4" aria-hidden="true" />
+              Descargar PNG
+            </a>
+          </Button>
 
-        <p className="max-w-md text-center text-xs text-neutral-on-surface-variant">
-          Si el período elegido no tiene un destacado que supere el umbral mínimo, la
-          tarjeta lo dice en vez de mostrar datos inventados.
-        </p>
+          <p className="max-w-[60ch] text-sm text-chalk-faint">
+            Si el período elegido no tiene un destacado que supere el umbral mínimo, la
+            tarjeta lo dice en vez de mostrar datos inventados.
+          </p>
+        </div>
       </section>
     </PageTransition>
   );

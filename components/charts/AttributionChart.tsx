@@ -70,7 +70,6 @@ export function AttributionChart({ rows }: { rows: AttributionRow[] }) {
 
   return (
     <div
-      className="rounded-lg border border-neutral-outline-variant bg-surface-container p-4"
       style={{ height }}
     >
       <ResponsiveContainer width="100%" height="100%">
@@ -94,7 +93,7 @@ export function AttributionChart({ rows }: { rows: AttributionRow[] }) {
           <Bar
             dataKey="signups"
             name="Altas"
-            fill={CHART_COLORS.brandPrimary}
+            fill={CHART_COLORS.onSurfaceVariant}
             radius={[0, 4, 4, 0]}
             maxBarSize={28}
           />

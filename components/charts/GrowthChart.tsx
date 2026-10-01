@@ -43,17 +43,17 @@ export function GrowthChart({ data }: { data: GrowthPointRow[] }) {
   }
 
   return (
-    <div className="h-72 rounded-lg border border-neutral-outline-variant bg-surface-container p-4">
+    <div className="h-72">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="growth-signups" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={CHART_COLORS.brandPrimary} stopOpacity={0.35} />
-              <stop offset="100%" stopColor={CHART_COLORS.brandPrimary} stopOpacity={0} />
+              <stop offset="0%" stopColor={CHART_COLORS.series1} stopOpacity={0.35} />
+              <stop offset="100%" stopColor={CHART_COLORS.series1} stopOpacity={0} />
             </linearGradient>
             <linearGradient id="growth-teams" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={CHART_COLORS.info} stopOpacity={0.35} />
-              <stop offset="100%" stopColor={CHART_COLORS.info} stopOpacity={0} />
+              <stop offset="0%" stopColor={CHART_COLORS.series2} stopOpacity={0.35} />
+              <stop offset="100%" stopColor={CHART_COLORS.series2} stopOpacity={0} />
             </linearGradient>
           </defs>
 
@@ -76,7 +76,7 @@ export function GrowthChart({ data }: { data: GrowthPointRow[] }) {
           <Area
             type="monotone"
             dataKey="signups"
-            stroke={CHART_COLORS.brandPrimary}
+            stroke={CHART_COLORS.series1}
             strokeWidth={2}
             fill="url(#growth-signups)"
             activeDot={{ r: 4 }}
@@ -84,7 +84,7 @@ export function GrowthChart({ data }: { data: GrowthPointRow[] }) {
           <Area
             type="monotone"
             dataKey="teams"
-            stroke={CHART_COLORS.info}
+            stroke={CHART_COLORS.series2}
             strokeWidth={2}
             fill="url(#growth-teams)"
             activeDot={{ r: 4 }}

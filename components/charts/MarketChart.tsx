@@ -38,7 +38,7 @@ export function MarketChart({ data }: { data: MarketPointRow[] }) {
   }
 
   return (
-    <div className="h-72 rounded-lg border border-neutral-outline-variant bg-surface-container p-4">
+    <div className="h-72">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
           <CartesianGrid {...GRID_PROPS} vertical={false} />
@@ -60,16 +60,16 @@ export function MarketChart({ data }: { data: MarketPointRow[] }) {
           {/* Los avisos se apilan entre sí (son el mismo acto: publicar) y las
               postulaciones van en su propia barra: comparar oferta contra
               respuesta es justamente lo que dice si el mercado funciona. */}
-          <Bar dataKey="player_posts" stackId="posts" fill={CHART_COLORS.info} />
+          <Bar dataKey="player_posts" stackId="posts" fill={CHART_COLORS.series1} />
           <Bar
             dataKey="team_posts"
             stackId="posts"
-            fill={CHART_COLORS.alertOrange}
+            fill={CHART_COLORS.series2}
             radius={[3, 3, 0, 0]}
           />
           <Bar
             dataKey="applications"
-            fill={CHART_COLORS.brandPrimary}
+            fill={CHART_COLORS.series3}
             radius={[3, 3, 0, 0]}
           />
         </BarChart>

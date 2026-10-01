@@ -3,87 +3,21 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useState } from "react";
-import {
-  Activity,
-  CalendarRange,
-  Flag,
-  ImageIcon,
-  HeartPulse,
-  LayoutDashboard,
-  LogOut,
-  PanelLeftClose,
-  PanelLeftOpen,
-  Radar,
-  Scale,
-  Settings,
-  Share2,
-  Shield,
-  ShieldAlert,
-  TrendingUp,
-  Users,
-  type LucideIcon,
-} from "lucide-react";
+import { LogOut, PanelLeftClose, PanelLeftOpen, type LucideIcon } from "lucide-react";
 
 import { signOut } from "@/lib/auth-actions";
 import { cn } from "@/lib/utils";
+import { PenaltyCard } from "@/components/ui/PenaltyCard";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SIDEBAR_COOKIE_MAX_AGE, SIDEBAR_COOKIE_NAME } from "@/lib/sidebar-state";
 import type { QueueCounts } from "@/lib/admin-queues-data";
+import { NAV_GROUPS, isItemActive, type NavItem } from "./nav-items";
 
-/** Clave del contador que alimenta el badge de un ítem, si tiene. */
-type BadgeKey = keyof QueueCounts;
-
-interface NavItem {
-  href: string;
-  label: string;
-  icon: LucideIcon;
-  badge?: BadgeKey;
-}
-
-// Los 5 paneles + Configuración de la spec (§6, Hitos 1-6) más los tres
-// módulos de gestión migrados de la app móvil, agrupados por naturaleza: lo
-// que se lee vs. lo que se opera.
-const NAV_GROUPS: ReadonlyArray<{ title: string; items: readonly NavItem[] }> = [
-  {
-    title: "Analítica",
-    items: [
-      { href: "/dashboard", label: "Resumen", icon: LayoutDashboard },
-      { href: "/dashboard/growth", label: "Crecimiento", icon: TrendingUp },
-      { href: "/dashboard/viral", label: "Viralidad", icon: Share2 },
-      { href: "/dashboard/social", label: "Redes", icon: Radar },
-      { href: "/dashboard/content", label: "Contenido", icon: ImageIcon },
-      { href: "/dashboard/activity", label: "Actividad", icon: Activity },
-      { href: "/dashboard/health", label: "Salud", icon: HeartPulse },
-    ],
-  },
-  {
-    title: "Gestión",
-    items: [
-      { href: "/dashboard/disputes", label: "Disputas", icon: Scale, badge: "disputes" },
-      { href: "/dashboard/wo-claims", label: "Reclamos WO", icon: Flag, badge: "woClaims" },
-      {
-        href: "/dashboard/moderation",
-        label: "Moderación",
-        icon: ShieldAlert,
-        badge: "reports",
-      },
-      { href: "/dashboard/seasons", label: "Temporadas", icon: CalendarRange },
-      { href: "/dashboard/teams", label: "Equipos", icon: Shield },
-      { href: "/dashboard/users", label: "Usuarios", icon: Users },
-    ],
-  },
-  {
-    title: "Sistema",
-    items: [{ href: "/dashboard/settings", label: "Configuración", icon: Settings }],
-  },
-];
-
-function isItemActive(href: string, pathname: string) {
-  // `/dashboard` es prefijo de todas las demás rutas: sin este caso especial
-  // el ítem Resumen quedaría activo en todos los paneles.
-  return href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(href);
-}
-
+/**
+ * Barra lateral de la compu. En el celular no se renderiza: ahí la reemplaza
+ * `MobileNav`, porque 256 px de una pantalla de 390 dejaban el contenido
+ * apretado.
+ */
 export function AdminSidebar({
   username,
   defaultCollapsed,
@@ -117,17 +51,17 @@ export function AdminSidebar({
       className={cn(
         // `sticky top-0 h-dvh` es lo que lo mantiene a la altura completa de
         // la ventana: el scroll vive en el <main> del layout, no acá.
-        "sticky top-0 flex h-dvh shrink-0 flex-col justify-between overflow-hidden",
-        "border-r border-neutral-outline-variant bg-surface-lowest",
+        "sticky top-0 hidden h-dvh shrink-0 flex-col justify-between overflow-hidden md:flex",
+        "border-r border-chalk-line bg-pitch-deep",
         "transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-        collapsed ? "w-16" : "w-64",
+        collapsed ? "w-16" : "w-60",
       )}
     >
       <div className="flex min-h-0 flex-1 flex-col">
         <div
           className={cn(
-            "flex h-[65px] shrink-0 items-center border-b border-neutral-outline-variant",
-            collapsed ? "justify-center px-2" : "justify-between px-6",
+            "flex h-16 shrink-0 items-center",
+            collapsed ? "justify-center px-2" : "justify-between pl-5 pr-3",
           )}
         >
           {/*
@@ -137,12 +71,12 @@ export function AdminSidebar({
           */}
           <span
             className={cn(
-              "font-display whitespace-nowrap text-lg uppercase tracking-wide text-neutral-on-surface",
+              "whitespace-nowrap text-[17px] font-semibold tracking-tight text-chalk",
               "transition-opacity duration-200",
               collapsed && "pointer-events-none w-0 opacity-0",
             )}
           >
-            torneAR <span className="text-brand-primary">admin</span>
+            torneAR <span className="font-normal text-chalk-faint">admin</span>
           </span>
 
           <button
@@ -150,7 +84,7 @@ export function AdminSidebar({
             onClick={toggle}
             aria-label={collapsed ? "Expandir menú" : "Colapsar menú"}
             aria-expanded={!collapsed}
-            className="rounded-md p-1.5 text-neutral-on-surface-variant transition-colors hover:bg-surface-container hover:text-neutral-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary"
+            className="rounded-md p-1.5 text-chalk-faint transition-colors hover:bg-slate hover:text-chalk focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chalk"
           >
             {collapsed ? (
               <PanelLeftOpen className="size-4" aria-hidden="true" />
@@ -161,18 +95,16 @@ export function AdminSidebar({
         </div>
 
         {/* El <nav> scrollea solo si la lista crece más que la ventana. */}
-        <nav className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-3">
+        <nav className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-3 pb-3 pt-2">
           {NAV_GROUPS.map((group) => (
-            <div key={group.title} className="flex flex-col gap-1">
-              <p
-                className={cn(
-                  "px-3 text-[11px] font-semibold uppercase tracking-wider text-neutral-outline",
-                  "transition-all duration-200",
-                  collapsed ? "h-0 overflow-hidden opacity-0" : "h-4 opacity-100",
-                )}
-              >
-                {group.title}
-              </p>
+            <div key={group.title} className="flex flex-col gap-0.5">
+              {collapsed ? (
+                // Colapsado, el título del grupo se vuelve una línea de tiza:
+                // la separación entre grupos se sigue leyendo sin texto.
+                <span aria-hidden="true" className="mx-3 mb-2 h-px bg-chalk-line" />
+              ) : (
+                <p className="px-3 pb-1.5 text-[13px] text-chalk-faint">{group.title}</p>
+              )}
 
               {group.items.map((item) => (
                 <SidebarLink
@@ -188,10 +120,10 @@ export function AdminSidebar({
         </nav>
       </div>
 
-      <div className="shrink-0 border-t border-neutral-outline-variant p-3">
+      <div className="shrink-0 border-t border-chalk-line p-3">
         <p
           className={cn(
-            "truncate px-3 py-1 text-xs text-neutral-on-surface-variant transition-opacity duration-200",
+            "truncate px-3 py-1 text-[13px] text-chalk-faint transition-opacity duration-200",
             collapsed && "h-0 overflow-hidden py-0 opacity-0",
           )}
         >
@@ -203,6 +135,10 @@ export function AdminSidebar({
       </div>
     </aside>
   );
+}
+
+function pendingLabel(count: number) {
+  return count > 0 ? `${count} pendiente${count === 1 ? "" : "s"}` : null;
 }
 
 function SidebarLink({
@@ -217,61 +153,46 @@ function SidebarLink({
   count: number;
 }) {
   const Icon = item.icon;
-  const hasBadge = count > 0;
-  const pendingText = hasBadge ? `${count} pendiente${count === 1 ? "" : "s"}` : null;
+  const pendingText = pendingLabel(count);
 
   const link = (
     <Link
       href={item.href}
       aria-current={isActive ? "page" : undefined}
       className={cn(
-        "group relative flex items-center gap-3 rounded-md py-2 text-sm font-medium transition-colors",
+        "relative flex h-9 items-center gap-3 rounded-md text-[15px] transition-colors",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chalk",
         collapsed ? "justify-center px-0" : "px-3",
         isActive
-          ? "bg-surface-container text-brand-primary"
-          : "text-neutral-on-surface-variant hover:bg-surface-container hover:text-neutral-on-surface",
+          ? "bg-slate font-medium text-chalk"
+          : "text-chalk-dim hover:bg-slate/60 hover:text-chalk",
       )}
     >
-      {/* Marca de activo que sobrevive al colapso, donde el color del texto
-          ya no alcanza porque no hay texto. */}
+      {/* Marca de activo: una línea de tiza, que sobrevive al colapso. */}
       <span
         aria-hidden="true"
         className={cn(
-          "absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r bg-brand-primary transition-opacity",
+          "absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r bg-chalk transition-opacity",
           isActive ? "opacity-100" : "opacity-0",
         )}
       />
 
       <span className="relative shrink-0">
         <Icon className="size-4" aria-hidden="true" />
-        {/* Colapsado no hay lugar para el número: queda un punto, que sigue
-            diciendo "acá hay algo" sin depender de leer una cifra de 8px. */}
-        {hasBadge && collapsed ? (
+        {/* Colapsado no entra el número: queda una tarjeta mínima. */}
+        {count > 0 && collapsed ? (
           <span
             aria-hidden="true"
-            className="absolute -right-1 -top-1 size-2 rounded-full bg-warning-tertiary ring-2 ring-surface-lowest"
+            className="absolute -right-1.5 -top-1.5 h-2.5 w-2 -rotate-6 rounded-[1px] bg-card-yellow"
           />
         ) : null}
       </span>
 
-      <span
-        className={cn(
-          "whitespace-nowrap transition-opacity duration-200",
-          collapsed && "sr-only",
-        )}
-      >
-        {item.label}
-      </span>
+      <span className={cn("whitespace-nowrap", collapsed && "sr-only")}>{item.label}</span>
 
-      {hasBadge && !collapsed ? (
-        <span className="ml-auto rounded-full bg-warning-tertiary/20 px-1.5 py-0.5 text-[11px] font-bold tabular-nums text-warning-tertiary">
-          {count > 99 ? "99+" : count}
-        </span>
-      ) : null}
+      {!collapsed ? <PenaltyCard count={count} className="ml-auto" /> : null}
 
-      {/* El punto de arriba es aria-hidden, así que colapsado el conteo se
-          perdería para un lector de pantalla si no se dijera acá. */}
-      {pendingText && collapsed ? <span className="sr-only">{pendingText}</span> : null}
+      {pendingText ? <span className="sr-only">{`, ${pendingText}`}</span> : null}
     </Link>
   );
 
@@ -281,7 +202,7 @@ function SidebarLink({
     <Tooltip>
       <TooltipTrigger asChild>{link}</TooltipTrigger>
       <TooltipContent side="right">
-        {pendingText ? `${item.label} · ${pendingText}` : item.label}
+        {pendingText ? `${item.label}: ${pendingText}` : item.label}
       </TooltipContent>
     </Tooltip>
   );
@@ -301,7 +222,8 @@ function SidebarButton({
       type="submit"
       aria-label={collapsed ? label : undefined}
       className={cn(
-        "flex w-full items-center gap-3 rounded-md py-2 text-sm text-neutral-on-surface-variant transition-colors hover:bg-surface-container hover:text-neutral-on-surface",
+        "flex h-9 w-full items-center gap-3 rounded-md text-[15px] text-chalk-dim transition-colors hover:bg-slate/60 hover:text-chalk",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chalk",
         collapsed ? "justify-center px-0" : "px-3 text-left",
       )}
     >

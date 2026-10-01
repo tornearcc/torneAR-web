@@ -21,19 +21,19 @@ export default async function SettingsPage() {
     <PageTransition>
       <PageHeader
         title="Configuración"
-        description="Parámetros operativos — cambian el comportamiento de la app en vivo, sin deploy."
+        description="Parámetros operativos. Cambian el comportamiento de la app en vivo, sin deploy."
         actions={
           <Link
             href="/dashboard/settings/versions"
-            className="rounded-md border border-neutral-outline px-3 py-2 text-sm font-semibold text-neutral-on-surface transition hover:bg-surface-container"
+            className="rounded-md border border-chalk-line px-3 py-2 text-sm font-medium text-chalk transition-colors hover:bg-slate focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chalk"
           >
-            Versiones →
+            Versiones de la app
           </Link>
         }
       />
 
       {error ? (
-        <p className="rounded-lg border border-danger-error bg-danger-error-container p-4 text-sm text-danger-on-error-container">
+        <p className="rounded-md border border-card-red/40 bg-card-red/10 p-4 text-[15px] text-chalk">
           No se pudo cargar la configuración: {error.message}
         </p>
       ) : (

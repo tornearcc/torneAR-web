@@ -22,10 +22,10 @@ const LINK_BASE = "tornear.vercel.app/d/";
  */
 export function LinkClicksTable({ rows }: { rows: LinkClicksRow[] }) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-neutral-outline-variant">
-      <table className="w-full min-w-[640px] border-collapse text-left text-sm">
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[640px] border-collapse text-left text-[15px]">
         <thead>
-          <tr className="border-b border-neutral-outline-variant bg-surface-container text-neutral-on-surface-variant">
+          <tr className="border-b border-chalk-line text-[13px] text-chalk-faint">
             <th className="px-4 py-3 font-medium">Canal</th>
             <th className="px-4 py-3 font-medium">Link</th>
             <th className="px-4 py-3 text-right font-medium">Clicks</th>
@@ -36,7 +36,7 @@ export function LinkClicksTable({ rows }: { rows: LinkClicksRow[] }) {
         </thead>
         <tbody>
           {rows.map((row) => (
-            <tr key={row.channel} className="border-b border-neutral-outline-variant last:border-0">
+            <tr key={row.channel} className="border-b border-chalk-line">
               <td className="px-4 py-3 text-neutral-on-surface">
                 {CHANNEL_LABELS[row.channel] ?? row.channel}
               </td>

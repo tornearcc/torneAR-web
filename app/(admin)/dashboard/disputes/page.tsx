@@ -4,6 +4,19 @@ import { DisputesQueue } from "@/components/admin/DisputesQueue";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { PageTransition } from "@/components/ui/PageTransition";
 
+/** «2 partidos sin acuerdo de resultado. Uno no se puede desempatar solo y va primero.» */
+function describeQueue(total: number, deadlocked: number) {
+  if (total === 0) return "Ningún partido esperando una decisión.";
+  const head =
+    total === 1 ? "Un partido sin acuerdo de resultado." : `${total} partidos sin acuerdo de resultado.`;
+  if (deadlocked === 0) return head;
+  const tail =
+    deadlocked === 1
+      ? "Uno no se puede desempatar solo y va primero."
+      : `${deadlocked} no se pueden desempatar solos y van primero.`;
+  return `${head} ${tail}`;
+}
+
 // Migrado de `tornear/app/admin/dispute-review.tsx`.
 export default async function DisputesPage() {
   // Guarda propia además de la del layout: en el App Router corren en
@@ -18,18 +31,12 @@ export default async function DisputesPage() {
     <PageTransition>
       <PageHeader
         title="Disputas"
-        description={
-          error
-            ? "Cola de resolución de partidos en disputa."
-            : `${matches.length} partido${matches.length === 1 ? "" : "s"} en disputa${
-                deadlocked > 0 ? ` · ${deadlocked} sin desempate automático posible` : ""
-              }.`
-        }
+        description={error ? undefined : describeQueue(matches.length, deadlocked)}
       />
 
       {error ? (
-        <p className="rounded-lg border border-danger-error bg-danger-error-container p-4 text-sm text-danger-on-error-container">
-          No se pudieron cargar las disputas: {error}
+        <p className="rounded-md border border-card-red/40 bg-card-red/10 p-4 text-[15px] text-chalk">
+          No se pudieron cargar las disputas: {error}. Recargá la página para reintentar.
         </p>
       ) : (
         <DisputesQueue matches={matches} />

@@ -65,9 +65,9 @@ export function VersionForm({ version }: { version: AppVersion }) {
     <>
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col gap-4 rounded-lg border border-neutral-outline-variant bg-surface-container p-5"
+        className="flex flex-col gap-5"
       >
-        <h2 className="font-display text-lg uppercase text-neutral-on-surface">
+        <h2 className="chalk-rule">
           {platformLabel}
         </h2>
 
@@ -141,15 +141,15 @@ function Field({
   onChange: (value: string) => void;
 }) {
   return (
-    <div>
-      <label className="text-sm font-medium text-neutral-on-surface">{label}</label>
-      <p className="mt-0.5 text-xs text-neutral-on-surface-variant">{hint}</p>
+    <label className="block">
+      <span className="block text-[15px] font-medium text-chalk">{label}</span>
+      <span className="mt-0.5 block text-sm text-chalk-dim">{hint}</span>
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1.5 w-full rounded-md border border-neutral-outline-variant bg-surface-low px-3 py-1.5 text-sm text-neutral-on-surface outline-none focus:border-brand-primary"
+        className="mt-1.5 w-full rounded-md border border-chalk-line bg-pitch-deep px-3 py-2 text-[15px] text-chalk outline-none [color-scheme:dark] focus:border-chalk"
       />
-    </div>
+    </label>
   );
 }

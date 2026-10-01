@@ -1,11 +1,12 @@
 import { requireAdminAuth } from "@/lib/admin-guard";
-import { Award, Send, Share2, TrendingUp, UserPlus } from "lucide-react";
+import { Award, Send, Share2 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import { StatCard } from "@/components/charts/StatCard";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { StatBoard } from "@/components/ui/Scoreboard";
 
 /**
  * Panel de Viralidad.
@@ -42,23 +43,24 @@ export default async function ViralPage() {
       {summaryResult.error ? (
         <ErrorBox context="el resumen de viralidad" message={summaryResult.error.message} />
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard
-            label="Usuarios referidos"
-            value={summary?.referred_count ?? 0}
-            hint={`de ${(summary?.total_profiles ?? 0).toLocaleString("es-AR")} en total`}
-            icon={UserPlus}
-            tone={(summary?.referred_count ?? 0) > 0 ? "positive" : "neutral"}
-          />
+        <StatBoard
+          hero={
+            <StatCard
+              size="hero"
+              label="Usuarios referidos"
+              value={summary?.referred_count ?? 0}
+              hint={`de ${(summary?.total_profiles ?? 0).toLocaleString("es-AR")} usuarios en total`}
+            />
+          }
+        >
           <StatCard
             label="Tasa de referidos"
             value={
               summary?.referral_rate === null || summary?.referral_rate === undefined
                 ? null
-                : `${summary.referral_rate}%`
+                : `${Number(summary.referral_rate).toLocaleString("es-AR", { maximumFractionDigits: 1 })} %`
             }
             hint="del total de altas"
-            icon={TrendingUp}
           />
           {/*
             Referidores distintos no es lo mismo que referidos, y la diferencia
@@ -70,19 +72,17 @@ export default async function ViralPage() {
             label="Referidores distintos"
             value={summary?.referrer_count ?? 0}
             hint="personas que trajeron al menos a alguien"
-            icon={Share2}
           />
           <StatCard
             label="Embajadores"
             value={summary?.ambassador_count ?? 0}
             hint="con la insignia otorgada"
-            icon={Award}
           />
-        </div>
+        </StatBoard>
       )}
 
-      <section>
-        <h2 className="font-display mb-1 text-lg uppercase text-neutral-on-surface">
+      <section className="flex flex-col">
+        <h2 className="chalk-rule mb-2">
           Compartidos
         </h2>
         {/*
@@ -90,7 +90,7 @@ export default async function ViralPage() {
           publicadas ni links abiertos — Meta y el sistema no devuelven eso. Ver
           lib/share-analytics.ts de la app.
         */}
-        <p className="mb-3 text-sm text-neutral-on-surface-variant">
+        <p className="mb-4 max-w-[65ch] text-[15px] text-chalk-dim">
           Intentos de compartir desde la app. El destino exacto sólo lo informa iOS.
         </p>
 
@@ -98,19 +98,16 @@ export default async function ViralPage() {
           <ErrorBox context="los compartidos" message={sharesResult.error.message} />
         ) : (
           <>
-            <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="mb-6 grid grid-cols-2 gap-6 sm:grid-cols-3">
               <StatCard
                 label="Últimos 7 días"
                 value={shares.total7}
                 hint={`${shares.sharers7} ${shares.sharers7 === 1 ? "persona" : "personas"}`}
-                icon={Send}
-                tone={shares.total7 > 0 ? "positive" : "neutral"}
               />
               <StatCard
                 label="Últimos 28 días"
                 value={shares.total28}
                 hint={`${shares.sharers28} ${shares.sharers28 === 1 ? "persona" : "personas"}`}
-                icon={Send}
               />
             </div>
 
@@ -122,32 +119,32 @@ export default async function ViralPage() {
                 description="Se llena solo cuando alguien comparte un resultado, su invitación o el código de su equipo."
               />
             ) : (
-              <div className="overflow-x-auto rounded-lg border border-neutral-outline-variant">
-                <table className="w-full min-w-[520px] border-collapse text-left text-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[520px] border-collapse text-left text-[15px]">
                   <thead>
-                    <tr className="border-b border-neutral-outline-variant bg-surface-container text-neutral-on-surface-variant">
-                      <th className="px-4 py-2 font-medium">Qué</th>
-                      <th className="px-4 py-2 font-medium">Destino</th>
-                      <th className="px-4 py-2 text-right font-medium">7 días</th>
-                      <th className="px-4 py-2 text-right font-medium">28 días</th>
+                    <tr className="border-b border-chalk-line text-[13px] text-chalk-faint">
+                      <th className="px-3 py-2 font-normal">Qué</th>
+                      <th className="px-3 py-2 font-normal">Destino</th>
+                      <th className="px-3 py-2 text-right font-normal">7 días</th>
+                      <th className="px-3 py-2 text-right font-normal">28 días</th>
                     </tr>
                   </thead>
                   <tbody>
                     {shares.rows.map((row) => (
                       <tr
                         key={`${row.contentType}|${row.destination}`}
-                        className="border-b border-neutral-outline-variant last:border-0"
+                        className="border-b border-chalk-line"
                       >
-                        <td className="px-4 py-2.5 text-neutral-on-surface">
+                        <td className="px-3 py-3 text-neutral-on-surface">
                           {CONTENT_TYPE_LABEL[row.contentType] ?? row.contentType}
                         </td>
-                        <td className="px-4 py-2.5 text-neutral-on-surface-variant">
+                        <td className="px-3 py-3 text-neutral-on-surface-variant">
                           {destinationLabel(row.destination)}
                         </td>
-                        <td className="px-4 py-2.5 text-right font-semibold tabular-nums text-brand-primary">
+                        <td className="px-3 py-3 text-right font-semibold tabular-nums text-chalk">
                           {row.count7}
                         </td>
-                        <td className="px-4 py-2.5 text-right tabular-nums text-neutral-on-surface">
+                        <td className="px-3 py-3 text-right tabular-nums text-neutral-on-surface">
                           {row.count28}
                         </td>
                       </tr>
@@ -160,8 +157,8 @@ export default async function ViralPage() {
         )}
       </section>
 
-      <section>
-        <h2 className="font-display mb-3 text-lg uppercase text-neutral-on-surface">
+      <section className="flex flex-col">
+        <h2 className="chalk-rule mb-4">
           Top embajadores
         </h2>
 
@@ -175,35 +172,35 @@ export default async function ViralPage() {
             description="Este ranking se llena solo cuando el primer usuario invite a otro. No hace falta tocar nada."
           />
         ) : (
-          <div className="overflow-x-auto rounded-lg border border-neutral-outline-variant">
-            <table className="w-full min-w-[520px] border-collapse text-left text-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[520px] border-collapse text-left text-[15px]">
               <thead>
-                <tr className="border-b border-neutral-outline-variant bg-surface-container text-neutral-on-surface-variant">
-                  <th className="w-12 px-4 py-2 font-medium">#</th>
-                  <th className="px-4 py-2 font-medium">Usuario</th>
-                  <th className="px-4 py-2 font-medium">Referidos</th>
-                  <th className="px-4 py-2 font-medium">Insignia</th>
+                <tr className="border-b border-chalk-line text-[13px] text-chalk-faint">
+                  <th className="w-12 px-3 py-2 font-normal">#</th>
+                  <th className="px-3 py-2 font-normal">Usuario</th>
+                  <th className="px-3 py-2 font-normal">Referidos</th>
+                  <th className="px-3 py-2 font-normal">Insignia</th>
                 </tr>
               </thead>
               <tbody>
                 {referrers.map((referrer, index) => (
                   <tr
                     key={referrer.profile_id}
-                    className="border-b border-neutral-outline-variant last:border-0"
+                    className="border-b border-chalk-line"
                   >
-                    <td className="px-4 py-2.5 tabular-nums text-neutral-outline">
+                    <td className="px-3 py-3 tabular-nums text-neutral-outline">
                       {index + 1}
                     </td>
-                    <td className="px-4 py-2.5">
+                    <td className="px-3 py-3">
                       <span className="text-neutral-on-surface">{referrer.full_name}</span>{" "}
                       <span className="text-neutral-on-surface-variant">
                         @{referrer.username}
                       </span>
                     </td>
-                    <td className="px-4 py-2.5 font-semibold tabular-nums text-brand-primary">
+                    <td className="px-3 py-3 font-semibold tabular-nums text-chalk">
                       {referrer.referred_count}
                     </td>
-                    <td className="px-4 py-2.5">
+                    <td className="px-3 py-3">
                       {referrer.is_ambassador ? (
                         <span className="inline-flex items-center gap-1 rounded-full bg-brand-gold/15 px-2 py-0.5 text-[11px] font-semibold text-brand-gold">
                           <Award className="size-3" aria-hidden="true" />
@@ -312,7 +309,7 @@ function buildShareTable(data: ShareSummaryRow[]) {
 
 function ErrorBox({ context, message }: { context: string; message: string }) {
   return (
-    <p className="rounded-lg border border-danger-error bg-danger-error-container p-4 text-sm text-danger-on-error-container">
+    <p className="rounded-md border border-card-red/40 bg-card-red/10 p-4 text-[15px] text-chalk">
       No se pudo cargar {context}: {message}
     </p>
   );

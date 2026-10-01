@@ -42,7 +42,7 @@ export function Pagination({
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <p className={cn("text-xs text-neutral-on-surface-variant", isPending && "opacity-60")}>
+      <p className={cn("text-sm text-chalk-faint", isPending && "opacity-60")}>
         {total === 0 ? (
           "Sin resultados"
         ) : (
@@ -69,7 +69,7 @@ export function Pagination({
           onClick={() => goTo(page - 1)}
         />
 
-        <span className="px-2 text-xs tabular-nums text-neutral-on-surface-variant">
+        <span className="px-2 text-sm tabular-nums text-chalk-dim">
           {page} / {lastPage}
         </span>
 
@@ -108,7 +108,7 @@ function PageButton({
       title={label}
       disabled={disabled}
       onClick={onClick}
-      className="rounded-md border border-neutral-outline-variant p-1.5 text-neutral-on-surface-variant transition-colors hover:bg-surface-high hover:text-neutral-on-surface disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+      className="rounded-md border border-chalk-line p-2 text-chalk-dim transition-colors hover:bg-slate hover:text-chalk focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chalk disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
     >
       <Icon className="size-4" aria-hidden />
     </button>

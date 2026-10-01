@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useState, useTransition } from "react";
-import { CalendarDays, CheckCheck, Clock, ImageOff, MapPinCheck, MessageSquareQuote, Star } from "lucide-react";
+import { CheckCheck, ImageOff, MapPinCheck, MessageSquareQuote, Star } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -41,15 +41,15 @@ function formatDateTime(iso: string): string {
 function checkinLabel(at: string | null, count: number): string {
   if (!at && count === 0) return "Sin check-in";
   const people = `${count} ${count === 1 ? "jugador" : "jugadores"}`;
-  return at ? `Check-in ${formatDateTime(at)} · ${people}` : people;
+  return at ? `${people}, el ${formatDateTime(at)}` : people;
 }
 
 function formatDate(iso: string | null): string {
   if (!iso) return "Sin fecha";
   return new Date(iso).toLocaleDateString("es-AR", {
-    day: "2-digit",
+    day: "numeric",
     month: "short",
-    year: "numeric",
+    timeZone: "America/Argentina/Buenos_Aires",
   });
 }
 
@@ -99,36 +99,34 @@ export function WoClaimsQueue({ claims }: { claims: WoClaimWithEvidence[] }) {
 
   return (
     <>
-      {/* Dos columnas desde lg: es la ganancia concreta de migrar esto del
-          celular — cada reclamo entra entero, evidencia incluida, sin scroll. */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      {/* Un reclamo por renglón de la planilla: en la compu la evidencia a la
+          izquierda y los datos con las acciones a la derecha, así cada
+          reclamo entra entero sin scroll. En el celular, apilado. */}
+      <div className="flex flex-col">
         {claims.map((claim) => (
           <article
             key={claim.claimId}
-            className="flex flex-col rounded-lg border border-neutral-outline-variant bg-surface-container p-5"
+            aria-label={`Reclamo de ${claim.claimingTeamName} contra ${claim.opponentTeamName}`}
+            className="grid grid-cols-1 gap-6 border-b border-chalk-line py-6 first:pt-0 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-10"
           >
-            <div className="flex items-start justify-between gap-3">
-              <h2 className="text-sm font-semibold text-neutral-on-surface">
-                {claim.claimingTeamName}{" "}
-                <span className="font-normal text-neutral-outline">vs</span>{" "}
-                {claim.opponentTeamName}
-              </h2>
-              <span className="flex shrink-0 items-center gap-1.5 text-[11px] text-neutral-on-surface-variant">
-                <CalendarDays className="size-3.5" aria-hidden="true" />
-                {formatDate(claim.scheduledAt ?? claim.createdAt)}
-              </span>
-            </div>
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                <h2 className="text-lg font-semibold text-chalk">
+                  {claim.claimingTeamName}{" "}
+                  <span className="font-normal text-chalk-faint">contra</span>{" "}
+                  {claim.opponentTeamName}
+                </h2>
+                <span className="text-sm text-chalk-dim">
+                  {formatDate(claim.scheduledAt ?? claim.createdAt)}
+                </span>
+              </div>
+              <p className="text-[15px] text-chalk-dim">
+                Reclama {claim.claimingTeamName}:{" "}
+                <span className="text-chalk">
+                  {claim.reason ? (REASON_LABELS[claim.reason] ?? claim.reason) : "sin motivo"}
+                </span>
+              </p>
 
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-warning-tertiary/20 px-2.5 py-1 text-[11px] font-semibold text-warning-tertiary">
-                {claim.reason ? (REASON_LABELS[claim.reason] ?? claim.reason) : "Sin motivo"}
-              </span>
-              <span className="text-[11px] text-neutral-on-surface-variant">
-                Reclama {claim.claimingTeamName}
-              </span>
-            </div>
-
-            <div className="mt-4">
               {claim.evidence.kind === "url" ? (
                 // La evidencia es la prueba sobre la que se decide: se abre en
                 // pestaña nueva a tamaño completo. El link es una URL firmada
@@ -137,7 +135,7 @@ export function WoClaimsQueue({ claims }: { claims: WoClaimWithEvidence[] }) {
                   href={claim.evidence.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="group relative block h-56 overflow-hidden rounded-lg border border-neutral-outline-variant"
+                  className="group relative block h-64 overflow-hidden rounded-md border border-chalk-line focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chalk"
                 >
                   {/* `unoptimized`: la foto va directo del navegador a Storage.
                       Optimizada pasaría por /_next/image, que la guarda 4 h sin
@@ -150,112 +148,107 @@ export function WoClaimsQueue({ claims }: { claims: WoClaimWithEvidence[] }) {
                     alt={`Evidencia del reclamo de ${claim.claimingTeamName}`}
                     fill
                     unoptimized
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                    className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                    sizes="(max-width: 1024px) 100vw, 40vw"
+                    className="object-cover"
                   />
-                  <span className="absolute bottom-2 right-2 rounded bg-surface-lowest/85 px-2 py-1 text-[11px] text-neutral-on-surface opacity-0 transition-opacity group-hover:opacity-100">
-                    Ver en tamaño completo →
+                  <span className="absolute bottom-2 right-2 rounded bg-pitch-deep/90 px-2 py-1 text-xs text-chalk">
+                    Ver en tamaño completo
                   </span>
                 </a>
               ) : claim.evidence.kind === "error" ? (
-                <div className="flex h-24 items-center justify-center gap-2 rounded-lg bg-danger-error-container text-xs text-danger-on-error-container">
+                <div className="flex h-24 items-center justify-center gap-2 rounded-md border border-card-red/40 bg-card-red/10 text-sm text-chalk">
                   <ImageOff className="size-4" aria-hidden="true" />
                   No se pudo cargar la evidencia. Recargá la página.
                 </div>
               ) : (
-                <div className="flex h-24 items-center justify-center gap-2 rounded-lg bg-surface-high text-xs text-neutral-outline">
+                <div className="flex h-24 items-center justify-center gap-2 rounded-md border border-dashed border-chalk-line text-sm text-chalk-faint">
                   <ImageOff className="size-4" aria-hidden="true" />
                   Sin evidencia fotográfica
                 </div>
               )}
             </div>
 
-            <p className="mb-1.5 mt-4 text-[11px] font-semibold uppercase tracking-widest text-neutral-outline">
-              Goleadores propuestos
-            </p>
-            {claim.scorers.length === 0 ? (
-              <p className="text-sm text-neutral-on-surface-variant">
-                No se cargaron goleadores.
-              </p>
-            ) : (
-              <ul className="flex flex-col gap-1">
-                {claim.scorers.map((scorer, i) => (
-                  <li
-                    key={`${claim.claimId}-${scorer.profile_id}-${i}`}
-                    className="flex items-center justify-between text-sm"
-                  >
-                    <span className="text-neutral-on-surface">
-                      {scorer.full_name ?? "Jugador"}
-                    </span>
-                    <span className="font-semibold tabular-nums text-brand-primary">
-                      {scorer.goals}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
+            <div className="flex flex-col">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                <div>
+                  <p className="mb-1.5 text-[13px] text-chalk-faint">Goleadores propuestos</p>
+                  {claim.scorers.length === 0 ? (
+                    <p className="text-[15px] text-chalk-dim">No se cargaron goleadores.</p>
+                  ) : (
+                    <ul className="flex flex-col gap-1">
+                      {claim.scorers.map((scorer, i) => (
+                        <li
+                          key={`${claim.claimId}-${scorer.profile_id}-${i}`}
+                          className="flex items-center justify-between gap-3 text-[15px]"
+                        >
+                          <span className="text-chalk">{scorer.full_name ?? "Jugador"}</span>
+                          <span className="font-display text-xl font-bold tabular-nums text-chalk">
+                            {scorer.goals}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  <p className="mt-3 flex items-center gap-2 text-[15px]">
+                    <span className="text-[13px] text-chalk-faint">MVP</span>
+                    {claim.mvpName ? (
+                      <span className="flex items-center gap-1 font-medium text-chalk">
+                        <Star className="size-3.5 fill-current" aria-hidden="true" />
+                        {claim.mvpName}
+                      </span>
+                    ) : (
+                      <span className="text-chalk-dim">Sin MVP</span>
+                    )}
+                  </p>
+                </div>
 
-            <p className="mt-3 flex items-center gap-2 text-sm">
-              <span className="text-[11px] font-semibold uppercase tracking-widest text-neutral-outline">
-                MVP
-              </span>
-              {claim.mvpName ? (
-                <span className="flex items-center gap-1 font-semibold text-warning-tertiary">
-                  <Star className="size-3.5 fill-current" aria-hidden="true" />
-                  {claim.mvpName}
-                </span>
-              ) : (
-                <span className="text-neutral-on-surface-variant">Sin MVP</span>
-              )}
-            </p>
+                <div>
+                  <p className="mb-1.5 text-[13px] text-chalk-faint">Check-in</p>
+                  <ul className="flex flex-col gap-1 text-[15px]">
+                    <li className="flex flex-col">
+                      <span className="text-chalk">{claim.claimingTeamName}</span>
+                      <span className="flex items-center gap-1 text-chalk-dim">
+                        <MapPinCheck className="size-3.5" aria-hidden="true" />
+                        {checkinLabel(claim.claimingCheckinAt, claim.claimingCheckins)}
+                      </span>
+                    </li>
+                    <li className="flex flex-col">
+                      <span className="text-chalk">{claim.opponentTeamName}</span>
+                      <span className="flex items-center gap-1 text-chalk-dim">
+                        <MapPinCheck className="size-3.5" aria-hidden="true" />
+                        {checkinLabel(claim.opponentCheckinAt, claim.opponentCheckins)}
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
 
-            <p className="mb-1.5 mt-4 text-[11px] font-semibold uppercase tracking-widest text-neutral-outline">
-              Check-in
-            </p>
-            <ul className="flex flex-col gap-1 text-sm">
-              <li className="flex items-center justify-between gap-3">
-                <span className="text-neutral-on-surface">{claim.claimingTeamName}</span>
-                <span className="flex items-center gap-1 text-neutral-on-surface-variant">
-                  <MapPinCheck className="size-3.5" aria-hidden="true" />
-                  {checkinLabel(claim.claimingCheckinAt, claim.claimingCheckins)}
-                </span>
-              </li>
-              <li className="flex items-center justify-between gap-3">
-                <span className="text-neutral-on-surface">{claim.opponentTeamName}</span>
-                <span className="flex items-center gap-1 text-neutral-on-surface-variant">
-                  <MapPinCheck className="size-3.5" aria-hidden="true" />
-                  {checkinLabel(claim.opponentCheckinAt, claim.opponentCheckins)}
-                </span>
-              </li>
-            </ul>
+              <ResponseBlock claim={claim} nowTs={nowTs} />
 
-            <ResponseBlock claim={claim} nowTs={nowTs} />
-
-            {/* mt-auto: con tarjetas de alto distinto en la grilla, las
-                acciones quedan alineadas al pie de cada una. */}
-            <div className="mt-auto flex gap-2 pt-5">
-              <Button
-                variant="secondary"
-                className="flex-1 text-danger-error"
-                onClick={() => setDialog({ claim, approve: false })}
-                disabled={isPending}
-              >
-                Rechazar
-              </Button>
-              <Button
-                className="flex-1"
-                onClick={() => setDialog({ claim, approve: true })}
-                // D-61: con el acusado en plazo y sin respuesta, aprobar le
-                // sacaría su derecho a contestar. Rechazar sí se puede.
-                disabled={isPending || isAwaitingResponse(claim, nowTs)}
-                title={
-                  isAwaitingResponse(claim, nowTs)
-                    ? "El equipo acusado todavía está en plazo para dar su versión"
-                    : undefined
-                }
-              >
-                Aprobar
-              </Button>
+              <div className="mt-auto flex flex-col-reverse gap-2 pt-6 sm:flex-row sm:justify-end">
+                <Button
+                  variant="outline"
+                  className="h-10 border-card-red/40 bg-transparent text-card-red hover:bg-card-red/10 hover:text-card-red sm:h-9"
+                  onClick={() => setDialog({ claim, approve: false })}
+                  disabled={isPending}
+                >
+                  Rechazar reclamo
+                </Button>
+                <Button
+                  className="h-10 sm:h-9"
+                  onClick={() => setDialog({ claim, approve: true })}
+                  // D-61: con el acusado en plazo y sin respuesta, aprobar le
+                  // sacaría su derecho a contestar. Rechazar sí se puede.
+                  disabled={isPending || isAwaitingResponse(claim, nowTs)}
+                  title={
+                    isAwaitingResponse(claim, nowTs)
+                      ? "El equipo acusado todavía está en plazo para dar su versión"
+                      : undefined
+                  }
+                >
+                  Aprobar WO
+                </Button>
+              </div>
             </div>
           </article>
         ))}
@@ -314,24 +307,24 @@ function ResponseBlock({ claim, nowTs }: { claim: WoClaimWithEvidence; nowTs: nu
 
   return (
     <div className="mt-4">
-      <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-widest text-neutral-outline">
+      <p className="mb-1.5 text-[13px] text-chalk-faint">
         Versión de {claim.opponentTeamName}
       </p>
       {claim.respondedAt !== null ? (
-        <div className="rounded-lg border border-neutral-outline-variant bg-surface-high p-3">
-          <p className="flex gap-2 text-sm text-neutral-on-surface">
+        <div className="rounded-md border border-chalk-line bg-slate/60 p-3">
+          <p className="flex gap-2 text-[15px] text-chalk">
             <MessageSquareQuote className="mt-0.5 size-4 shrink-0 text-neutral-outline" aria-hidden="true" />
             <span className="whitespace-pre-wrap">{claim.responseText}</span>
           </p>
-          <p className="mt-2 text-[11px] text-neutral-on-surface-variant">
-            {claim.respondedByName ?? "Alguien del equipo"} · {formatDateTime(claim.respondedAt)}
+          <p className="mt-2 text-[13px] text-chalk-faint">
+            {claim.respondedByName ?? "Alguien del equipo"}, {formatDateTime(claim.respondedAt)}
           </p>
           {claim.responseEvidence.kind === "url" ? (
             <a
               href={claim.responseEvidence.url}
               target="_blank"
               rel="noreferrer"
-              className="relative mt-3 block h-40 overflow-hidden rounded-lg border border-neutral-outline-variant"
+              className="relative mt-3 block h-40 overflow-hidden rounded-md border border-chalk-line"
             >
               <Image
                 src={claim.responseEvidence.url}
@@ -343,20 +336,20 @@ function ResponseBlock({ claim, nowTs }: { claim: WoClaimWithEvidence; nowTs: nu
               />
             </a>
           ) : claim.responseEvidence.kind === "error" ? (
-            <p className="mt-2 flex items-center gap-2 text-xs text-danger-error">
+            <p className="mt-2 flex items-center gap-2 text-sm text-card-red">
               <ImageOff className="size-3.5" aria-hidden="true" />
               No se pudo cargar la foto de la respuesta. Recargá la página.
             </p>
           ) : null}
         </div>
       ) : isAwaitingResponse(claim, nowTs) ? (
-        <p className="flex items-center gap-2 rounded-lg bg-warning-tertiary/10 px-3 py-2 text-xs text-warning-tertiary">
-          <Clock className="size-3.5 shrink-0" aria-hidden="true" />
+        <p className="flex items-start gap-2.5 text-sm leading-snug text-chalk">
+          <span aria-hidden="true" className="mt-0.5 h-4 w-3 shrink-0 -rotate-6 rounded-[2px] bg-card-yellow" />
           Tiene hasta el {formatDateTime(claim.responseDeadline!)} para responder. Hasta entonces no se puede aprobar;
           rechazar sí.
         </p>
       ) : (
-        <p className="text-sm text-neutral-on-surface-variant">
+        <p className="text-[15px] text-chalk-dim">
           No respondió en el plazo (venció el {formatDateTime(claim.responseDeadline!)}).
         </p>
       )}

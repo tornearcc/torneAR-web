@@ -71,7 +71,7 @@ export function LogsChart({
   }
 
   return (
-    <div className="h-72 rounded-lg border border-neutral-outline-variant bg-surface-container p-4">
+    <div className="h-72">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={data}
@@ -103,7 +103,7 @@ export function LogsChart({
             eso, tras filtrar por un día el gráfico se ve igual que antes y no
             hay señal de qué está aislado.
           */}
-          <Bar dataKey="info_count" stackId="logs" fill={CHART_COLORS.info}>
+          <Bar dataKey="info_count" stackId="logs" fill={CHART_COLORS.onSurfaceVariant}>
             {data.map((entry) => (
               <Cell key={entry.day} fillOpacity={dimmed(entry.day, selectedDay)} />
             ))}

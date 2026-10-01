@@ -10,9 +10,9 @@ import type { LogRow } from "@/lib/logs-data";
 // como `string` plano. El fallback a "info" cubre cualquier valor futuro que
 // no esté en este mapa en vez de romper el render.
 const LEVEL_BADGE_CLASS: Record<string, string> = {
-  error: "bg-danger-error-container text-danger-on-error-container",
-  warn: "bg-warning-tertiary-container text-warning-on-tertiary",
-  info: "bg-surface-high text-neutral-on-surface-variant",
+  error: "bg-card-red text-white",
+  warn: "bg-card-yellow text-on-card",
+  info: "border border-chalk-line text-chalk-dim",
 };
 
 const DATE_FORMATTER = new Intl.DateTimeFormat("es-AR", {
@@ -22,6 +22,11 @@ const DATE_FORMATTER = new Intl.DateTimeFormat("es-AR", {
   hour: "2-digit",
   minute: "2-digit",
   second: "2-digit",
+  // Zona y reloj de 24 h fijos: sin esto el servidor (UTC) y el navegador
+  // formatean distinto (hora, y hasta el espacio de «p. m.») y React tira un
+  // error de hidratación en cada log.
+  hourCycle: "h23",
+  timeZone: "America/Argentina/Buenos_Aires",
 });
 
 /**
@@ -50,10 +55,10 @@ export function LogsTable({ rows }: { rows: LogRow[] }) {
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-neutral-outline-variant">
-      <table className="w-full min-w-[860px] border-collapse text-left text-sm">
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[860px] border-collapse text-left text-[15px]">
         <thead>
-          <tr className="border-b border-neutral-outline-variant bg-surface-container text-neutral-on-surface-variant">
+          <tr className="border-b border-chalk-line text-[13px] text-chalk-faint">
             <th className="w-8 px-2 py-2" />
             <th className="px-3 py-2 font-medium">Fecha</th>
             <th className="px-3 py-2 font-medium">Nivel</th>
@@ -71,7 +76,7 @@ export function LogsTable({ rows }: { rows: LogRow[] }) {
                 key={log.id}
                 onClick={() => hasDetails && setExpandedId(isExpanded ? null : log.id)}
                 className={cn(
-                  "border-b border-neutral-outline-variant last:border-0",
+                  "border-b border-chalk-line",
                   hasDetails && "cursor-pointer hover:bg-surface-container",
                   isExpanded && "bg-surface-container",
                 )}
@@ -106,7 +111,7 @@ export function LogsTable({ rows }: { rows: LogRow[] }) {
                 <td className="px-3 py-2">
                   <span
                     className={cn(
-                      "rounded px-1.5 py-0.5 text-[11px] font-semibold uppercase",
+                      "rounded px-1.5 py-0.5 text-xs font-medium",
                       LEVEL_BADGE_CLASS[log.level] ?? LEVEL_BADGE_CLASS.info,
                     )}
                   >
@@ -124,11 +129,11 @@ export function LogsTable({ rows }: { rows: LogRow[] }) {
               // pasar el mouse, no se podía copiar y se cortaba sin aviso.
               isExpanded && hasDetails ? (
                 <tr key={`${log.id}-details`} className="border-b border-neutral-outline-variant">
-                  <td colSpan={5} className="bg-surface-low px-4 py-3">
-                    <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-neutral-outline">
+                  <td colSpan={5} className="bg-pitch-deep px-4 py-3">
+                    <p className="mb-1.5 text-[13px] text-chalk-faint">
                       Detalles
                     </p>
-                    <pre className="max-h-80 overflow-auto rounded-md bg-surface-lowest p-3 font-mono text-xs leading-relaxed text-neutral-on-surface-variant">
+                    <pre className="max-h-80 overflow-auto rounded-md border border-chalk-line bg-pitch p-3 font-mono text-xs leading-relaxed text-chalk-dim">
                       {JSON.stringify(log.details, null, 2)}
                     </pre>
                   </td>

@@ -93,7 +93,7 @@ function TeamZoneBody({
   return (
     <>
       <DialogHeader>
-        <DialogTitle className="font-display text-xl uppercase">Cambiar zona</DialogTitle>
+        <DialogTitle className="text-xl font-semibold">Cambiar zona</DialogTitle>
         <DialogDescription className="text-sm leading-relaxed text-neutral-on-surface-variant">
           <strong className="text-neutral-on-surface">{team.name}</strong>, hoy en{" "}
           <strong className="text-neutral-on-surface">{team.zone}</strong>. Usalo sólo para una
@@ -108,7 +108,7 @@ function TeamZoneBody({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor={zoneId} className="text-xs font-semibold text-neutral-on-surface-variant">
+        <label htmlFor={zoneId} className="text-[13px] text-chalk-dim">
           Zona nueva
         </label>
         <input
@@ -118,7 +118,7 @@ function TeamZoneBody({
           onChange={(e) => setZone(e.target.value)}
           placeholder="Escribí para buscar…"
           autoComplete="off"
-          className="w-full rounded-md border border-neutral-outline-variant bg-surface-low px-3 py-2 text-sm text-neutral-on-surface outline-none placeholder:text-neutral-outline focus:border-brand-primary"
+          className="w-full rounded-md border border-neutral-outline-variant bg-pitch-deep px-3 py-2 text-sm text-neutral-on-surface outline-none placeholder:text-neutral-outline focus:border-chalk"
         />
         <datalist id={listId}>
           {zones.map((name) => (
@@ -134,7 +134,7 @@ function TeamZoneBody({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor={reasonId} className="text-xs font-semibold text-neutral-on-surface-variant">
+        <label htmlFor={reasonId} className="text-[13px] text-chalk-dim">
           Motivo (obligatorio)
         </label>
         <textarea
@@ -143,7 +143,7 @@ function TeamZoneBody({
           onChange={(e) => setReason(e.target.value)}
           placeholder="Ej.: el equipo se mudó a Caballito, pedido del capitán por WhatsApp del 28/09"
           rows={3}
-          className="w-full resize-y rounded-md border border-neutral-outline-variant bg-surface-low px-3 py-2 text-sm text-neutral-on-surface outline-none placeholder:text-neutral-outline focus:border-brand-primary"
+          className="w-full resize-y rounded-md border border-neutral-outline-variant bg-pitch-deep px-3 py-2 text-sm text-neutral-on-surface outline-none placeholder:text-neutral-outline focus:border-chalk"
         />
       </div>
 

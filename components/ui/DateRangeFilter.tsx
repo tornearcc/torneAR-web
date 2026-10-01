@@ -64,13 +64,13 @@ export function DateRangeFilter({ range }: { range: ResolvedRange }) {
   return (
     <div
       className={cn(
-        "flex items-center gap-1 rounded-lg border border-neutral-outline-variant bg-surface-container p-1",
+        "flex w-fit max-w-full items-center gap-1 overflow-x-auto rounded-md border border-chalk-line p-1",
         isPending && "opacity-70",
       )}
     >
       {isPending ? (
         <Loader2
-          className="ml-1.5 size-3.5 animate-spin text-brand-primary"
+          className="ml-1.5 size-3.5 shrink-0 animate-spin text-chalk-dim"
           aria-hidden="true"
         />
       ) : null}
@@ -82,10 +82,10 @@ export function DateRangeFilter({ range }: { range: ResolvedRange }) {
           onClick={() => selectPreset(preset as FixedPreset)}
           aria-pressed={range.preset === preset}
           className={cn(
-            "rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+            "shrink-0 rounded-[4px] px-3 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chalk",
             range.preset === preset
-              ? "bg-surface-high text-brand-primary"
-              : "text-neutral-on-surface-variant hover:bg-surface-high hover:text-neutral-on-surface",
+              ? "bg-slate-high font-medium text-chalk"
+              : "text-chalk-dim hover:bg-slate hover:text-chalk",
           )}
         >
           {PRESET_LABELS[preset]}
@@ -98,10 +98,10 @@ export function DateRangeFilter({ range }: { range: ResolvedRange }) {
             type="button"
             aria-pressed={range.preset === "custom"}
             className={cn(
-              "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+              "flex shrink-0 items-center gap-1.5 rounded-[4px] px-3 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chalk",
               range.preset === "custom"
-                ? "bg-surface-high text-brand-primary"
-                : "text-neutral-on-surface-variant hover:bg-surface-high hover:text-neutral-on-surface",
+                ? "bg-slate-high font-medium text-chalk"
+                : "text-chalk-dim hover:bg-slate hover:text-chalk",
             )}
           >
             <CalendarRange className="size-3.5" aria-hidden="true" />
@@ -111,29 +111,29 @@ export function DateRangeFilter({ range }: { range: ResolvedRange }) {
 
         <PopoverContent align="end" className="w-72">
           <div className="flex flex-col gap-3">
-            <p className="text-xs font-semibold uppercase tracking-wider text-neutral-outline">
+            <p className="text-sm font-medium text-chalk">
               Rango personalizado
             </p>
 
             <div className="grid grid-cols-2 gap-2">
               <label className="flex flex-col gap-1">
-                <span className="text-[11px] text-neutral-on-surface-variant">Desde</span>
+                <span className="text-[13px] text-chalk-dim">Desde</span>
                 <input
                   type="date"
                   value={customFrom}
                   max={customTo || undefined}
                   onChange={(e) => setCustomFrom(e.target.value)}
-                  className="rounded-md border border-neutral-outline-variant bg-surface-low px-2 py-1.5 text-xs text-neutral-on-surface outline-none focus:border-brand-primary"
+                  className="rounded-md border border-chalk-line bg-pitch px-2 py-1.5 text-sm text-chalk outline-none [color-scheme:dark] focus:border-chalk"
                 />
               </label>
               <label className="flex flex-col gap-1">
-                <span className="text-[11px] text-neutral-on-surface-variant">Hasta</span>
+                <span className="text-[13px] text-chalk-dim">Hasta</span>
                 <input
                   type="date"
                   value={customTo}
                   min={customFrom || undefined}
                   onChange={(e) => setCustomTo(e.target.value)}
-                  className="rounded-md border border-neutral-outline-variant bg-surface-low px-2 py-1.5 text-xs text-neutral-on-surface outline-none focus:border-brand-primary"
+                  className="rounded-md border border-chalk-line bg-pitch px-2 py-1.5 text-sm text-chalk outline-none [color-scheme:dark] focus:border-chalk"
                 />
               </label>
             </div>
