@@ -48,7 +48,7 @@ export function ActivityTimeseriesChart({ data }: { data: ActivityPointRow[] }) 
   }
 
   return (
-    <div className="h-72 rounded-lg border border-neutral-outline-variant bg-surface-container p-4">
+    <div className="h-72">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
           <CartesianGrid {...GRID_PROPS} vertical={false} />
@@ -67,16 +67,16 @@ export function ActivityTimeseriesChart({ data }: { data: ActivityPointRow[] }) 
             formatter={(value) => SERIES_NAME[value] ?? value}
             wrapperStyle={{ fontSize: 12, color: CHART_COLORS.onSurfaceVariant }}
           />
-          <Bar dataKey="matches_created" fill={CHART_COLORS.info} radius={[3, 3, 0, 0]} />
+          <Bar dataKey="matches_created" fill={CHART_COLORS.series1} radius={[3, 3, 0, 0]} />
           <Bar
             dataKey="matches_scheduled"
-            fill={CHART_COLORS.warn}
+            fill={CHART_COLORS.series2}
             radius={[3, 3, 0, 0]}
           />
           <Line
             type="monotone"
             dataKey="matches_finished"
-            stroke={CHART_COLORS.brandPrimary}
+            stroke={CHART_COLORS.series3}
             strokeWidth={2}
             dot={false}
             activeDot={{ r: 4 }}

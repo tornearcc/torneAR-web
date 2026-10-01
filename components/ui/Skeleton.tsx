@@ -11,9 +11,9 @@ export function Skeleton({ className }: { className?: string }) {
     <div
       aria-hidden="true"
       className={cn(
-        "relative overflow-hidden rounded-md bg-surface-container",
+        "relative overflow-hidden rounded-md bg-slate/70",
         "after:absolute after:inset-0 after:-translate-x-full",
-        "after:bg-gradient-to-r after:from-transparent after:via-surface-high after:to-transparent",
+        "after:bg-gradient-to-r after:from-transparent after:via-slate-high after:to-transparent",
         "after:animate-[skeleton-shimmer_1.6s_infinite]",
         className,
       )}
@@ -44,15 +44,12 @@ export function StatCardsSkeleton({
   className?: string;
 }) {
   return (
-    <div className={cn("grid grid-cols-1 gap-4 sm:grid-cols-3", className)}>
+    <div className={cn("grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3", className)}>
       {Array.from({ length: count }, (_, i) => (
-        <div
-          key={i}
-          className="rounded-lg border border-neutral-outline-variant bg-surface-container p-5"
-        >
+        <div key={i} className="flex flex-col gap-2">
+          <Skeleton className="h-10 w-16" />
           <Skeleton className="h-4 w-24" />
-          <Skeleton className="mt-2 h-9 w-20" />
-          <Skeleton className="mt-2 h-3 w-32" />
+          <Skeleton className="h-3 w-32" />
         </div>
       ))}
     </div>
@@ -63,8 +60,25 @@ export function StatCardsSkeleton({
 export function ChartSkeleton({ className }: { className?: string }) {
   return (
     <Skeleton
-      className={cn("h-72 rounded-lg border border-neutral-outline-variant", className)}
+      className={cn("h-72", className)}
     />
   );
 }
 
+
+/**
+ * Cabecera de números de una página de análisis (`StatBoard`): el
+ * protagonista grande y `count` números chicos al lado.
+ */
+export function StatBoardSkeleton({ count = 3 }: { count?: number }) {
+  return (
+    <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-end">
+      <div className="flex flex-col gap-2">
+        <Skeleton className="h-14 w-24 md:h-[72px]" />
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-3 w-40" />
+      </div>
+      <StatCardsSkeleton count={count} />
+    </div>
+  );
+}

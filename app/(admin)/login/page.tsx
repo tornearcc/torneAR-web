@@ -15,11 +15,15 @@ export default async function LoginPage({
   const { error } = await searchParams;
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-surface-lowest px-6">
+    // `data-admin-shell`: misma paleta de cancha que el dashboard (globals.css).
+    <div
+      data-admin-shell
+      className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-pitch px-4"
+    >
       {error && (
         <p
           role="alert"
-          className="w-full max-w-sm rounded-md bg-danger-error-container px-3 py-2 text-center text-sm text-danger-on-error-container"
+          className="w-full max-w-sm rounded-md border border-card-red/40 bg-card-red/10 px-3 py-2 text-center text-[15px] text-chalk"
         >
           Email o contraseña incorrectos.
         </p>

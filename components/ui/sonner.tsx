@@ -27,6 +27,8 @@ export function Toaster(props: ToasterProps) {
       theme="dark"
       className="toaster group"
       position="bottom-right"
+      // En el celular, por encima de la barra inferior del dashboard (64 px).
+      mobileOffset={{ bottom: 88 }}
       icons={{
         success: <CircleCheckIcon className="size-4" />,
         info: <InfoIcon className="size-4" />,

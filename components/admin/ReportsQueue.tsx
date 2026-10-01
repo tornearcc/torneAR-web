@@ -70,10 +70,11 @@ const STATUS_LABEL: Record<ReportStatus, string> = {
 };
 
 const STATUS_BADGE_CLASS: Record<ReportStatus, string> = {
-  PENDING: "bg-warning-tertiary-container text-warning-on-tertiary",
-  REVIEWED: "bg-info-secondary-container text-info-on-secondary",
-  DISMISSED: "bg-surface-high text-neutral-on-surface-variant",
-  ACTIONED: "bg-brand-primary-container text-brand-inverse-primary",
+  // Sólo la pendiente lleva color: es la única que pide algo (amarilla).
+  PENDING: "bg-card-yellow text-on-card",
+  REVIEWED: "border border-chalk-line text-chalk-dim",
+  DISMISSED: "border border-chalk-line text-chalk-faint",
+  ACTIONED: "border border-chalk-line text-chalk",
 };
 
 const ENTITY_LABEL: Record<ReportRow["reported_entity_type"], string> = {
@@ -204,17 +205,17 @@ export function ReportsQueue({
 
   return (
     <>
-      <div className="overflow-x-auto rounded-lg border border-neutral-outline-variant">
-        <table className="w-full min-w-[900px] border-collapse text-left text-sm">
+      <div className="overflow-x-auto">
+        <table className="ledger-stack w-full border-collapse text-left text-[15px] md:min-w-[900px]">
           <thead>
-            <tr className="border-b border-neutral-outline-variant bg-surface-container text-neutral-on-surface-variant">
-              <th className="px-4 py-3 font-medium">Estado</th>
-              <th className="px-4 py-3 font-medium">Denunciante</th>
-              <th className="px-4 py-3 font-medium">Entidad</th>
-              <th className="px-4 py-3 font-medium">Contenido denunciado</th>
-              <th className="px-4 py-3 font-medium">Motivo</th>
-              <th className="px-4 py-3 font-medium">Fecha</th>
-              <th className="px-4 py-3 font-medium">Acciones</th>
+            <tr className="border-b border-chalk-line text-[13px] text-chalk-faint">
+              <th className="px-3 py-2 font-normal">Estado</th>
+              <th className="px-3 py-2 font-normal">Denunciante</th>
+              <th className="px-3 py-2 font-normal">Entidad</th>
+              <th className="px-3 py-2 font-normal">Contenido denunciado</th>
+              <th className="px-3 py-2 font-normal">Motivo</th>
+              <th className="px-3 py-2 font-normal">Fecha</th>
+              <th className="px-3 py-2 font-normal">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -230,23 +231,26 @@ export function ReportsQueue({
               return (
                 <tr
                   key={report.id}
-                  className="border-b border-neutral-outline-variant last:border-0"
+                  className="border-b border-chalk-line"
                 >
-                  <td className="px-4 py-3">
+                  <td data-label="Estado" className="px-3 py-3">
                     <span
                       className={cn(
-                        "rounded-full px-2.5 py-1 text-xs font-semibold",
+                        "inline-block rounded-[4px] px-2 py-0.5 text-[13px] font-medium",
                         STATUS_BADGE_CLASS[report.status],
                       )}
                     >
                       {STATUS_LABEL[report.status]}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-neutral-on-surface">
+                  <td data-label="Denunciante" className="px-3 py-3 text-chalk">
                     {report.reporter ? `@${report.reporter.username}` : "—"}
                   </td>
-                  <td className="px-4 py-3 text-neutral-on-surface-variant">
-                    <span className="font-medium text-neutral-on-surface">
+                  <td data-label="Denunciado" className="px-3 py-3 text-chalk-dim">
+                    {/* Un solo hijo: en el celular la celda es una grilla de dos
+                        columnas y cada hijo suelto ocuparía una fila. */}
+                    <div>
+                    <span className="font-medium text-chalk">
                       {ENTITY_LABEL[report.reported_entity_type]}
                     </span>{" "}
                     {report.reportedUser ? (
@@ -259,15 +263,16 @@ export function ReportsQueue({
                       </span>
                     )}
                     {isSuspended ? (
-                      <span className="ml-2 rounded-full bg-danger-error-container px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-danger-on-error-container">
+                      <span className="ml-2 rounded-[4px] bg-card-red px-1.5 py-0.5 text-xs font-medium text-white">
                         Suspendido
                       </span>
                     ) : null}
+                    </div>
                   </td>
                   {/* El texto denunciado, no sólo su id. Es lo que vuelve la
                       cola accionable de un vistazo: sin esto hay que salir a
                       buscar el contenido a mano, con 24 horas de plazo encima. */}
-                  <td className="max-w-sm px-4 py-3 text-neutral-on-surface-variant">
+                  <td data-label="Contenido" className="max-w-sm px-3 py-3 text-chalk-dim">
                     {report.content_snapshot ? (
                       <span className="line-clamp-3 whitespace-pre-wrap break-words italic">
                         “{report.content_snapshot}”
@@ -278,17 +283,18 @@ export function ReportsQueue({
                       <span className="text-xs text-neutral-outline">Sin copia guardada</span>
                     )}
                   </td>
-                  <td className="max-w-xs px-4 py-3 text-neutral-on-surface-variant">
+                  <td data-label="Motivo" className="max-w-xs px-3 py-3 text-chalk-dim">
                     {report.reason}
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-neutral-on-surface-variant">
+                  <td data-label="Fecha" className="whitespace-nowrap px-3 py-3 text-chalk-dim">
                     {new Date(report.created_at).toLocaleDateString("es-AR", {
                       day: "2-digit",
                       month: "2-digit",
                       year: "numeric",
+                      timeZone: "America/Argentina/Buenos_Aires",
                     })}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-3 py-3">
                     <div className="flex flex-wrap gap-2">
                       <Button
                         size="xs"
@@ -320,7 +326,7 @@ export function ReportsQueue({
                           size="xs"
                           disabled={isPending || report.status === "ACTIONED"}
                           onClick={() => setDialog({ report, action: "remove" })}
-                          className="bg-danger-error-container text-danger-on-error-container hover:bg-danger-error-container/85"
+                          className="border border-card-red/40 bg-transparent text-card-red hover:bg-card-red/10 hover:text-card-red"
                         >
                           Eliminar contenido
                         </Button>
@@ -335,7 +341,7 @@ export function ReportsQueue({
                           size="xs"
                           disabled={isPending || report.status === "ACTIONED"}
                           onClick={() => setDialog({ report, action: "remove-avatar" })}
-                          className="bg-danger-error-container text-danger-on-error-container hover:bg-danger-error-container/85"
+                          className="border border-card-red/40 bg-transparent text-card-red hover:bg-card-red/10 hover:text-card-red"
                         >
                           Quitar foto
                         </Button>
@@ -354,7 +360,7 @@ export function ReportsQueue({
                           }
                           className={cn(
                             !isSuspended &&
-                              "bg-danger-error-container text-danger-on-error-container hover:bg-danger-error-container/85",
+                              "border border-card-red/40 bg-transparent text-card-red hover:bg-card-red/10 hover:text-card-red",
                           )}
                         >
                           {isSuspended ? "Levantar suspensión" : "Suspender"}

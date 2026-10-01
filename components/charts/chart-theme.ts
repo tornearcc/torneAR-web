@@ -7,19 +7,35 @@
  * subcomponentes). Antes esta duplicación vivía copiada en cada uno de los
  * tres charts; acá está una sola vez, y si cambia un token de marca hay un
  * único archivo que actualizar.
+ *
+ * Neutros, amarilla y roja siguen la paleta de cancha del dashboard
+ * (globals.css, `:root:has([data-admin-shell])`), que es el único lugar donde
+ * se dibujan gráficos.
  */
 export const CHART_COLORS = {
   brandPrimary: "#53e076", // --brand-primary
   info: "#8ccdff", // --info-secondary
-  warn: "#fabd32", // --warning-tertiary
-  error: "#ffb4ab", // --danger-error
+  warn: "#ffd23f", // --card-yellow
+  error: "#ff5a4e", // --card-red
   alertOrange: "#e8821a", // --danger-alert-orange
-  outline: "#869585", // --neutral-outline
-  outlineVariant: "#3d4a3d", // --neutral-outline-variant
-  onSurface: "#e5e2e1", // --neutral-on-surface
-  onSurfaceVariant: "#bccbb9", // --neutral-on-surface-variant
-  surfaceContainer: "#201f1f", // --surface-container
-  surfaceHigh: "#2a2a2a", // --surface-high
+  outline: "#849a89", // --chalk-faint
+  outlineVariant: "#2e4d3c", // --chalk-line
+  onSurface: "#eef2ea", // --chalk
+  onSurfaceVariant: "#b4c4b6", // --chalk-dim
+  surfaceContainer: "#1a3326", // --slate
+  surfaceHigh: "#22402f", // --slate-high
+
+  /*
+   * Series de los gráficos con más de una serie, en este orden fijo. El verde,
+   * la amarilla y la roja NO se usan como series: en el dashboard dicen
+   * «en orden», «requiere atención» y «crítico». Validadas con el script del
+   * skill dataviz sobre el césped (#0f2419): banda de luminosidad, croma,
+   * separación para daltonismo y contraste, todo OK. Una serie sola va en
+   * tiza (`onSurfaceVariant`), sin color.
+   */
+  series1: "#3987e5", // azul
+  series2: "#d55181", // magenta
+  series3: "#9085e9", // violeta
 } as const;
 
 /** Props comunes de `<XAxis>` / `<YAxis>` — evita repetir 4 atributos por eje. */

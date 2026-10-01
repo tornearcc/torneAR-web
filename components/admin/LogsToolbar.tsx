@@ -76,7 +76,7 @@ export function LogsToolbar({ filters }: { filters: LogFilters }) {
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <div className="relative">
+      <div className="relative w-full sm:w-64">
         <Search
           className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-neutral-outline"
           aria-hidden="true"
@@ -87,11 +87,11 @@ export function LogsToolbar({ filters }: { filters: LogFilters }) {
           onChange={(e) => setDraft(e.target.value)}
           placeholder="Buscar en el mensaje…"
           aria-label="Buscar en el mensaje del log"
-          className="w-64 rounded-md border border-neutral-outline-variant bg-surface-low py-1.5 pl-8 pr-8 text-sm text-neutral-on-surface outline-none placeholder:text-neutral-outline focus:border-brand-primary"
+          className="w-full rounded-md border border-chalk-line bg-pitch-deep py-2 pl-8 pr-8 text-[15px] text-neutral-on-surface outline-none placeholder:text-neutral-outline focus:border-chalk"
         />
         {isPending ? (
           <Loader2
-            className="absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 animate-spin text-brand-primary"
+            className="absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 animate-spin text-chalk-dim"
             aria-hidden="true"
           />
         ) : null}
@@ -156,7 +156,7 @@ export function LogsToolbar({ filters }: { filters: LogFilters }) {
         <select
           value={filters.size}
           onChange={(e) => setParams({ size: Number(e.target.value) })}
-          className="rounded-md border border-neutral-outline-variant bg-surface-low px-2 py-1.5 text-sm text-neutral-on-surface outline-none focus:border-brand-primary"
+          className="rounded-md border border-neutral-outline-variant bg-pitch-deep px-2 py-1.5 text-sm text-neutral-on-surface outline-none focus:border-chalk"
         >
           {PAGE_SIZES.map((size) => (
             <option key={size} value={size}>

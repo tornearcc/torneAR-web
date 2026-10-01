@@ -80,7 +80,7 @@ export function SocialSnapshotForm({
 
   if (accounts.length === 0) {
     return (
-      <p className="rounded-lg border border-neutral-outline-variant bg-surface-container p-5 text-sm text-neutral-on-surface-variant">
+      <p className="rounded-md border border-chalk-line bg-slate/50 p-5 text-sm text-neutral-on-surface-variant">
         No hay cuentas sociales configuradas. Se cargan por SQL en{" "}
         <span className="font-mono">social_accounts</span>.
       </p>
@@ -113,13 +113,13 @@ export function SocialSnapshotForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-4 rounded-lg border border-neutral-outline-variant bg-surface-container p-5"
+      className="flex flex-col gap-4 rounded-md border border-chalk-line bg-slate/50 p-5"
     >
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <label className="flex flex-col gap-1">
-          <span className="text-xs font-semibold text-neutral-on-surface-variant">Cuenta</span>
+          <span className="text-[13px] text-chalk-dim">Cuenta</span>
           <Select value={accountId} onValueChange={setAccountId}>
-            <SelectTrigger className="w-full bg-surface-low">
+            <SelectTrigger className="w-full bg-pitch-deep">
               <SelectValue placeholder="Elegí una cuenta" />
             </SelectTrigger>
             <SelectContent>
@@ -135,13 +135,13 @@ export function SocialSnapshotForm({
         </label>
 
         <label className="flex flex-col gap-1">
-          <span className="text-xs font-semibold text-neutral-on-surface-variant">Fecha</span>
+          <span className="text-[13px] text-chalk-dim">Fecha</span>
           <input
             type="date"
             value={capturedAt}
             max={todayUTC()}
             onChange={(e) => setCapturedAt(e.target.value)}
-            className="rounded-md border border-neutral-outline-variant bg-surface-low px-3 py-1.5 text-sm text-neutral-on-surface outline-none focus:border-brand-primary"
+            className="rounded-md border border-chalk-line bg-pitch-deep px-3 py-2 text-[15px] text-chalk outline-none [color-scheme:dark] focus:border-chalk"
           />
         </label>
       </div>
@@ -158,7 +158,7 @@ export function SocialSnapshotForm({
               placeholder="—"
               value={fields[field.key]}
               onChange={(e) => updateField(field.key, e.target.value)}
-              className="rounded-md border border-neutral-outline-variant bg-surface-low px-3 py-1.5 text-sm text-neutral-on-surface outline-none placeholder:text-neutral-outline focus:border-brand-primary"
+              className="rounded-md border border-chalk-line bg-pitch-deep px-3 py-2 text-[15px] text-chalk outline-none [color-scheme:dark] placeholder:text-neutral-outline focus:border-chalk"
             />
           </label>
         ))}

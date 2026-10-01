@@ -54,10 +54,10 @@ export function InstagramConnectionCard({ account }: { account: SocialAccountRow
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-neutral-outline-variant bg-surface-container p-5 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 rounded-md border border-chalk-line bg-slate/50 p-5 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
-          <p className="font-display text-sm uppercase tracking-wide text-neutral-on-surface">
+          <p className="text-base font-semibold text-chalk">
             Instagram
           </p>
           {isConnected ? (

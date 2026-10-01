@@ -11,24 +11,27 @@ export const metadata: Metadata = {
 // por ese mismo guard sin generar un loop.
 export default function UnauthorizedPage() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-surface-lowest px-6 text-center">
-      <h1 className="font-display text-2xl uppercase text-neutral-on-surface">
-        Acceso Denegado
+    <div
+      data-admin-shell
+      className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-pitch px-4 text-center"
+    >
+      <h1 className="text-[28px] font-semibold tracking-tight text-chalk">
+        Acceso denegado
       </h1>
-      <p className="max-w-sm text-neutral-on-surface-variant">
+      <p className="max-w-sm text-[15px] text-chalk-dim">
         Esta cuenta no tiene privilegios de administrador.
       </p>
       <div className="mt-2 flex gap-3">
         <Link
           href="/"
-          className="rounded-md border border-neutral-outline px-4 py-2 text-sm font-semibold text-neutral-on-surface transition hover:bg-surface-container"
+          className="rounded-md border border-chalk-line px-4 py-2 text-sm font-medium text-chalk transition-colors hover:bg-slate"
         >
           Volver al inicio
         </Link>
         <form action={signOut}>
           <button
             type="submit"
-            className="rounded-md bg-brand-primary px-4 py-2 text-sm font-semibold text-brand-inverse-primary transition hover:bg-brand-primary-container"
+            className="rounded-md bg-go px-4 py-2 text-sm font-medium text-on-card transition-colors hover:bg-go/90"
           >
             Cerrar sesión
           </button>

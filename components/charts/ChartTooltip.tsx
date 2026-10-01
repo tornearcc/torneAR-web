@@ -42,13 +42,13 @@ export function ChartTooltip({
 
   return (
     <div
-      className="rounded-lg border border-neutral-outline-variant bg-surface-high px-3 py-2 shadow-lg shadow-black/40"
+      className="rounded-md border border-chalk-line bg-slate-high px-3 py-2 shadow-lg shadow-black/40"
       // `pointer-events-none`: el tooltip sigue al cursor y, si captura
       // eventos, parpadea al pasar por encima de sí mismo.
       style={{ pointerEvents: "none" }}
     >
       {heading != null && (
-        <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-neutral-on-surface-variant">
+        <p className="mb-1.5 text-xs font-semibold text-neutral-on-surface-variant">
           {heading}
         </p>
       )}

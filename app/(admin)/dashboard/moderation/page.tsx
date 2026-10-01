@@ -166,9 +166,9 @@ export default async function ModerationPage({
         actions={
           <Link
             href="/dashboard/moderation/feedback"
-            className="rounded-md border border-neutral-outline px-3 py-2 text-sm font-semibold text-neutral-on-surface transition hover:bg-surface-container"
+            className="rounded-md border border-chalk-line px-3 py-2 text-sm font-medium text-chalk transition-colors hover:bg-slate focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chalk"
           >
-            Ver feedback →
+            Ver feedback de la app
           </Link>
         }
       />
@@ -181,7 +181,7 @@ export default async function ModerationPage({
       />
 
       {error ? (
-        <p className="rounded-lg border border-danger-error bg-danger-error-container p-4 text-sm text-danger-on-error-container">
+        <p className="rounded-md border border-card-red/40 bg-card-red/10 p-4 text-[15px] text-chalk">
           No se pudieron cargar las denuncias: {error.message}
         </p>
       ) : (

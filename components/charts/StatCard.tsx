@@ -5,21 +5,25 @@ import { cn } from "@/lib/utils";
 export type StatTone = "neutral" | "positive" | "warning" | "danger";
 
 const TONE_VALUE_CLASS: Record<StatTone, string> = {
-  neutral: "text-neutral-on-surface",
-  positive: "text-brand-primary",
-  warning: "text-warning-tertiary",
-  danger: "text-danger-error",
+  neutral: "text-chalk",
+  positive: "text-go",
+  warning: "text-card-yellow",
+  danger: "text-card-red",
 };
 
-const TONE_BORDER_CLASS: Record<StatTone, string> = {
-  neutral: "border-neutral-outline-variant",
-  positive: "border-neutral-outline-variant",
-  warning: "border-warning-tertiary/40",
-  danger: "border-danger-error/40",
-};
+const SIZE_CLASS = {
+  // Escala del tanteador: el protagonista de la página va en `hero`.
+  md: "text-[40px]",
+  hero: "text-[56px] md:text-[72px]",
+} as const;
 
 /**
- * Tarjeta de KPI.
+ * Número del tanteador con su etiqueta: sin caja, sobre el césped.
+ *
+ * Reemplaza a la tarjeta de KPI de antes (misma API, así las páginas no
+ * cambian de contrato). Una página de análisis tiene **un** número
+ * protagonista (`size="hero"`) y el resto chico; ya no hay grillas de
+ * tarjetas iguales.
  *
  * Acepta `value` como number o string ya formateado: hay métricas que no son
  * conteos (la tasa de check-in es un porcentaje con un decimal, y puede ser
@@ -34,60 +38,61 @@ export function StatCard({
   label,
   value,
   hint,
-  icon: Icon,
   tone = "neutral",
+  size = "md",
   delta,
   deltaInverted = false,
+  className,
 }: {
   label: string;
   value: number | string | null;
   /** Bajada corta: la unidad, la ventana temporal o el "de N totales". */
   hint?: string;
+  /** Ya no se dibuja: el número y la etiqueta alcanzan. Se acepta por compatibilidad. */
   icon?: LucideIcon;
   tone?: StatTone;
+  size?: keyof typeof SIZE_CLASS;
   /** Comparación contra el período previo. Sólo aplica si `value` es number. */
   delta?: { previous: number };
   /**
-   * true cuando subir es malo (errores, disputas): invierte los colores sin
-   * invertir la flecha, que sigue indicando la dirección real del cambio.
+   * true cuando subir es malo (errores, disputas): una suba se pinta en rojo.
+   * La flecha sigue indicando la dirección real del cambio.
    */
   deltaInverted?: boolean;
+  className?: string;
 }) {
   const numericValue = typeof value === "number" ? value : null;
   const comparison =
     delta && numericValue !== null ? describeDelta(numericValue, delta.previous) : null;
 
   return (
-    <div
-      className={cn(
-        "flex flex-col rounded-lg border bg-surface-container p-5",
-        TONE_BORDER_CLASS[tone],
-      )}
-    >
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-sm text-neutral-on-surface-variant">{label}</p>
-        {Icon ? (
-          <Icon className="size-4 shrink-0 text-neutral-outline" aria-hidden="true" />
-        ) : null}
-      </div>
-
-      <p className={cn("font-display mt-1 text-4xl tabular-nums", TONE_VALUE_CLASS[tone])}>
+    <div className={cn("flex min-w-0 flex-col", className)}>
+      <p
+        className={cn(
+          "font-display font-bold leading-[0.9] tabular-nums",
+          SIZE_CLASS[size],
+          TONE_VALUE_CLASS[tone],
+        )}
+      >
         {value === null ? "—" : typeof value === "number" ? value.toLocaleString("es-AR") : value}
       </p>
 
-      <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+      <p className="mt-2 text-base text-chalk">{label}</p>
+
+      <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm">
         {comparison ? (
           <span
             className={cn(
-              "flex items-center gap-0.5 text-xs font-semibold",
-              deltaColor(comparison.direction, deltaInverted),
+              "flex items-center gap-0.5",
+              // Sólo una suba de algo malo pide atención; el resto se lee en tiza.
+              deltaInverted && comparison.direction === "up" ? "text-card-red" : "text-chalk-dim",
             )}
           >
-            <comparison.Icon className="size-3" aria-hidden="true" />
+            <comparison.Icon className="size-3.5" aria-hidden="true" />
             {comparison.text}
           </span>
         ) : null}
-        {hint ? <span className="text-xs text-neutral-outline">{hint}</span> : null}
+        {hint ? <span className="text-chalk-faint">{hint}</span> : null}
       </div>
     </div>
   );
@@ -117,12 +122,6 @@ function describeDelta(current: number, previous: number) {
   return {
     direction,
     Icon,
-    text: `${sign}${pct.toFixed(pct % 1 === 0 ? 0 : 1)}% vs. previo`,
+    text: `${sign}${pct.toLocaleString("es-AR", { maximumFractionDigits: 1 })} % vs. previo`,
   };
-}
-
-function deltaColor(direction: Direction, inverted: boolean): string {
-  if (direction === "flat") return "text-neutral-outline";
-  const isGood = inverted ? direction === "down" : direction === "up";
-  return isGood ? "text-brand-primary" : "text-danger-error";
 }

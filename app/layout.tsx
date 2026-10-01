@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Barlow_Condensed, Epilogue } from "next/font/google";
+import { Archivo, Inter, Barlow_Condensed, Epilogue } from "next/font/google";
 import { OG_IMAGE, SITE_DESCRIPTION, SITE_URL } from "@/lib/site-metadata";
 import "./globals.css";
 
@@ -9,6 +9,16 @@ const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
   weight: ["500", "700", "900"],
+});
+
+// Letra de interfaz del dashboard (rediseño «la planilla del partido»). Sólo
+// la usa la zona admin, vía `--font-ui` en globals.css: sin preload, así la
+// landing no la descarga. El navegador la baja recién cuando un texto la pide.
+const archivo = Archivo({
+  variable: "--font-archivo",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  preload: false,
 });
 
 const barlowCondensed = Barlow_Condensed({
@@ -61,7 +71,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="es"
-      className={`${inter.variable} ${barlowCondensed.variable} ${epilogue.variable} h-full antialiased`}
+      className={`${inter.variable} ${archivo.variable} ${barlowCondensed.variable} ${epilogue.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-surface-base text-foreground font-sans">
         {children}

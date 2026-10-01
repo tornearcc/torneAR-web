@@ -40,12 +40,12 @@ export function SegmentedFilter({
   return (
     <div
       className={cn(
-        "flex items-center gap-1 rounded-lg border border-neutral-outline-variant bg-surface-container p-1",
+        "flex w-fit max-w-full items-center gap-1 overflow-x-auto rounded-md border border-chalk-line p-1",
         isPending && "opacity-70",
       )}
     >
       {isPending ? (
-        <Loader2 className="ml-1.5 size-3.5 animate-spin text-brand-primary" aria-hidden="true" />
+        <Loader2 className="ml-1.5 size-3.5 shrink-0 animate-spin text-chalk-dim" aria-hidden="true" />
       ) : null}
 
       {options.map((option) => {
@@ -59,18 +59,18 @@ export function SegmentedFilter({
               setParams({ [param]: option.value === defaultValue ? null : option.value })
             }
             className={cn(
-              "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+              "flex shrink-0 items-center gap-1.5 rounded-[4px] px-3 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chalk",
               isActive
-                ? "bg-surface-high text-brand-primary"
-                : "text-neutral-on-surface-variant hover:bg-surface-high hover:text-neutral-on-surface",
+                ? "bg-slate-high font-medium text-chalk"
+                : "text-chalk-dim hover:bg-slate hover:text-chalk",
             )}
           >
             {option.label}
             {option.count !== undefined ? (
               <span
                 className={cn(
-                  "rounded-full px-1.5 text-[10px] tabular-nums",
-                  isActive ? "bg-brand-primary/20" : "bg-surface-variant",
+                  "text-xs tabular-nums",
+                  isActive ? "text-chalk-dim" : "text-chalk-faint",
                 )}
               >
                 {option.count}

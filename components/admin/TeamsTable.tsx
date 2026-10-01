@@ -9,7 +9,12 @@ import { TeamZoneDialog } from "@/components/admin/TeamZoneDialog";
 import { cn } from "@/lib/utils";
 import type { AdminTeamRow } from "@/lib/teams-data";
 
-const DATE_FORMATTER = new Intl.DateTimeFormat("es-AR", { day: "2-digit", month: "short" });
+// Zona fija: servidor y navegador tienen que formatear igual (hidratación).
+const DATE_FORMATTER = new Intl.DateTimeFormat("es-AR", {
+  day: "2-digit",
+  month: "short",
+  timeZone: "America/Argentina/Buenos_Aires",
+});
 
 const CATEGORY_LABEL: Record<string, string> = {
   HOMBRES: "Hombres",
@@ -33,16 +38,16 @@ export function TeamsTable({ teams, zones }: { teams: AdminTeamRow[]; zones: str
 
   return (
     <>
-      <div className="overflow-x-auto rounded-lg border border-neutral-outline-variant">
-        <table className="w-full min-w-[820px] border-collapse text-left text-sm">
+      <div className="overflow-x-auto">
+        <table className="ledger-stack w-full border-collapse text-left text-[15px] md:min-w-[820px]">
           <thead>
-            <tr className="border-b border-neutral-outline-variant bg-surface-container text-neutral-on-surface-variant">
-              <th className="px-4 py-3 font-medium">Equipo</th>
-              <th className="px-4 py-3 font-medium">Zona</th>
-              <th className="px-4 py-3 font-medium">Categoría</th>
-              <th className="px-4 py-3 font-medium">Miembros</th>
-              <th className="px-4 py-3 font-medium">Mudanzas esta temporada</th>
-              <th className="px-4 py-3" />
+            <tr className="border-b border-chalk-line text-[13px] text-chalk-faint">
+              <th className="px-3 py-2 font-normal">Equipo</th>
+              <th className="px-3 py-2 font-normal">Zona</th>
+              <th className="px-3 py-2 font-normal">Categoría</th>
+              <th className="px-3 py-2 font-normal">Miembros</th>
+              <th className="px-3 py-2 font-normal">Mudanzas esta temporada</th>
+              <th className="px-3 py-2"><span className="sr-only">Acciones</span></th>
             </tr>
           </thead>
           <tbody>
@@ -50,34 +55,36 @@ export function TeamsTable({ teams, zones }: { teams: AdminTeamRow[]; zones: str
               <tr
                 key={team.id}
                 className={cn(
-                  "border-b border-neutral-outline-variant last:border-0",
+                  "border-b border-chalk-line",
                   !team.isActive && "opacity-60",
                 )}
               >
-                <td className="px-4 py-3">
-                  <span className="font-medium text-neutral-on-surface">{team.name}</span>
-                  {!team.isActive ? (
-                    <span className="ml-2 text-xs text-neutral-outline">(dado de baja)</span>
-                  ) : null}
+                <td data-label="Equipo" className="px-3 py-3">
+                  <div>
+                    <span className="font-medium text-chalk">{team.name}</span>
+                    {!team.isActive ? (
+                      <span className="ml-2 text-sm text-chalk-faint">(dado de baja)</span>
+                    ) : null}
+                  </div>
                 </td>
-                <td className="px-4 py-3 text-neutral-on-surface-variant">
+                <td data-label="Zona" className="px-3 py-3 text-chalk-dim">
                   <span className="inline-flex items-center gap-1.5">
                     {team.zone}
                     {team.zoneLocked ? (
                       <Lock
-                        className="size-3 text-warning-tertiary"
+                        className="size-3 text-chalk-faint"
                         aria-label="Ya usó su cambio de zona de la temporada"
                       />
                     ) : null}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-neutral-on-surface-variant">
+                <td data-label="Categoría" className="px-3 py-3 text-chalk-dim">
                   {CATEGORY_LABEL[team.category] ?? team.category}
                 </td>
-                <td className="px-4 py-3 tabular-nums text-neutral-on-surface-variant">
+                <td data-label="Miembros" className="px-3 py-3 tabular-nums text-chalk-dim">
                   {team.membersCount}
                 </td>
-                <td className="px-4 py-3 text-xs text-neutral-on-surface-variant">
+                <td data-label="Mudanzas" className="px-3 py-3 text-sm text-chalk-dim">
                   {team.seasonChanges.length === 0 ? (
                     "—"
                   ) : (
@@ -87,14 +94,14 @@ export function TeamsTable({ teams, zones }: { teams: AdminTeamRow[]; zones: str
                           {DATE_FORMATTER.format(new Date(change.createdAt))}: {change.fromZone} →{" "}
                           {change.toZone}
                           {change.isAdminOverride ? (
-                            <span className="ml-1 font-semibold text-brand-primary">(admin)</span>
+                            <span className="ml-1 font-medium text-chalk">(admin)</span>
                           ) : null}
                         </li>
                       ))}
                     </ul>
                   )}
                 </td>
-                <td className="px-4 py-3 text-right">
+                <td className="px-3 py-3 md:text-right">
                   <Button variant="outline" size="sm" onClick={() => setZoneTeam(team)}>
                     <MapPin className="size-3.5" aria-hidden="true" />
                     Cambiar zona

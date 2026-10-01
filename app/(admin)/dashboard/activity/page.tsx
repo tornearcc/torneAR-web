@@ -1,5 +1,4 @@
 import { requireAdminAuth } from "@/lib/admin-guard";
-import { CalendarCheck, Store, Swords } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -17,6 +16,7 @@ import { MarketChart } from "@/components/charts/MarketChart";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { DateRangeFilter } from "@/components/ui/DateRangeFilter";
+import { StatBoard } from "@/components/ui/Scoreboard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default async function ActivityPage({
@@ -62,32 +62,37 @@ export default async function ActivityPage({
         actions={<DateRangeFilter range={range} />}
       />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard
-          label="Partidos finalizados"
-          value={sumBy(activityResult.data, (d) => d.matches_finished)}
-          hint={`en ${range.days} días`}
-          icon={Swords}
-        />
+      <StatBoard
+        hero={
+          <StatCard
+            size="hero"
+            label="Partidos jugados"
+            value={sumBy(activityResult.data, (d) => d.matches_finished)}
+            hint={`finalizados en ${range.days} días`}
+          />
+        }
+      >
         <StatCard
           label="Convocados"
           value={participants}
           hint={`${checkins.toLocaleString("es-AR")} hicieron check-in`}
-          icon={CalendarCheck}
         />
         <StatCard
           label="Tasa de check-in"
-          value={checkinRate === null ? null : `${checkinRate.toFixed(1)}%`}
+          value={
+            checkinRate === null
+              ? null
+              : `${checkinRate.toLocaleString("es-AR", { maximumFractionDigits: 1 })} %`
+          }
           hint="sobre convocados del período"
           tone={checkinRate !== null && checkinRate < 50 ? "warning" : "neutral"}
         />
         <StatCard
-          label="Mercado"
+          label="Postulaciones"
           value={applications}
-          hint={`postulaciones sobre ${marketPosts} avisos`}
-          icon={Store}
+          hint={`en el mercado, sobre ${marketPosts} avisos`}
         />
-      </div>
+      </StatBoard>
 
       {/*
         La pestaña activa viaja en la URL (`?tab=`) y no en estado local: así
@@ -96,7 +101,7 @@ export default async function ActivityPage({
         compartible entero.
       */}
       <Tabs defaultValue={resolveTab(params.tab)} className="gap-4">
-        <TabsList>
+        <TabsList variant="line" className="max-w-full overflow-x-auto">
           <TabsTrigger value="matches">Partidos</TabsTrigger>
           <TabsTrigger value="checkins">Check-ins</TabsTrigger>
           <TabsTrigger value="market">Mercado</TabsTrigger>
@@ -104,7 +109,7 @@ export default async function ActivityPage({
 
         <TabsContent value="matches" className="flex flex-col gap-6">
           <section>
-            <h2 className="font-display mb-3 text-lg uppercase text-neutral-on-surface">
+            <h2 className="chalk-rule mb-4">
               Ciclo de vida por día
             </h2>
             {activityResult.error ? (
@@ -115,10 +120,10 @@ export default async function ActivityPage({
           </section>
 
           <section>
-            <h2 className="font-display mb-1 text-lg uppercase text-neutral-on-surface">
+            <h2 className="chalk-rule mb-2">
               Distribución por estado
             </h2>
-            <p className="mb-3 text-sm text-neutral-on-surface-variant">
+            <p className="mb-4 max-w-[65ch] text-[15px] text-chalk-dim">
               Histórico completo — no depende del filtro de fechas.
             </p>
             {byStatus.error ? (
@@ -130,7 +135,7 @@ export default async function ActivityPage({
         </TabsContent>
 
         <TabsContent value="checkins" className="flex flex-col gap-3">
-          <p className="max-w-3xl text-sm text-neutral-on-surface-variant">
+          <p className="max-w-[65ch] text-[15px] text-chalk-dim">
             Convocados por día de partido, partidos cancelados excluidos. Las filas se
             imputan a la fecha del partido y no a la de la convocatoria: la tasa de
             presentismo es una propiedad del partido jugado.
@@ -143,7 +148,7 @@ export default async function ActivityPage({
         </TabsContent>
 
         <TabsContent value="market" className="flex flex-col gap-3">
-          <p className="max-w-3xl text-sm text-neutral-on-surface-variant">
+          <p className="max-w-[65ch] text-[15px] text-chalk-dim">
             Avisos publicados y postulaciones recibidas. Las postulaciones suman los dos
             lados del mercado — jugador que se ofrece a un equipo y equipo que busca
             jugador.
@@ -170,7 +175,7 @@ function resolveTab(value: string | string[] | undefined): (typeof TABS)[number]
 
 function ErrorBox({ context, message }: { context: string; message: string }) {
   return (
-    <p className="rounded-lg border border-danger-error bg-danger-error-container p-4 text-sm text-danger-on-error-container">
+    <p className="rounded-md border border-card-red/40 bg-card-red/10 p-4 text-[15px] text-chalk">
       No se pudo cargar {context}: {message}
     </p>
   );

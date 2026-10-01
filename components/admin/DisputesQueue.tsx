@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { CalendarDays, CheckCheck, Scale } from "lucide-react";
+import { CheckCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { adminResolveDisputeAction } from "@/lib/admin-queues-actions";
 import { formatScoreline } from "@/lib/dispute-scores";
+import { cn } from "@/lib/utils";
 import type {
   DisputeResolution,
   DisputedMatch,
@@ -27,48 +28,85 @@ const FORMAT_SHORT: Record<string, string> = {
 function formatDate(iso: string | null): string {
   if (!iso) return "Sin fecha";
   return new Date(iso).toLocaleDateString("es-AR", {
-    day: "2-digit",
+    day: "numeric",
     month: "short",
-    year: "numeric",
+    timeZone: "America/Argentina/Buenos_Aires",
   });
 }
 
 function formatFps(value: number): string {
-  return Number.isInteger(value) ? String(value) : value.toFixed(1);
+  return value.toLocaleString("es-AR", { maximumFractionDigits: 1 });
 }
 
 /**
- * Columna de un equipo: el marcador COMPLETO que propuso, votos y Fair Play.
+ * Columnas de la planilla en la compu. Cada partido ocupa dos renglones, uno
+ * por equipo, y el botón «Gana …» queda en el renglón de ese equipo: la
+ * decisión se toma mirando el marcador que ese mismo equipo cargó.
+ */
+const LEDGER_COLUMNS =
+  "md:grid-cols-[7rem_minmax(0,1fr)_9.5rem_3.5rem_4.5rem_minmax(9rem,13rem)]";
+
+/**
+ * Renglón de un equipo: el marcador COMPLETO que propuso, votos y Fair Play.
  *
  * Pintar `goals` a secas —los goles que ese equipo se adjudica— era el bug de
  * la versión vieja de la pantalla móvil: dos de esas cifras, una al lado de la
  * otra, se leen como un marcador y no lo son, porque salen de dos planillas
  * distintas. "A: 2  B: 3" no dice si el desacuerdo es de un gol o de cinco.
- * Cada columna muestra el partido entero tal como lo cargó su equipo, siempre
+ * Cada renglón muestra el partido entero tal como lo cargó su equipo, siempre
  * en orden A–B (ver lib/dispute-scores), que es exactamente lo que ve el
  * jugador al votar.
+ *
+ * En la compu es un subgrid de la planilla; en el celular, un bloque con el
+ * nombre y el marcador arriba, los números chicos abajo y el botón a lo ancho.
  */
-function TeamColumn({
+function TeamRow({
   side,
-  align,
+  winLabel,
+  onWin,
+  disabled,
 }: {
   side: DisputedMatchSide;
-  align: "left" | "right";
+  winLabel: string;
+  onWin: () => void;
+  disabled: boolean;
 }) {
   return (
-    <div className={`flex min-w-0 flex-1 flex-col ${align === "right" ? "items-end" : ""}`}>
-      <p className="w-full truncate text-sm font-semibold text-neutral-on-surface">
-        {side.teamName}
+    <div
+      className={cn(
+        "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 py-2",
+        "md:col-span-5 md:grid-cols-subgrid md:gap-y-0",
+      )}
+    >
+      <p className="truncate text-[17px] font-medium text-chalk md:text-base">{side.teamName}</p>
+
+      <p className="text-right md:text-left">
+        {side.scoreline === null ? (
+          <span className="text-sm text-chalk-faint">No cargó</span>
+        ) : (
+          <span className="font-display text-[30px] font-bold leading-none tabular-nums text-chalk">
+            {formatScoreline(side.scoreline)}
+          </span>
+        )}
       </p>
-      <p className="font-display mt-1 text-3xl leading-none text-neutral-on-surface tabular-nums">
-        {formatScoreline(side.scoreline)}
+
+      <p className="col-span-2 text-sm text-chalk-dim md:col-span-1 md:text-[15px] md:tabular-nums">
+        <span className="md:hidden">
+          {side.votes} voto{side.votes === 1 ? "" : "s"}, Fair Play {formatFps(side.fairPlayScore)}
+        </span>
+        <span className="hidden md:inline">{side.votes}</span>
       </p>
-      <p className="mt-1 text-[10px] uppercase tracking-wider text-neutral-outline">
-        {side.scoreline === null ? "no cargó" : "cargó"}
+      <p className="hidden text-[15px] tabular-nums text-chalk-dim md:block">
+        {formatFps(side.fairPlayScore)}
       </p>
-      <p className="mt-1 text-[11px] text-neutral-on-surface-variant">
-        {side.votes} voto{side.votes === 1 ? "" : "s"} · FP {formatFps(side.fairPlayScore)}
-      </p>
+
+      <Button
+        className="col-span-2 mt-2 h-10 min-w-0 md:col-span-1 md:mt-0 md:h-9"
+        onClick={onWin}
+        disabled={disabled}
+      >
+        <span className="truncate">{winLabel}</span>
+      </Button>
     </div>
   );
 }
@@ -142,76 +180,84 @@ export function DisputesQueue({ matches }: { matches: DisputedMatch[] }) {
 
   return (
     <>
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        {sorted.map((match) => (
-          <article
-            key={match.matchId}
-            className="flex flex-col rounded-lg border border-neutral-outline-variant bg-surface-container p-5"
+      <div className="flex flex-col gap-3">
+        <p className="text-sm text-chalk-faint">
+          Los dos marcadores de cada partido están en el mismo orden: local – visitante.
+        </p>
+
+        <div className={cn("md:grid", LEDGER_COLUMNS)}>
+          {/* Encabezado de la planilla: sólo en la compu. Oculto para lectores
+              de pantalla, que leen cada partido como un bloque con nombre. */}
+          <div
+            aria-hidden="true"
+            className="hidden gap-x-4 border-b border-chalk-line pb-2 text-[13px] text-chalk-faint md:col-span-6 md:grid md:grid-cols-subgrid"
           >
-            <div className="flex items-center justify-between gap-3">
-              <span
-                className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${
-                  match.matchType === "RANKING"
-                    ? "bg-warning-tertiary/20 text-warning-tertiary"
-                    : "bg-info-secondary/15 text-info-secondary"
-                }`}
-              >
-                {match.matchType === "RANKING" ? "Ranking" : "Amistoso"}
-                {match.format ? ` · ${FORMAT_SHORT[match.format] ?? match.format}` : ""}
-              </span>
-              <span className="flex items-center gap-1.5 text-[11px] text-neutral-on-surface-variant">
-                <CalendarDays className="size-3.5" aria-hidden="true" />
-                {formatDate(match.scheduledAt)}
-              </span>
-            </div>
+            <span>Partido</span>
+            <span>Equipo</span>
+            <span>Marcador que cargó</span>
+            <span>Votos</span>
+            <span>Fair Play</span>
+            <span />
+          </div>
 
-            {/* La leyenda fija el eje: las dos cifras de cada columna son
-                "local – visitante", no "míos – suyos". */}
-            <p className="mb-2 mt-4 text-[10px] uppercase tracking-widest text-neutral-outline">
-              Marcadores cargados ({match.teamA.teamName} – {match.teamB.teamName})
-            </p>
-            <div className="flex items-start gap-3">
-              <TeamColumn side={match.teamA} align="left" />
-              <span className="mt-7 text-xs text-neutral-outline">vs</span>
-              <TeamColumn side={match.teamB} align="right" />
-            </div>
-
-            {match.isDeadlocked ? (
-              <p className="mt-4 flex items-start gap-2 rounded-lg bg-warning-tertiary/10 px-3 py-2.5 text-[11px] leading-relaxed text-warning-tertiary">
-                <Scale className="mt-px size-4 shrink-0" aria-hidden="true" />
-                Empate total: mismos votos y mismo Fair Play. La resolución automática no
-                puede desempatar — este partido sólo se cierra desde acá.
-              </p>
-            ) : null}
-
-            <div className="mt-auto flex flex-col gap-2 pt-5">
-              <div className="flex gap-2">
-                <Button
-                  className="min-w-0 flex-1"
-                  onClick={() => setDialog({ match, resolution: "WIN_A" })}
+          {sorted.map((match) => (
+            <article
+              key={match.matchId}
+              aria-label={`${match.teamA.teamName} contra ${match.teamB.teamName}`}
+              className={cn(
+                "relative flex flex-col border-b border-chalk-line py-4 md:col-span-6 md:grid md:grid-cols-subgrid md:gap-x-4 md:py-3",
+                // Empate total: una tarjeta amarilla asomando a la izquierda
+                // del renglón.
+                match.isDeadlocked &&
+                  "before:absolute before:-left-3 before:inset-y-4 before:w-[3px] before:rounded-full before:bg-card-yellow md:before:-left-4",
+              )}
+            >
+              <div className="flex items-baseline justify-between gap-3 pb-1 md:row-span-2 md:flex-col md:items-start md:justify-start md:gap-0.5 md:py-2">
+                <p className="text-[15px] text-chalk">{formatDate(match.scheduledAt)}</p>
+                <p className="text-sm text-chalk-faint">
+                  {match.matchType === "RANKING" ? "Ranking" : "Amistoso"}
+                  {match.format ? `, ${FORMAT_SHORT[match.format] ?? match.format}` : ""}
+                </p>
+                <AnnulButton
+                  className="mt-auto hidden md:inline-flex"
+                  onClick={() => setDialog({ match, resolution: "CANCEL" })}
                   disabled={isPending}
-                >
-                  <span className="truncate">Gana {match.teamA.teamName}</span>
-                </Button>
-                <Button
-                  className="min-w-0 flex-1"
-                  onClick={() => setDialog({ match, resolution: "WIN_B" })}
-                  disabled={isPending}
-                >
-                  <span className="truncate">Gana {match.teamB.teamName}</span>
-                </Button>
+                />
               </div>
-              <Button
-                variant="outline"
-                className="border-danger-error/30 bg-danger-error/10 text-danger-error hover:bg-danger-error/20 hover:text-danger-error"
+
+              <TeamRow
+                side={match.teamA}
+                winLabel={`Gana ${match.teamA.teamName}`}
+                onWin={() => setDialog({ match, resolution: "WIN_A" })}
+                disabled={isPending}
+              />
+              <div aria-hidden="true" className="my-1 h-px bg-chalk-line/60 md:hidden" />
+              <TeamRow
+                side={match.teamB}
+                winLabel={`Gana ${match.teamB.teamName}`}
+                onWin={() => setDialog({ match, resolution: "WIN_B" })}
+                disabled={isPending}
+              />
+
+              {match.isDeadlocked ? (
+                <p className="mt-3 flex items-start gap-2.5 text-sm leading-snug text-chalk md:col-span-5 md:col-start-2 md:mt-1">
+                  <span
+                    aria-hidden="true"
+                    className="mt-0.5 h-4 w-3 shrink-0 -rotate-6 rounded-[2px] bg-card-yellow"
+                  />
+                  Empate total: mismos votos y mismo Fair Play. La resolución automática no puede
+                  desempatar, así que este partido sólo se cierra desde acá.
+                </p>
+              ) : null}
+
+              <AnnulButton
+                className="mt-3 self-start md:hidden"
                 onClick={() => setDialog({ match, resolution: "CANCEL" })}
                 disabled={isPending}
-              >
-                Anular el partido
-              </Button>
-            </div>
-          </article>
-        ))}
+              />
+            </article>
+          ))}
+        </div>
       </div>
 
       <ConfirmDialog
@@ -257,5 +303,31 @@ export function DisputesQueue({ matches }: { matches: DisputedMatch[] }) {
         onConfirm={handleConfirm}
       />
     </>
+  );
+}
+
+/** Anular es la salida de excepción: texto rojo, sin el peso de un botón lleno. */
+function AnnulButton({
+  className,
+  onClick,
+  disabled,
+}: {
+  className?: string;
+  onClick: () => void;
+  disabled: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        "items-center rounded-sm py-1 text-sm font-medium text-card-red underline-offset-4 hover:underline",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chalk disabled:opacity-50",
+        className,
+      )}
+    >
+      Anular partido
+    </button>
   );
 }

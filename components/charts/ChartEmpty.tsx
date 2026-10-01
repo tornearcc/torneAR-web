@@ -18,7 +18,7 @@ export function ChartEmpty({
   return (
     <div
       className={cn(
-        "flex h-64 items-center justify-center rounded-lg border border-dashed border-neutral-outline-variant bg-surface-container text-sm text-neutral-on-surface-variant",
+        "flex h-64 items-center justify-center border-y border-dashed border-chalk-line text-sm text-chalk-faint",
         className,
       )}
     >

@@ -2,14 +2,14 @@ import {
   ChartSkeleton,
   PageHeaderSkeleton,
   Skeleton,
-  StatCardsSkeleton,
+  StatBoardSkeleton,
 } from "@/components/ui/Skeleton";
 
 export default function SocialLoading() {
   return (
     <div className="flex flex-col gap-8">
       <PageHeaderSkeleton />
-      <StatCardsSkeleton count={3} />
+      <StatBoardSkeleton count={2} />
 
       <div className="flex flex-col gap-3">
         <Skeleton className="h-6 w-40" />

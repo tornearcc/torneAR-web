@@ -49,7 +49,7 @@ export function CheckinChart({ data }: { data: CheckinPointRow[] }) {
   }));
 
   return (
-    <div className="h-72 rounded-lg border border-neutral-outline-variant bg-surface-container p-4">
+    <div className="h-72">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={rows} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
           <CartesianGrid {...GRID_PROPS} vertical={false} />
@@ -68,7 +68,7 @@ export function CheckinChart({ data }: { data: CheckinPointRow[] }) {
             formatter={(value) => SERIES_NAME[value] ?? value}
             wrapperStyle={{ fontSize: 12, color: CHART_COLORS.onSurfaceVariant }}
           />
-          <Bar dataKey="checkins" stackId="ck" fill={CHART_COLORS.brandPrimary} />
+          <Bar dataKey="checkins" stackId="ck" fill={CHART_COLORS.onSurfaceVariant} />
           <Bar
             dataKey="no_show"
             stackId="ck"

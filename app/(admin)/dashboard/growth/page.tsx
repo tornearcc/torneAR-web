@@ -1,5 +1,4 @@
 import { requireAdminAuth } from "@/lib/admin-guard";
-import { UserPlus, Users } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -18,6 +17,7 @@ import { LinkClicksTable } from "@/components/admin/LinkClicksTable";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { DateRangeFilter } from "@/components/ui/DateRangeFilter";
+import { StatBoard } from "@/components/ui/Scoreboard";
 
 export default async function GrowthPage({
   searchParams,
@@ -58,19 +58,20 @@ export default async function GrowthPage({
       {summaryResult.error ? (
         <ErrorBox context="el resumen de crecimiento" message={summaryResult.error.message} />
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatBoard
+          hero={
+            <StatCard
+              size="hero"
+              label="Altas en el período"
+              value={signupsInRange}
+              hint={`usuarios nuevos en ${range.days} días`}
+            />
+          }
+        >
           <StatCard
-            label="Altas en el período"
-            value={signupsInRange}
-            hint={`${range.days} días`}
-            icon={UserPlus}
-            tone="positive"
-          />
-          <StatCard
-            label="Equipos en el período"
+            label="Equipos nuevos"
             value={teamsInRange}
-            hint={`${range.days} días`}
-            icon={Users}
+            hint={`en ${range.days} días`}
           />
           <StatCard
             label="Usuarios totales"
@@ -82,11 +83,11 @@ export default async function GrowthPage({
             value={summary?.teams_count ?? 0}
             hint="histórico"
           />
-        </div>
+        </StatBoard>
       )}
 
       <section>
-        <h2 className="font-display mb-3 text-lg uppercase text-neutral-on-surface">
+        <h2 className="chalk-rule mb-4">
           Altas por día
         </h2>
         {seriesResult.error ? (
@@ -97,10 +98,10 @@ export default async function GrowthPage({
       </section>
 
       <section>
-        <h2 className="font-display mb-1 text-lg uppercase text-neutral-on-surface">
+        <h2 className="chalk-rule mb-2">
           Activación por cohorte
         </h2>
-        <p className="mb-3 max-w-3xl text-sm text-neutral-on-surface-variant">
+        <p className="mb-4 max-w-[65ch] text-[15px] text-chalk-dim">
           De cada grupo que se dio de alta en la misma semana, cuántos llegaron a{" "}
           <strong className="text-neutral-on-surface">jugar un partido</strong> dentro de
           los 7 y los 28 días siguientes. Es activación acumulada, no retención semanal
@@ -115,12 +116,12 @@ export default async function GrowthPage({
       </section>
 
       <section>
-        <h2 className="font-display mb-1 text-lg uppercase text-neutral-on-surface">
+        <h2 className="chalk-rule mb-2">
           De dónde vienen
         </h2>
-        <p className="mb-3 max-w-3xl text-sm text-neutral-on-surface-variant">
+        <p className="mb-4 max-w-[65ch] text-[15px] text-chalk-dim">
           Altas del período por canal de campaña (parámetros UTM capturados en{" "}
-          <span className="font-mono text-neutral-on-surface-variant">/i/&lt;username&gt;</span>
+          <span className="text-chalk">/i/&lt;username&gt;</span>
           ). &quot;Orgánico&quot; es todo alta sin campaña asociada — no una ausencia de dato,
           sino nadie la trajo desde un link etiquetado.
         </p>
@@ -132,10 +133,10 @@ export default async function GrowthPage({
       </section>
 
       <section>
-        <h2 className="font-display mb-1 text-lg uppercase text-neutral-on-surface">
+        <h2 className="chalk-rule mb-2">
           Links de descarga
         </h2>
-        <p className="mb-3 max-w-3xl text-sm text-neutral-on-surface-variant">
+        <p className="mb-4 max-w-[65ch] text-[15px] text-chalk-dim">
           Clicks del período en cada link de la campaña. Cada uno lleva a la App Store con su
           canal marcado, así que las <strong className="text-neutral-on-surface">descargas y
           primeras aperturas</strong> por canal se ven en App Store Connect → Analytics → Campañas
@@ -155,7 +156,7 @@ export default async function GrowthPage({
 
 function ErrorBox({ context, message }: { context: string; message: string }) {
   return (
-    <p className="rounded-lg border border-danger-error bg-danger-error-container p-4 text-sm text-danger-on-error-container">
+    <p className="rounded-md border border-card-red/40 bg-card-red/10 p-4 text-[15px] text-chalk">
       No se pudo cargar {context}: {message}
     </p>
   );

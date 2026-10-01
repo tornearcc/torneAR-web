@@ -92,6 +92,80 @@
   --input: var(--neutral-outline-variant);
   --ring: var(--brand-primary);
   --radius: 0.5rem;
+
+  /* Tipografía de interfaz. El dashboard la cambia a Archivo (ver abajo). */
+  --font-ui: var(--font-inter);
+
+  /*
+   * Paleta «la planilla del partido» (rediseño del dashboard, dirección A,
+   * knowledge/diseno-dashboard-plan.md). Colores con nombre de cancha:
+   *
+   *   pitch  césped de noche: fondo general
+   *   slate  pizarra: superficies elevadas y filas al pasar el mouse
+   *   chalk  tiza: texto principal y las líneas que separan secciones
+   *   go     verde torneAR: acción principal y «todo en orden»
+   *   card-yellow  amarilla: requiere atención
+   *   card-red     roja: crítico
+   *
+   * Regla: la amarilla y la roja sólo aparecen cuando hay algo que hacer.
+   */
+  --pitch: #0f2419;
+  --pitch-deep: #0b1c13;
+  --slate: #1a3326;
+  --slate-high: #22402f;
+  --chalk: #eef2ea;
+  --chalk-dim: #b4c4b6;
+  --chalk-faint: #849a89;
+  --chalk-line: #2e4d3c;
+  --go: #53e076;
+  --card-yellow: #ffd23f;
+  --card-red: #ff5a4e;
+  --on-card: #0f2419;
+}
+
+/*
+ * El dashboard usa la paleta de cancha sólo mientras hay un
+ * `[data-admin-shell]` en la página (lo pone app/(admin)/dashboard/layout.tsx).
+ * Va sobre `:root` y no sobre el contenedor porque diálogos, tooltips y
+ * toasts se montan en un portal fuera del shell y tienen que heredar la misma
+ * paleta. La landing y las páginas legales comparten este CSS pero no tienen
+ * el atributo, así que quedan como estaban.
+ *
+ * Además de los tokens nuevos se re-apuntan los viejos (`surface-*`,
+ * `neutral-*`, `warning-*`, `danger-*`): las páginas que todavía no se
+ * rediseñaron toman el fondo de cancha sin editar una clase.
+ */
+:root:has([data-admin-shell]) {
+  --background: var(--pitch);
+  --foreground: var(--chalk);
+
+  --surface-lowest: var(--pitch-deep);
+  --surface-base: var(--pitch);
+  --surface-low: #132b1e;
+  --surface-container: var(--slate);
+  --surface-high: var(--slate-high);
+  --surface-variant: #2a4a38;
+  --surface-bright: #325541;
+
+  --neutral-on-surface: var(--chalk);
+  --neutral-on-surface-variant: var(--chalk-dim);
+  --neutral-outline: var(--chalk-faint);
+  --neutral-outline-variant: var(--chalk-line);
+
+  --brand-inverse-primary: var(--on-card);
+
+  --warning-tertiary: var(--card-yellow);
+  --warning-tertiary-container: #c9a21a;
+  --warning-on-tertiary: var(--on-card);
+
+  --danger-error: var(--card-red);
+  --danger-error-container: #4a1712;
+  --danger-on-error: #ffffff;
+  --danger-on-error-container: #ffd9d5;
+
+  --radius: 0.375rem;
+
+  --font-ui: var(--font-archivo);
 }
 
 @theme inline {
@@ -134,7 +208,20 @@
   --color-danger-on-error-container: var(--danger-on-error-container);
   --color-danger-alert-orange: var(--danger-alert-orange);
 
-  --font-sans: var(--font-inter);
+  --color-pitch: var(--pitch);
+  --color-pitch-deep: var(--pitch-deep);
+  --color-slate: var(--slate);
+  --color-slate-high: var(--slate-high);
+  --color-chalk: var(--chalk);
+  --color-chalk-dim: var(--chalk-dim);
+  --color-chalk-faint: var(--chalk-faint);
+  --color-chalk-line: var(--chalk-line);
+  --color-go: var(--go);
+  --color-card-yellow: var(--card-yellow);
+  --color-card-red: var(--card-red);
+  --color-on-card: var(--on-card);
+
+  --font-sans: var(--font-ui);
   --font-display: var(--font-barlow-condensed);
   --font-epic: var(--font-epilogue);
 
@@ -161,6 +248,72 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+}
+
+/*
+ * Título de sección del dashboard: el texto y, a su derecha, una línea de
+ * tiza hasta el borde. Separa como las líneas de la cancha, sin encerrar el
+ * contenido en tarjetas. Utilidad (y no sólo el componente ChalkRule) para
+ * que cualquier <h2> la tome con una clase.
+ */
+@utility chalk-rule {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: 500;
+  color: var(--chalk-dim);
+
+  &::after {
+    content: "";
+    height: 1px;
+    flex: 1 1 0%;
+    background: var(--chalk-line);
+  }
+}
+
+/*
+ * Tabla-planilla que en el celular pasa a bloques apilados: cada fila es un
+ * bloque y cada celda muestra su columna a la izquierda, tomada de
+ * `data-label`. Se aplica sobre el <table>. Una celda sin `data-label` (las
+ * acciones, por ejemplo) ocupa el ancho entero. Desde 768 px es una tabla
+ * común. El ancho mínimo de la tabla tiene que ir con `md:` para no forzar
+ * scroll horizontal en el celular.
+ */
+@utility ledger-stack {
+  @media (width < 48rem) {
+    & thead {
+      display: none;
+    }
+
+    & tr {
+      display: block;
+      padding-block: 0.75rem;
+    }
+
+    & td {
+      display: grid;
+      grid-template-columns: 7rem minmax(0, 1fr);
+      align-items: baseline;
+      justify-items: start;
+      gap: 0.75rem;
+      padding: 0.25rem 0;
+      white-space: normal;
+      max-width: none;
+    }
+
+    & td[data-label]::before {
+      content: attr(data-label);
+      font-size: 13px;
+      color: var(--chalk-faint);
+    }
+
+    & td:not([data-label]) {
+      grid-template-columns: minmax(0, 1fr);
+      padding-top: 0.75rem;
+    }
+  }
 }
 
 body {
