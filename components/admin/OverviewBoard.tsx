@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { DailyBars } from "@/components/charts/DailyBars";
 import { PenaltyCard } from "@/components/ui/PenaltyCard";
 import { ChalkRule, ScoreFigure } from "@/components/ui/Scoreboard";
-import type { OverviewKpis } from "@/lib/analytics-data";
+import type { OverviewKpis, TeamSquads } from "@/lib/analytics-data";
 
 const QUEUES = [
   {
@@ -39,10 +39,13 @@ const QUEUES = [
  */
 export function OverviewBoard({
   kpis,
+  squads,
   totals,
   signupsSeries,
 }: {
   kpis: OverviewKpis;
+  /** Equipos con 2+ integrantes; `null` si la consulta falló. */
+  squads: TeamSquads | null;
   totals: { profiles: number; matches: number } | null;
   /** Altas por día de los últimos 30 días, `null` si la serie no cargó. */
   signupsSeries: { day: string; value: number }[] | null;
@@ -153,13 +156,32 @@ export function OverviewBoard({
         />
 
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-          {/* El número protagonista de la sección. */}
-          <ScoreFigure
-            size="xl"
-            value={kpis.active_teams}
-            label="Equipos activos"
-            detail={`de ${kpis.total_teams.toLocaleString("es-AR")} equipos creados`}
-          />
+          {/* El número protagonista de la sección: equipos que dejaron de ser
+              de una sola persona. Si la consulta falla, queda el dato más
+              cercano (equipos activos) en vez de un hueco. */}
+          {squads ? (
+            <ScoreFigure
+              size="xl"
+              value={squads.teams_2plus_now}
+              label="Equipos con 2 o más integrantes"
+              detail={
+                <>
+                  {squadsComparison(squads.teams_2plus_7d_ago, squads.teams_2plus_now)}
+                  <br />
+                  {squads.teams_solo_now === 1
+                    ? "1 equipo sigue siendo de una sola persona"
+                    : `${squads.teams_solo_now.toLocaleString("es-AR")} equipos siguen siendo de una sola persona`}
+                </>
+              }
+            />
+          ) : (
+            <ScoreFigure
+              size="xl"
+              value={kpis.active_teams}
+              label="Equipos activos"
+              detail={`de ${kpis.total_teams.toLocaleString("es-AR")} equipos creados`}
+            />
+          )}
 
           <div className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3">
             <ScoreFigure
@@ -216,6 +238,13 @@ export function OverviewBoard({
       </section>
     </div>
   );
+}
+
+/** «Eran 22 hace 7 días (+1)». */
+function squadsComparison(before: number, now: number): string {
+  const diff = now - before;
+  const change = diff === 0 ? "sin cambios" : `${diff > 0 ? "+" : "−"}${Math.abs(diff).toLocaleString("es-AR")}`;
+  return `Eran ${before.toLocaleString("es-AR")} hace 7 días (${change})`;
 }
 
 /**
