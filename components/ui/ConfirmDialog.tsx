@@ -100,7 +100,7 @@ function ConfirmDialogBody({
   return (
     <>
       <DialogHeader>
-        <DialogTitle className="font-display text-xl uppercase">
+        <DialogTitle className="text-xl font-semibold">
           {title}
         </DialogTitle>
         <DialogDescription className="text-sm leading-relaxed text-neutral-on-surface-variant">

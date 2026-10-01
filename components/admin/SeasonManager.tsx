@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { ChalkRule, ScoreFigure } from "@/components/ui/Scoreboard";
 import { transitionSeasonAction } from "@/lib/admin-queues-actions";
 import type { ActiveSeasonInfo, SeasonRow } from "@/lib/admin-queues-data";
 
@@ -81,40 +82,38 @@ export function SeasonManager({
 
   return (
     <>
-      <section className="rounded-lg border border-neutral-outline-variant bg-surface-container p-5">
-        <p className="mb-3 text-[11px] font-semibold uppercase tracking-widest text-neutral-outline">
-          Temporada activa
-        </p>
+      <section aria-labelledby="temporada-activa" className="flex flex-col gap-5">
+        <ChalkRule id="temporada-activa" title="Temporada activa" />
 
         {active ? (
           <>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="font-display text-2xl uppercase text-neutral-on-surface">
-                {active.name}
-              </h2>
-              <span
-                className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider ${
-                  active.isExpired
-                    ? "bg-danger-error-container text-danger-on-error-container"
-                    : "bg-brand-primary/15 text-brand-primary"
-                }`}
-              >
-                {active.isExpired ? "Vencida" : "En curso"}
-              </span>
+            <div className="flex flex-wrap items-end justify-between gap-6">
+              <div className="min-w-0">
+                <p className="text-[28px] font-semibold leading-tight tracking-tight text-chalk">
+                  {active.name}
+                </p>
+                <p className="mt-1 flex items-center gap-2 text-[15px] text-chalk-dim">
+                  <CalendarClock className="size-4" aria-hidden="true" />
+                  Del {formatDate(active.startsAt)} al {formatDate(active.endsAt)}
+                </p>
+              </div>
+              {active.isExpired ? null : (
+                <ScoreFigure
+                  value={daysUntil(active.endsAt)}
+                  label="días para el cierre"
+                  className="items-end text-right"
+                />
+              )}
             </div>
-            <p className="mt-1 flex items-center gap-2 text-sm text-neutral-on-surface-variant">
-              <CalendarClock className="size-4" aria-hidden="true" />
-              {formatDate(active.startsAt)} — {formatDate(active.endsAt)}
-            </p>
             {active.isExpired ? (
-              <p className="mt-3 flex items-start gap-2 rounded-md bg-danger-error-container/40 p-3 text-xs text-danger-on-error-container">
-                <TriangleAlert className="mt-px size-4 shrink-0" aria-hidden="true" />
-                La temporada venció: ejecutá la transición para abrir la siguiente.
+              <p className="flex items-start gap-3 rounded-md border border-card-red/40 bg-card-red/10 p-4 text-[15px] text-chalk">
+                <TriangleAlert className="mt-0.5 size-4 shrink-0 text-card-red" aria-hidden="true" />
+                La temporada venció. Iniciá la transición de abajo para abrir la siguiente.
               </p>
             ) : null}
           </>
         ) : (
-          <p className="flex items-start gap-2 text-sm text-danger-error">
+          <p className="flex items-start gap-2 text-[15px] text-card-red">
             <CircleAlert className="mt-px size-4 shrink-0" aria-hidden="true" />
             No hay temporada activa — es un estado anómalo. Creá una con el formulario de
             abajo.
@@ -122,12 +121,10 @@ export function SeasonManager({
         )}
       </section>
 
-      <section className="rounded-lg border border-neutral-outline-variant bg-surface-container p-5">
-        <p className="mb-4 text-[11px] font-semibold uppercase tracking-widest text-neutral-outline">
-          Nueva temporada
-        </p>
+      <section aria-labelledby="nueva-temporada" className="flex flex-col gap-5">
+        <ChalkRule id="nueva-temporada" title="Nueva temporada" />
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid max-w-2xl grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Nombre" className="sm:col-span-2">
             <input
               value={name}
@@ -160,7 +157,7 @@ export function SeasonManager({
         </div>
 
         {formError ? (
-          <p className="mt-3 text-xs text-danger-error" role="alert">
+          <p className="mt-3 text-sm text-card-red" role="alert">
             {formError}
           </p>
         ) : null}
@@ -168,12 +165,12 @@ export function SeasonManager({
         <Button
           onClick={handleSubmitPress}
           disabled={isPending}
-          className="mt-5 bg-warning-tertiary text-warning-on-tertiary hover:bg-warning-tertiary/85"
+          className="h-10 self-start"
         >
           Iniciar transición de temporada
         </Button>
 
-        <p className="mt-4 max-w-2xl text-[11px] leading-5 text-neutral-outline">
+        <p className="max-w-[65ch] text-sm leading-relaxed text-chalk-faint">
           La transición cierra la temporada activa, pone en 0 las estadísticas de temporada
           (victorias, empates, derrotas y goles) de todos los equipos y pasa los partidos
           abiertos a la temporada nueva. El Rating y el historial de partidos jugados no se
@@ -183,41 +180,41 @@ export function SeasonManager({
 
       {history.length > 0 ? (
         <section>
-          <h2 className="font-display mb-3 text-lg uppercase text-neutral-on-surface">
+          <h2 className="chalk-rule mb-4">
             Historial
           </h2>
-          <div className="overflow-x-auto rounded-lg border border-neutral-outline-variant">
-            <table className="w-full min-w-[520px] border-collapse text-left text-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[520px] border-collapse text-left text-[15px]">
               <thead>
-                <tr className="border-b border-neutral-outline-variant bg-surface-container text-neutral-on-surface-variant">
-                  <th className="px-4 py-2 font-medium">Temporada</th>
-                  <th className="px-4 py-2 font-medium">Inicio</th>
-                  <th className="px-4 py-2 font-medium">Fin</th>
-                  <th className="px-4 py-2 font-medium">Estado</th>
+                <tr className="border-b border-chalk-line text-[13px] text-chalk-faint">
+                  <th className="px-3 py-2 font-normal">Temporada</th>
+                  <th className="px-3 py-2 font-normal">Inicio</th>
+                  <th className="px-3 py-2 font-normal">Fin</th>
+                  <th className="px-3 py-2 font-normal">Estado</th>
                 </tr>
               </thead>
               <tbody>
                 {history.map((season) => (
                   <tr
                     key={season.id}
-                    className="border-b border-neutral-outline-variant last:border-0"
+                    className="border-b border-chalk-line"
                   >
-                    <td className="px-4 py-2.5 font-medium text-neutral-on-surface">
+                    <td className="px-3 py-3 font-medium text-chalk">
                       {season.name}
                     </td>
-                    <td className="px-4 py-2.5 text-neutral-on-surface-variant">
+                    <td className="px-3 py-3 text-neutral-on-surface-variant">
                       {formatDate(season.starts_at)}
                     </td>
-                    <td className="px-4 py-2.5 text-neutral-on-surface-variant">
+                    <td className="px-3 py-3 text-neutral-on-surface-variant">
                       {formatDate(season.ends_at)}
                     </td>
-                    <td className="px-4 py-2.5">
+                    <td className="px-3 py-3">
                       {season.is_active ? (
-                        <span className="rounded px-1.5 py-0.5 text-[11px] font-semibold uppercase bg-brand-primary/15 text-brand-primary">
+                        <span className="text-sm font-medium text-go">
                           Activa
                         </span>
                       ) : (
-                        <span className="text-xs text-neutral-outline">Cerrada</span>
+                        <span className="text-sm text-chalk-faint">Cerrada</span>
                       )}
                     </td>
                   </tr>
@@ -262,7 +259,13 @@ export function SeasonManager({
 }
 
 const inputClass =
-  "w-full rounded-md border border-neutral-outline-variant bg-surface-low px-3 py-2 text-sm text-neutral-on-surface outline-none placeholder:text-neutral-outline focus:border-brand-primary";
+  "w-full rounded-md border border-chalk-line bg-pitch-deep px-3 py-2 text-[15px] text-chalk outline-none [color-scheme:dark] placeholder:text-chalk-faint focus:border-chalk";
+
+/** Días que faltan hasta el final del día de `endsAt` (YYYY-MM-DD). */
+function daysUntil(endsAt: string): number {
+  const end = new Date(`${endsAt}T23:59:59`).getTime();
+  return Math.max(0, Math.ceil((end - Date.now()) / 86_400_000));
+}
 
 function Field({
   label,
@@ -275,7 +278,7 @@ function Field({
 }) {
   return (
     <label className={`flex flex-col gap-1.5 ${className ?? ""}`}>
-      <span className="text-xs font-semibold text-neutral-on-surface-variant">{label}</span>
+      <span className="text-[13px] text-chalk-dim">{label}</span>
       {children}
     </label>
   );

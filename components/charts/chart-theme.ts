@@ -24,6 +24,18 @@ export const CHART_COLORS = {
   onSurfaceVariant: "#b4c4b6", // --chalk-dim
   surfaceContainer: "#1a3326", // --slate
   surfaceHigh: "#22402f", // --slate-high
+
+  /*
+   * Series de los gráficos con más de una serie, en este orden fijo. El verde,
+   * la amarilla y la roja NO se usan como series: en el dashboard dicen
+   * «en orden», «requiere atención» y «crítico». Validadas con el script del
+   * skill dataviz sobre el césped (#0f2419): banda de luminosidad, croma,
+   * separación para daltonismo y contraste, todo OK. Una serie sola va en
+   * tiza (`onSurfaceVariant`), sin color.
+   */
+  series1: "#3987e5", // azul
+  series2: "#d55181", // magenta
+  series3: "#9085e9", // violeta
 } as const;
 
 /** Props comunes de `<XAxis>` / `<YAxis>` — evita repetir 4 atributos por eje. */

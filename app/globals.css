@@ -250,6 +250,72 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+/*
+ * Título de sección del dashboard: el texto y, a su derecha, una línea de
+ * tiza hasta el borde. Separa como las líneas de la cancha, sin encerrar el
+ * contenido en tarjetas. Utilidad (y no sólo el componente ChalkRule) para
+ * que cualquier <h2> la tome con una clase.
+ */
+@utility chalk-rule {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: 500;
+  color: var(--chalk-dim);
+
+  &::after {
+    content: "";
+    height: 1px;
+    flex: 1 1 0%;
+    background: var(--chalk-line);
+  }
+}
+
+/*
+ * Tabla-planilla que en el celular pasa a bloques apilados: cada fila es un
+ * bloque y cada celda muestra su columna a la izquierda, tomada de
+ * `data-label`. Se aplica sobre el <table>. Una celda sin `data-label` (las
+ * acciones, por ejemplo) ocupa el ancho entero. Desde 768 px es una tabla
+ * común. El ancho mínimo de la tabla tiene que ir con `md:` para no forzar
+ * scroll horizontal en el celular.
+ */
+@utility ledger-stack {
+  @media (width < 48rem) {
+    & thead {
+      display: none;
+    }
+
+    & tr {
+      display: block;
+      padding-block: 0.75rem;
+    }
+
+    & td {
+      display: grid;
+      grid-template-columns: 7rem minmax(0, 1fr);
+      align-items: baseline;
+      justify-items: start;
+      gap: 0.75rem;
+      padding: 0.25rem 0;
+      white-space: normal;
+      max-width: none;
+    }
+
+    & td[data-label]::before {
+      content: attr(data-label);
+      font-size: 13px;
+      color: var(--chalk-faint);
+    }
+
+    & td:not([data-label]) {
+      grid-template-columns: minmax(0, 1fr);
+      padding-top: 0.75rem;
+    }
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);

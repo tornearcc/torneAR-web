@@ -39,13 +39,13 @@ export function SocialGrowthChart({ data }: { data: SocialMetricPoint[] }) {
   }
 
   return (
-    <div className="h-72 rounded-lg border border-neutral-outline-variant bg-surface-container p-4">
+    <div className="h-72">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="social-followers" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={CHART_COLORS.brandPrimary} stopOpacity={0.35} />
-              <stop offset="100%" stopColor={CHART_COLORS.brandPrimary} stopOpacity={0} />
+              <stop offset="0%" stopColor={CHART_COLORS.onSurfaceVariant} stopOpacity={0.35} />
+              <stop offset="100%" stopColor={CHART_COLORS.onSurfaceVariant} stopOpacity={0} />
             </linearGradient>
           </defs>
 
@@ -69,7 +69,7 @@ export function SocialGrowthChart({ data }: { data: SocialMetricPoint[] }) {
           <Area
             type="monotone"
             dataKey="followers"
-            stroke={CHART_COLORS.brandPrimary}
+            stroke={CHART_COLORS.onSurfaceVariant}
             strokeWidth={2}
             fill="url(#social-followers)"
             activeDot={{ r: 4 }}

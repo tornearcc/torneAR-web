@@ -39,14 +39,14 @@ export function LoginForm() {
   return (
     <form
       action={formAction}
-      className="flex w-full max-w-sm flex-col gap-4 rounded-xl border border-neutral-outline-variant bg-surface-container p-8"
+      className="flex w-full max-w-sm flex-col gap-4 rounded-md border border-chalk-line bg-slate/60 p-6 sm:p-8"
     >
-      <h1 className="font-display text-center text-2xl uppercase text-neutral-on-surface">
+      <h1 className="text-center text-[28px] font-semibold tracking-tight text-chalk">
         torneAR admin
       </h1>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="email" className="text-sm text-neutral-on-surface-variant">
+        <label htmlFor="email" className="text-[15px] text-chalk-dim">
           Email
         </label>
         <input
@@ -55,12 +55,12 @@ export function LoginForm() {
           type="email"
           required
           autoComplete="email"
-          className="rounded-md border border-neutral-outline-variant bg-surface-low px-3 py-2 text-neutral-on-surface outline-none focus:border-brand-primary"
+          className="rounded-md border border-chalk-line bg-pitch-deep px-3 py-2.5 text-chalk outline-none focus:border-chalk"
         />
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="password" className="text-sm text-neutral-on-surface-variant">
+        <label htmlFor="password" className="text-[15px] text-chalk-dim">
           Contraseña
         </label>
         <input
@@ -69,7 +69,7 @@ export function LoginForm() {
           type="password"
           required
           autoComplete="current-password"
-          className="rounded-md border border-neutral-outline-variant bg-surface-low px-3 py-2 text-neutral-on-surface outline-none focus:border-brand-primary"
+          className="rounded-md border border-chalk-line bg-pitch-deep px-3 py-2.5 text-chalk outline-none focus:border-chalk"
         />
       </div>
 

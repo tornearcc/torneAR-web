@@ -2,14 +2,14 @@ import {
   ChartSkeleton,
   PageHeaderSkeleton,
   Skeleton,
-  StatCardsSkeleton,
+  StatBoardSkeleton,
 } from "@/components/ui/Skeleton";
 
 export default function ActivityLoading() {
   return (
     <div className="flex flex-col gap-8">
       <PageHeaderSkeleton />
-      <StatCardsSkeleton count={4} className="sm:grid-cols-2 xl:grid-cols-4" />
+      <StatBoardSkeleton count={3} />
 
       <div className="flex flex-col gap-4">
         {/* Fila de tabs (Partidos / Check-ins / Mercado). */}

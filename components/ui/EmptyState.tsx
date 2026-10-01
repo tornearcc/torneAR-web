@@ -27,14 +27,14 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-neutral-outline-variant bg-surface-container px-6 py-20 text-center",
+        "flex flex-col items-center justify-center gap-3 border-y border-dashed border-chalk-line px-6 py-16 text-center",
         className,
       )}
     >
       <Icon
         className={cn(
           "size-10",
-          tone === "positive" ? "text-brand-primary" : "text-neutral-outline",
+          tone === "positive" ? "text-go" : "text-chalk-faint",
         )}
         aria-hidden="true"
       />

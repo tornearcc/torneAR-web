@@ -23,33 +23,33 @@ export interface RetentionCohortRow {
 export function RetentionCohorts({ cohorts }: { cohorts: RetentionCohortRow[] }) {
   if (cohorts.length === 0) {
     return (
-      <div className="flex h-40 items-center justify-center rounded-lg border border-dashed border-neutral-outline-variant bg-surface-container text-sm text-neutral-on-surface-variant">
+      <div className="flex h-40 items-center justify-center border-y border-dashed border-chalk-line text-sm text-chalk-faint">
         Sin cohortes en el período.
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-neutral-outline-variant">
+    <div className="overflow-x-auto">
       <table className="w-full min-w-[560px] border-collapse text-left text-sm">
         <thead>
-          <tr className="border-b border-neutral-outline-variant bg-surface-container text-neutral-on-surface-variant">
-            <th className="px-4 py-2 font-medium">Semana de alta</th>
-            <th className="px-4 py-2 font-medium">Usuarios</th>
-            <th className="px-4 py-2 font-medium">Jugó en 7 días</th>
-            <th className="px-4 py-2 font-medium">Jugó en 28 días</th>
+          <tr className="border-b border-chalk-line text-[13px] text-chalk-faint">
+            <th className="px-3 py-2 font-normal">Semana de alta</th>
+            <th className="px-3 py-2 font-normal">Usuarios</th>
+            <th className="px-3 py-2 font-normal">Jugó en 7 días</th>
+            <th className="px-3 py-2 font-normal">Jugó en 28 días</th>
           </tr>
         </thead>
         <tbody>
           {cohorts.map((cohort) => (
             <tr
               key={cohort.cohort_week}
-              className="border-b border-neutral-outline-variant last:border-0"
+              className="border-b border-chalk-line"
             >
-              <td className="whitespace-nowrap px-4 py-2.5 text-neutral-on-surface">
+              <td className="whitespace-nowrap px-3 py-3 text-[15px] text-chalk">
                 {formatWeek(cohort.cohort_week)}
               </td>
-              <td className="px-4 py-2.5 tabular-nums text-neutral-on-surface-variant">
+              <td className="px-3 py-3 text-[15px] tabular-nums text-chalk-dim">
                 {cohort.cohort_size}
               </td>
               <RateCell
@@ -82,15 +82,15 @@ function RateCell({
   const pct = denominator > 0 ? (numerator / denominator) * 100 : 0;
 
   return (
-    <td className="px-4 py-2.5">
+    <td className="px-3 py-3 text-[15px]">
       <div className="flex items-center gap-2">
         {/* Barra proporcional en vez de sólo el número: con varias cohortes
             una al lado de la otra, la comparación visual es inmediata. */}
-        <div className="h-1.5 w-16 overflow-hidden rounded-full bg-surface-high">
+        <div className="h-1.5 w-16 overflow-hidden rounded-full bg-chalk-line">
           <div
             className={cn(
               "h-full rounded-full",
-              mature ? "bg-brand-primary" : "bg-neutral-outline",
+              mature ? "bg-chalk-dim" : "bg-chalk-faint/60",
             )}
             style={{ width: `${Math.min(100, pct)}%` }}
           />
@@ -109,7 +109,7 @@ function RateCell({
             número se compararía como si fuera final. */}
         {!mature ? (
           <span
-            className="rounded bg-surface-high px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-neutral-outline"
+            className="text-xs text-chalk-faint"
             title="La ventana de esta cohorte todavía no cerró: el valor sólo puede subir."
           >
             parcial

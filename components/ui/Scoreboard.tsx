@@ -6,6 +6,35 @@ import { cn } from "@/lib/utils";
  */
 
 /**
+ * Cabecera de números de una página de análisis: un protagonista grande a la
+ * izquierda y el resto chico al lado (abajo en el celular). Reemplaza a las
+ * grillas de tarjetas iguales.
+ */
+export function StatBoard({
+  hero,
+  children,
+  className,
+}: {
+  hero: React.ReactNode;
+  children?: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-end",
+        className,
+      )}
+    >
+      {hero}
+      {children ? (
+        <div className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3">{children}</div>
+      ) : null}
+    </div>
+  );
+}
+
+/**
  * Línea de tiza que abre una sección, con su título a la izquierda. Separa
  * como las líneas de la cancha, sin encerrar el contenido en tarjetas.
  */

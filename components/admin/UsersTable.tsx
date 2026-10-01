@@ -37,6 +37,8 @@ const DATE_FORMATTER = new Intl.DateTimeFormat("es-AR", {
   day: "2-digit",
   month: "short",
   year: "numeric",
+  // Zona fija: servidor y navegador tienen que formatear igual (hidratación).
+  timeZone: "America/Argentina/Buenos_Aires",
 });
 
 type PendingAction =
@@ -114,17 +116,17 @@ export function UsersTable({
 
   return (
     <>
-      <div className="overflow-x-auto rounded-lg border border-neutral-outline-variant">
-        <table className="w-full min-w-[900px] border-collapse text-left text-sm">
+      <div className="overflow-x-auto">
+        <table className="ledger-stack w-full border-collapse text-left text-[15px] md:min-w-[900px]">
           <thead>
-            <tr className="border-b border-neutral-outline-variant bg-surface-container text-neutral-on-surface-variant">
-              <th className="px-4 py-3 font-medium">Usuario</th>
-              <th className="px-4 py-3 font-medium">Zona</th>
-              <th className="px-4 py-3 font-medium">Alta</th>
-              <th className="px-4 py-3 font-medium">Equipos</th>
-              <th className="px-4 py-3 font-medium">Partidos</th>
-              <th className="px-4 py-3 font-medium">Referido por</th>
-              <th className="w-12 px-4 py-3" />
+            <tr className="border-b border-chalk-line text-[13px] text-chalk-faint">
+              <th className="px-3 py-2 font-normal">Usuario</th>
+              <th className="px-3 py-2 font-normal">Zona</th>
+              <th className="px-3 py-2 font-normal">Alta</th>
+              <th className="px-3 py-2 font-normal">Equipos</th>
+              <th className="px-3 py-2 font-normal">Partidos</th>
+              <th className="px-3 py-2 font-normal">Referido por</th>
+              <th className="w-12 px-3 py-2"><span className="sr-only">Acciones</span></th>
             </tr>
           </thead>
           <tbody>
@@ -136,65 +138,68 @@ export function UsersTable({
                 <tr
                   key={user.profile_id}
                   className={cn(
-                    "border-b border-neutral-outline-variant last:border-0",
-                    user.is_suspended && !isDeleted && "bg-danger-error-container/10",
+                    "border-b border-chalk-line",
+                    user.is_suspended && !isDeleted && "bg-card-red/5",
                   )}
                 >
-                  <td className="px-4 py-3">
+                  <td data-label="Usuario" className="px-3 py-3">
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                      <span className="font-medium text-neutral-on-surface">
+                      <span className="font-medium text-chalk">
                         {user.full_name}
                       </span>
-                      <span className="text-neutral-on-surface-variant">
+                      <span className="text-chalk-faint">
                         @{user.username}
                       </span>
                       {user.is_admin ? (
-                        <Badge className="bg-brand-primary/15 text-brand-primary">
+                        <Badge className="border border-chalk-line text-chalk">
                           <ShieldCheck className="size-3" aria-hidden="true" />
                           Admin
                         </Badge>
                       ) : null}
                       {isDeleted ? (
-                        <Badge className="bg-surface-high text-neutral-outline">
+                        <Badge className="border border-chalk-line text-chalk-faint">
                           <Trash2 className="size-3" aria-hidden="true" />
                           Eliminada
                         </Badge>
                       ) : user.is_suspended ? (
-                        <Badge className="bg-danger-error-container text-danger-on-error-container">
+                        <Badge className="bg-card-red text-white">
                           <ShieldOff className="size-3" aria-hidden="true" />
                           Suspendido
                         </Badge>
                       ) : null}
                       {isSelf ? (
-                        <Badge className="bg-surface-high text-neutral-outline">Vos</Badge>
+                        <Badge className="border border-chalk-line text-chalk-faint">Vos</Badge>
                       ) : null}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-neutral-on-surface-variant">
+                  <td data-label="Zona" className="px-3 py-3 text-chalk-dim">
                     {user.zone ?? "—"}
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-neutral-on-surface-variant">
+                  <td data-label="Alta" className="whitespace-nowrap px-3 py-3 text-chalk-dim">
                     {DATE_FORMATTER.format(new Date(user.created_at))}
                   </td>
-                  <td className="px-4 py-3 tabular-nums text-neutral-on-surface-variant">
+                  <td data-label="Equipos" className="px-3 py-3 tabular-nums text-chalk-dim">
                     {user.teams_count}
                   </td>
-                  <td className="px-4 py-3 tabular-nums text-neutral-on-surface-variant">
+                  <td data-label="Partidos" className="px-3 py-3 tabular-nums text-chalk-dim">
                     {user.matches_count}
                   </td>
-                  <td className="px-4 py-3 text-neutral-on-surface-variant">
+                  <td data-label="Referido por" className="px-3 py-3 text-chalk-dim">
                     {user.referred_by_username ? `@${user.referred_by_username}` : "—"}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-3 py-3">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <button
                           type="button"
                           aria-label={`Acciones sobre @${user.username}`}
                           disabled={isPending}
-                          className="rounded-md p-1.5 text-neutral-outline transition-colors hover:bg-surface-high hover:text-neutral-on-surface disabled:opacity-40"
+                          className="flex items-center gap-2 rounded-md border border-chalk-line px-3 py-2 text-sm text-chalk-dim transition-colors hover:bg-slate hover:text-chalk focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chalk disabled:opacity-40 md:border-transparent md:p-1.5"
                         >
                           <MoreHorizontal className="size-4" aria-hidden="true" />
+                          <span className="md:hidden" aria-hidden="true">
+                            Acciones
+                          </span>
                         </button>
                       </DropdownMenuTrigger>
 
@@ -365,7 +370,7 @@ function Badge({ className, children }: { className?: string; children: React.Re
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
+        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
         className,
       )}
     >

@@ -31,13 +31,15 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const STATUS_COLOR: Record<string, string> = {
-  PENDIENTE: CHART_COLORS.warn,
-  CONFIRMADO: CHART_COLORS.info,
+  // Mismo código que el resto del dashboard: verde = en juego, amarilla =
+  // espera una decisión. El resto sin color de estado.
+  PENDIENTE: CHART_COLORS.outline,
+  CONFIRMADO: CHART_COLORS.series1,
   EN_VIVO: CHART_COLORS.brandPrimary,
-  FINALIZADO: CHART_COLORS.outline,
-  EN_DISPUTA: CHART_COLORS.error,
-  WO_A: CHART_COLORS.alertOrange,
-  WO_B: CHART_COLORS.alertOrange,
+  FINALIZADO: CHART_COLORS.onSurfaceVariant,
+  EN_DISPUTA: CHART_COLORS.warn,
+  WO_A: CHART_COLORS.series2,
+  WO_B: CHART_COLORS.series2,
   CANCELADO: CHART_COLORS.outlineVariant,
 };
 
@@ -46,14 +48,14 @@ export function ActivityChart({ data }: { data: MatchesByStatusRow[] }) {
 
   if (!hasMatches) {
     return (
-      <div className="flex h-64 items-center justify-center rounded-lg border border-neutral-outline-variant bg-surface-container text-neutral-on-surface-variant">
+      <div className="flex h-64 items-center justify-center border-y border-dashed border-chalk-line text-sm text-chalk-faint">
         Sin partidos todavía.
       </div>
     );
   }
 
   return (
-    <div className="h-80 rounded-lg border border-neutral-outline-variant bg-surface-container p-4">
+    <div className="h-80">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} layout="vertical" margin={{ top: 8, right: 16, left: 8, bottom: 8 }}>
           <CartesianGrid {...GRID_PROPS} horizontal={false} />

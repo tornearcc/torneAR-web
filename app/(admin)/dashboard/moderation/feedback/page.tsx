@@ -60,15 +60,15 @@ export default async function FeedbackInboxPage({
         actions={
           <Link
             href="/dashboard/moderation"
-            className="rounded-md border border-neutral-outline px-3 py-2 text-sm font-semibold text-neutral-on-surface transition hover:bg-surface-container"
+            className="rounded-md border border-chalk-line px-3 py-2 text-sm font-medium text-chalk transition-colors hover:bg-slate focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chalk"
           >
-            ← Denuncias
+            Volver a denuncias
           </Link>
         }
       />
 
       {error ? (
-        <p className="rounded-lg border border-danger-error bg-danger-error-container p-4 text-sm text-danger-on-error-container">
+        <p className="rounded-md border border-card-red/40 bg-card-red/10 p-4 text-[15px] text-chalk">
           No se pudo cargar el feedback: {error.message}
         </p>
       ) : feedback.length === 0 ? (
@@ -84,29 +84,29 @@ export default async function FeedbackInboxPage({
         />
       ) : (
         <>
-          <ul className="flex flex-col gap-3">
+          <ul className="flex flex-col">
             {feedback.map((item) => (
               <li
                 key={item.id}
-                className="rounded-lg border border-neutral-outline-variant bg-surface-container p-4"
+                className="border-b border-chalk-line py-4 first:pt-0"
               >
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-baseline gap-2">
-                    <span className="font-medium text-neutral-on-surface">
+                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                  <div className="flex min-w-0 flex-wrap items-baseline gap-x-2">
+                    <span className="font-medium text-chalk">
                       {item.full_name}
                     </span>
-                    <span className="text-sm text-neutral-on-surface-variant">
+                    <span className="text-sm text-chalk-faint">
                       @{item.username}
                     </span>
                   </div>
                   <time
                     dateTime={item.created_at}
-                    className="shrink-0 text-xs text-neutral-on-surface-variant"
+                    className="shrink-0 text-sm text-chalk-faint"
                   >
                     {DATE_FORMATTER.format(new Date(item.created_at))}
                   </time>
                 </div>
-                <p className="mt-2 whitespace-pre-wrap text-sm text-neutral-on-surface">
+                <p className="mt-2 max-w-[70ch] whitespace-pre-wrap text-[15px] text-chalk">
                   {item.message}
                 </p>
               </li>
@@ -117,10 +117,10 @@ export default async function FeedbackInboxPage({
               total de filas para calcular la última página, y acá no lo hay. */}
           {(page > 1 || hasNext) && (
             <div className="flex items-center justify-between gap-3">
-              <p className="text-xs text-neutral-on-surface-variant">Página {page}</p>
+              <p className="text-sm text-chalk-faint">Página {page}</p>
               <div className="flex gap-2">
-                <PageLink page={page - 1} disabled={page <= 1} label="← Anterior" />
-                <PageLink page={page + 1} disabled={!hasNext} label="Siguiente →" />
+                <PageLink page={page - 1} disabled={page <= 1} label="Anterior" />
+                <PageLink page={page + 1} disabled={!hasNext} label="Siguiente" />
               </div>
             </div>
           )}
@@ -141,7 +141,7 @@ function PageLink({
 }) {
   if (disabled) {
     return (
-      <span className="cursor-not-allowed rounded-md border border-neutral-outline-variant px-3 py-1.5 text-xs text-neutral-outline opacity-40">
+      <span className="cursor-not-allowed rounded-md border border-chalk-line px-3 py-2 text-sm text-chalk-faint opacity-40">
         {label}
       </span>
     );
@@ -151,7 +151,7 @@ function PageLink({
     <Link
       href={page <= 1 ? "/dashboard/moderation/feedback" : `?page=${page}`}
       scroll={false}
-      className="rounded-md border border-neutral-outline-variant px-3 py-1.5 text-xs text-neutral-on-surface-variant transition-colors hover:bg-surface-high hover:text-neutral-on-surface"
+      className="rounded-md border border-chalk-line px-3 py-2 text-sm text-chalk-dim transition-colors hover:bg-slate hover:text-chalk focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chalk"
     >
       {label}
     </Link>

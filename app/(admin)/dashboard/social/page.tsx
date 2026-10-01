@@ -1,5 +1,4 @@
 import { requireAdminAuth } from "@/lib/admin-guard";
-import { Eye, Radar, Users } from "lucide-react";
 
 import {
   fetchSocialAccounts,
@@ -21,6 +20,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { DateRangeFilter } from "@/components/ui/DateRangeFilter";
 import { SegmentedFilter } from "@/components/ui/SegmentedFilter";
+import { StatBoard } from "@/components/ui/Scoreboard";
 
 const PLATFORM_OPTIONS = SOCIAL_PLATFORMS.map((platform) => ({
   value: platform,
@@ -64,8 +64,8 @@ export default async function SocialPage({
         title="Redes"
         description={
           account
-            ? `@${account.handle} · ${formatRangeLabel(range)}`
-            : `Sin cuenta activa de ${PLATFORM_LABELS[platform]} · ${formatRangeLabel(range)}`
+            ? `@${account.handle}, ${formatRangeLabel(range)}`
+            : `Sin cuenta activa de ${PLATFORM_LABELS[platform]}, ${formatRangeLabel(range)}`
         }
         actions={
           <>
@@ -76,7 +76,7 @@ export default async function SocialPage({
       />
 
       {oauthStatus === "connected" ? (
-        <p className="rounded-lg border border-brand-primary/40 bg-brand-primary/10 p-4 text-sm text-brand-primary">
+        <p className="rounded-md border border-go/40 bg-go/10 p-4 text-[15px] text-chalk">
           Instagram conectado. El primer sync automático corre con el próximo cron diario (09:00 UTC).
         </p>
       ) : oauthStatus === "error" ? (
@@ -94,35 +94,35 @@ export default async function SocialPage({
         <ErrorBox context="las métricas de redes" message={seriesResult.error} />
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <StatCard
-              label="Seguidores"
-              value={currentFollowers}
-              hint="último dato cargado"
-              icon={Users}
-              tone="positive"
-              delta={
-                currentFollowers !== null && startFollowers !== null
-                  ? { previous: startFollowers }
-                  : undefined
-              }
-            />
+          <StatBoard
+            hero={
+              <StatCard
+                size="hero"
+                label="Seguidores"
+                value={currentFollowers}
+                hint="último dato cargado"
+                delta={
+                  currentFollowers !== null && startFollowers !== null
+                    ? { previous: startFollowers }
+                    : undefined
+                }
+              />
+            }
+          >
             <StatCard
               label="Alcance del período"
               value={reachInRange}
               hint={reachInRange === null ? "sin carga en este rango" : `${range.days} días`}
-              icon={Radar}
             />
             <StatCard
               label="Interacciones del período"
               value={engagementsInRange}
               hint={engagementsInRange === null ? "sin carga en este rango" : `${range.days} días`}
-              icon={Eye}
             />
-          </div>
+          </StatBoard>
 
           <section>
-            <h2 className="font-display mb-3 text-lg uppercase text-neutral-on-surface">
+            <h2 className="chalk-rule mb-4">
               Seguidores por día
             </h2>
             <SocialGrowthChart data={seriesResult.data} />
@@ -131,7 +131,7 @@ export default async function SocialPage({
       )}
 
       <section>
-        <h2 className="font-display mb-3 text-lg uppercase text-neutral-on-surface">
+        <h2 className="chalk-rule mb-4">
           Cargar snapshot
         </h2>
         {accountsResult.error ? (
@@ -146,7 +146,7 @@ export default async function SocialPage({
 
 function ErrorBox({ context, message }: { context: string; message: string }) {
   return (
-    <p className="rounded-lg border border-danger-error bg-danger-error-container p-4 text-sm text-danger-on-error-container">
+    <p className="rounded-md border border-card-red/40 bg-card-red/10 p-4 text-[15px] text-chalk">
       No se pudo cargar {context}: {message}
     </p>
   );

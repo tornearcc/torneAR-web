@@ -30,7 +30,9 @@ export function PageHeader({
           <p className="mt-1 max-w-[65ch] text-base text-chalk-dim">{description}</p>
         ) : null}
       </div>
-      {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
+      {actions ? (
+        <div className="flex max-w-full flex-wrap items-center gap-2">{actions}</div>
+      ) : null}
     </div>
   );
 }

@@ -39,7 +39,7 @@ export default async function WoClaimsPage() {
       />
 
       {error ? (
-        <p className="rounded-lg border border-danger-error bg-danger-error-container p-4 text-sm text-danger-on-error-container">
+        <p className="rounded-md border border-card-red/40 bg-card-red/10 p-4 text-[15px] text-chalk">
           No se pudieron cargar los reclamos: {error}
         </p>
       ) : (

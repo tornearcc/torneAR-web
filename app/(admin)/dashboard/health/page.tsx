@@ -1,5 +1,4 @@
 import { requireAdminAuth } from "@/lib/admin-guard";
-import { AlertTriangle, FileText, TriangleAlert } from "lucide-react";
 
 import { fetchLogsPage, fetchLogsTimeseries } from "@/lib/logs-data";
 import { resolveLogFilters } from "@/lib/logs-filters";
@@ -12,6 +11,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { DateRangeFilter } from "@/components/ui/DateRangeFilter";
 import { Pagination } from "@/components/ui/Pagination";
+import { StatBoard } from "@/components/ui/Scoreboard";
 
 export default async function HealthPage({
   searchParams,
@@ -53,35 +53,43 @@ export default async function HealthPage({
         actions={<DateRangeFilter range={filters.range} />}
       />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Logs en el período" value={totalLogs} hint={`${filters.range.days} días`} icon={FileText} />
-        <StatCard
-          label="Errores"
-          value={totals.error}
-          hint="nivel error"
-          icon={AlertTriangle}
-          tone={totals.error > 0 ? "danger" : "neutral"}
-        />
+      {/* Los errores son el protagonista: es lo único de esta página que
+          puede pedir una acción. En 0 se leen en verde, «en orden». */}
+      <StatBoard
+        hero={
+          <StatCard
+            size="hero"
+            label="Errores"
+            value={totals.error}
+            hint={`nivel error, en ${filters.range.days} días`}
+            tone={totals.error > 0 ? "danger" : "positive"}
+          />
+        }
+      >
         <StatCard
           label="Advertencias"
           value={totals.warn}
           hint="nivel warn"
-          icon={TriangleAlert}
           tone={totals.warn > 0 ? "warning" : "neutral"}
         />
         <StatCard
           label="Tasa de error"
-          value={errorRate === null ? null : `${errorRate.toFixed(1)}%`}
+          value={
+            errorRate === null
+              ? null
+              : `${errorRate.toLocaleString("es-AR", { maximumFractionDigits: 1 })} %`
+          }
           hint="sobre el total de logs"
           tone={errorRate !== null && errorRate > 10 ? "danger" : "neutral"}
         />
-      </div>
+        <StatCard label="Logs en el período" value={totalLogs} hint={`${filters.range.days} días`} />
+      </StatBoard>
 
       <section>
-        <h2 className="font-display mb-1 text-lg uppercase text-neutral-on-surface">
+        <h2 className="chalk-rule mb-2">
           Logs por día
         </h2>
-        <p className="mb-3 text-sm text-neutral-on-surface-variant">
+        <p className="mb-4 max-w-[65ch] text-[15px] text-chalk-dim">
           Clickeá una barra para aislar ese día en el explorador de abajo.
         </p>
         {seriesResult.error ? (
@@ -93,7 +101,7 @@ export default async function HealthPage({
 
       <section className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="font-display text-lg uppercase text-neutral-on-surface">
+          <h2 className="chalk-rule flex-1">
             Explorador de logs
           </h2>
           <LogsToolbar filters={filters} />
@@ -114,7 +122,7 @@ export default async function HealthPage({
 
 function ErrorBox({ context, message }: { context: string; message: string }) {
   return (
-    <p className="rounded-lg border border-danger-error bg-danger-error-container p-4 text-sm text-danger-on-error-container">
+    <p className="rounded-md border border-card-red/40 bg-card-red/10 p-4 text-[15px] text-chalk">
       No se pudo cargar {context}: {message}
     </p>
   );

@@ -119,7 +119,7 @@ function ProfileGenderBody({
   return (
     <>
       <DialogHeader>
-        <DialogTitle className="font-display text-xl uppercase">Corregir género</DialogTitle>
+        <DialogTitle className="text-xl font-semibold">Corregir género</DialogTitle>
         <DialogDescription className="text-sm leading-relaxed text-neutral-on-surface-variant">
           <strong className="text-neutral-on-surface">
             {user.full_name} (@{user.username})
@@ -134,7 +134,7 @@ function ProfileGenderBody({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <span className="text-xs font-semibold text-neutral-on-surface-variant">
+        <span className="text-[13px] text-chalk-dim">
           Actual:{" "}
           {current.status === "loading" ? (
             <Loader2 className="inline size-3 animate-spin" aria-label="Cargando" />
@@ -159,7 +159,7 @@ function ProfileGenderBody({
                 "flex-1 rounded-md border px-3 py-2 text-sm transition-colors disabled:opacity-40",
                 selected === option.value
                   ? "border-brand-primary bg-brand-primary/15 text-brand-primary"
-                  : "border-neutral-outline-variant bg-surface-low text-neutral-on-surface hover:bg-surface-high",
+                  : "border-neutral-outline-variant bg-pitch-deep text-neutral-on-surface hover:bg-surface-high",
               )}
             >
               {option.label}
@@ -169,7 +169,7 @@ function ProfileGenderBody({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor={reasonId} className="text-xs font-semibold text-neutral-on-surface-variant">
+        <label htmlFor={reasonId} className="text-[13px] text-chalk-dim">
           Motivo (obligatorio)
         </label>
         <textarea
@@ -178,7 +178,7 @@ function ProfileGenderBody({
           onChange={(e) => setReason(e.target.value)}
           placeholder="Ej.: correo del titular del 25/09 desde la cuenta"
           rows={3}
-          className="w-full resize-y rounded-md border border-neutral-outline-variant bg-surface-low px-3 py-2 text-sm text-neutral-on-surface outline-none placeholder:text-neutral-outline focus:border-brand-primary"
+          className="w-full resize-y rounded-md border border-neutral-outline-variant bg-pitch-deep px-3 py-2 text-sm text-neutral-on-surface outline-none placeholder:text-neutral-outline focus:border-chalk"
         />
       </div>
 
