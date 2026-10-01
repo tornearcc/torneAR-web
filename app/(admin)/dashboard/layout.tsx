@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 
 import { requireAdminAuth } from "@/lib/admin-guard";
-import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { AdminShell } from "@/components/admin/AdminShell";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { SIDEBAR_COOKIE_NAME } from "@/lib/sidebar-state";
@@ -40,20 +40,9 @@ export default async function DashboardLayout({
 
   return (
     <TooltipProvider delayDuration={200}>
-      {/*
-        `h-dvh overflow-hidden` en el contenedor + scroll exclusivo en <main>:
-        sin esto el <aside> sólo se estira hasta el alto del contenido y se va
-        con el scroll de la página. `dvh` y no `vh` por las barras dinámicas
-        de los navegadores móviles.
-      */}
-      <div className="flex h-dvh overflow-hidden">
-        <AdminSidebar
-          username={profile.username}
-          defaultCollapsed={sidebarCollapsed}
-          counts={counts}
-        />
-        <main className="flex-1 overflow-y-auto p-8">{children}</main>
-      </div>
+      <AdminShell username={profile.username} sidebarCollapsed={sidebarCollapsed} counts={counts}>
+        {children}
+      </AdminShell>
       <Toaster />
     </TooltipProvider>
   );

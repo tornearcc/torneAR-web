@@ -48,7 +48,7 @@ export function ChartTooltip({
       style={{ pointerEvents: "none" }}
     >
       {heading != null && (
-        <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-neutral-on-surface-variant">
+        <p className="mb-1.5 text-xs font-semibold text-neutral-on-surface-variant">
           {heading}
         </p>
       )}

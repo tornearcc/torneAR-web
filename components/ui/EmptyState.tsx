@@ -38,7 +38,7 @@ export function EmptyState({
         )}
         aria-hidden="true"
       />
-      <p className="font-display text-xl uppercase text-neutral-on-surface">{title}</p>
+      <p className="text-xl font-semibold text-neutral-on-surface">{title}</p>
       {description ? (
         <p className="max-w-md text-sm text-neutral-on-surface-variant">{description}</p>
       ) : null}
