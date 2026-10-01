@@ -1,7 +1,7 @@
 import { requireAdminAuth } from "@/lib/admin-guard";
 
 import { createClient } from "@/lib/supabase/server";
-import { fetchGrowthTimeseries, fetchOverviewKpis } from "@/lib/analytics-data";
+import { fetchGrowthTimeseries, fetchOverviewKpis, fetchTeamSquads } from "@/lib/analytics-data";
 import { resolveDateRange } from "@/lib/date-range";
 import { OverviewBoard } from "@/components/admin/OverviewBoard";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -11,7 +11,11 @@ import { PageTransition } from "@/components/ui/PageTransition";
 function todayTitle(now = new Date()) {
   const tz = "America/Argentina/Buenos_Aires";
   const weekday = now.toLocaleDateString("es-AR", { weekday: "long", timeZone: tz });
-  const date = now.toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", timeZone: tz });
+  // Día y mes a mano: con `2-digit`, la ICU de es-AR igual escribe «30/9».
+  const parts = new Intl.DateTimeFormat("es-AR", { day: "numeric", month: "numeric", timeZone: tz })
+    .formatToParts(now)
+    .reduce<Record<string, string>>((acc, p) => ({ ...acc, [p.type]: p.value }), {});
+  const date = `${parts.day.padStart(2, "0")}/${parts.month.padStart(2, "0")}`;
   return `Hoy, ${weekday} ${date}`;
 }
 
@@ -22,10 +26,11 @@ export default async function DashboardHomePage() {
 
   const supabase = await createClient();
 
-  const [{ data: summary }, { data: kpis, error }, series] = await Promise.all([
+  const [{ data: summary }, { data: kpis, error }, series, squads] = await Promise.all([
     supabase.rpc("dashboard_growth_summary").maybeSingle(),
     fetchOverviewKpis(),
     fetchGrowthTimeseries(resolveDateRange({ range: "30d" })),
+    fetchTeamSquads(),
   ]);
 
   return (
@@ -40,6 +45,7 @@ export default async function DashboardHomePage() {
       ) : (
         <OverviewBoard
           kpis={kpis}
+          squads={squads.data}
           totals={
             summary ? { profiles: summary.profiles_count, matches: summary.matches_count } : null
           }

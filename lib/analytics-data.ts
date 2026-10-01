@@ -69,6 +69,26 @@ export const fetchOverviewKpis = cache(
   },
 );
 
+/**
+ * Equipos con 2 o más integrantes ahora y hace 7 días, y equipos de una sola
+ * persona. Es la métrica de crecimiento del Resumen: un equipo de uno es un
+ * capitán que todavía no invitó a nadie, y no juega. Sale de team_stints en la
+ * base (migración 20260930150000 de la app).
+ */
+export interface TeamSquads {
+  teams_2plus_now: number;
+  teams_2plus_7d_ago: number;
+  teams_solo_now: number;
+}
+
+export async function fetchTeamSquads(): Promise<Result<TeamSquads | null>> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("dashboard_team_squads").maybeSingle();
+
+  if (error) return { data: null, error: error.message };
+  return { data, error: null };
+}
+
 // ─── Crecimiento ─────────────────────────────────────────────────────────────
 
 export interface GrowthPoint {
