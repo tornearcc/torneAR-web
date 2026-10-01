@@ -11,6 +11,8 @@ const CHANNEL_LABELS: Record<string, string> = {
   // invitación a un equipo (/i/<username>?e=<código>, Tanda 7).
   equipo: "Invitación a un equipo",
   x: "X / Twitter (bio de @tornear_app)",
+  ig: "Instagram (bio de @tornear.app)",
+  tiktok: "TikTok (bio de @tornear.app)",
 };
 
 const LINK_BASE = "tornear.vercel.app/d/";
