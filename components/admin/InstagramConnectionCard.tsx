@@ -88,9 +88,8 @@ export function InstagramConnectionCard({ account }: { account: SocialAccountRow
           </div>
         ) : (
           <p className="max-w-md text-sm text-neutral-on-surface-variant">
-            Conexión pausada: Meta rechaza el login («Invalid platform app») porque la app de
-            Meta no tiene configurado el producto de Instagram. El cron diario está apagado
-            hasta que se configure.
+            Conectá @tornear.app con la cuenta de Instagram (tiene que ser tester de la app de
+            Meta) para traer seguidores y estadísticas todos los días.
           </p>
         )}
 
@@ -102,9 +101,9 @@ export function InstagramConnectionCard({ account }: { account: SocialAccountRow
       </div>
 
       <div className="flex shrink-0 items-center gap-2">
-        {/* Sin cuenta conectada, "Conectar" lleva a un error de Meta (P2-8,
-            28/09): queda deshabilitado hasta configurar la app de Meta. Con una
-            cuenta ya conectada, Reconectar y Desconectar siguen como estaban. */}
+        {/* P2-8: estuvo en «Próximamente» del 28/09 al 04/10 porque la app de
+            Meta no tenía el caso de uso de Instagram (y el App ID cargado no
+            era el de Instagram). Configurado el 04/10. */}
         {isConnected ? (
           <>
             <Button asChild variant="outline" size="sm">
@@ -118,8 +117,8 @@ export function InstagramConnectionCard({ account }: { account: SocialAccountRow
             </Button>
           </>
         ) : (
-          <Button size="sm" disabled>
-            Próximamente
+          <Button asChild size="sm">
+            <a href="/api/instagram/oauth/start">Conectar Instagram</a>
           </Button>
         )}
       </div>
