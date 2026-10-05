@@ -30,7 +30,11 @@ import type { SocialMetricPoint } from "@/lib/social-data";
  * seguidores, y dibujarla como tal sería mostrar un dato inventado.
  */
 export function SocialGrowthChart({ data }: { data: SocialMetricPoint[] }) {
-  const hasData = data.some((d) => d.followers !== null);
+  const knownPoints = data.filter((d) => d.followers !== null).length;
+  const hasData = knownPoints > 0;
+  // Con pocos datos sueltos (días sin snapshot en el medio) la línea no tiene
+  // dos puntos seguidos que unir y no se vería nada: se marcan los puntos.
+  const showDots = knownPoints <= 15;
 
   if (!hasData) {
     return (
@@ -72,6 +76,7 @@ export function SocialGrowthChart({ data }: { data: SocialMetricPoint[] }) {
             stroke={CHART_COLORS.onSurfaceVariant}
             strokeWidth={2}
             fill="url(#social-followers)"
+            dot={showDots ? { r: 4, fill: CHART_COLORS.onSurfaceVariant, strokeWidth: 0 } : false}
             activeDot={{ r: 4 }}
             connectNulls={false}
           />
