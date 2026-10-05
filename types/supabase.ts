@@ -3237,6 +3237,41 @@ export type Database = {
           teams: number
         }[]
       }
+      dashboard_instagram_insights: {
+        Args: { p_from?: string; p_to?: string }
+        Returns: {
+          accounts_engaged: number | null
+          comments: number | null
+          day: string
+          likes: number | null
+          profile_views: number | null
+          reach: number | null
+          saves: number | null
+          shares: number | null
+          total_interactions: number | null
+          views: number | null
+          website_clicks: number | null
+        }[]
+      }
+      dashboard_instagram_posts: {
+        Args: { p_from?: string; p_to?: string }
+        Returns: {
+          avg_watch_ms: number | null
+          caption: string | null
+          captured_at: string
+          comments: number | null
+          likes: number | null
+          media_id: string
+          media_type: string | null
+          permalink: string | null
+          posted_at: string | null
+          reach: number | null
+          saved: number | null
+          shares: number | null
+          total_interactions: number | null
+          views: number | null
+        }[]
+      }
       dashboard_link_clicks: {
         Args: { p_from?: string; p_to?: string }
         Returns: {
