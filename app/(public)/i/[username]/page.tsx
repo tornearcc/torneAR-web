@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { PhoneFrame } from "@/components/landing/PhoneFrame";
 import { PitchLines } from "@/components/landing/PitchLines";
 import { StoreButtons } from "@/components/landing/StoreButtons";
+import { CopyCodeButton } from "@/components/landing/CopyCodeButton";
 import { OG_IMAGE } from "@/lib/site-metadata";
 import {
   buildAppDeepLink,
@@ -128,6 +129,9 @@ export default async function ReferralLandingPage({
                 Si al registrarte no aparece completo, escribilo en «¿Tenés un
                 código de invitación?».
               </p>
+              <div className="mt-3">
+                <CopyCodeButton code={username} />
+              </div>
             </div>
 
             <a
@@ -214,8 +218,11 @@ function TeamInviteContent({
         </p>
         <p className="mt-2 text-sm text-neutral-on-surface-variant">
           Lo vas a necesitar después de registrarte: la tienda no se lo pasa a
-          la app.
+          la app. Copialo antes de ir a bajarla.
         </p>
+        <div className="mt-3">
+          <CopyCodeButton code={invite.code} />
+        </div>
       </div>
 
       <a

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Archivo, Inter, Barlow_Condensed, Epilogue } from "next/font/google";
 import { OG_IMAGE, SITE_DESCRIPTION, SITE_URL } from "@/lib/site-metadata";
 import "./globals.css";
@@ -65,6 +65,16 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     images: [OG_IMAGE.url],
   },
+};
+
+// El sitio es sólo oscuro. `colorScheme` hace que scrollbars, inputs y
+// autocompletado nativos salgan oscuros; `themeColor` pinta la barra del
+// navegador (Chrome en Android, el navegador interno de Instagram) con el
+// fondo de la landing en vez de dejarla blanca encima de una página negra.
+// El dashboard lo pisa con su verde de cancha en (admin)/dashboard/layout.tsx.
+export const viewport: Viewport = {
+  colorScheme: "dark",
+  themeColor: "#131313",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
