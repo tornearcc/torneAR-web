@@ -8,6 +8,14 @@ import { APP_STORE_URL } from "@/lib/store-links";
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col">
+      {/* Para teclado y lectores de pantalla: salta el header y va directo al
+          contenido. Invisible hasta que recibe el foco. */}
+      <a
+        href="#contenido"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-lg focus:bg-brand-primary focus:px-3 focus:py-2 focus:text-sm focus:font-bold focus:text-surface-lowest"
+      >
+        Saltar al contenido
+      </a>
       <header className="sticky top-0 z-40 border-b border-neutral-outline-variant/60 bg-surface-base/85 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">
           <Link href="/" aria-label="torneAR — inicio" className="flex items-center">
@@ -50,7 +58,9 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         </div>
       </header>
 
-      <main className="flex-1">{children}</main>
+      <main id="contenido" className="flex-1">
+        {children}
+      </main>
 
       <footer className="border-t border-neutral-outline-variant bg-surface-lowest">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-8 text-sm text-neutral-on-surface-variant sm:flex-row sm:items-center sm:justify-between sm:px-8">

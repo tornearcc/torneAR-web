@@ -69,7 +69,7 @@ export default function LandingPage() {
               Clausura 2026 en juego
             </p>
 
-            <h1 className="font-display text-5xl leading-[0.92] font-extrabold tracking-tight text-neutral-on-surface uppercase sm:text-7xl lg:text-[5.5rem]">
+            <h1 className="font-display text-balance text-5xl leading-[0.92] font-extrabold tracking-tight text-neutral-on-surface uppercase sm:text-7xl lg:text-[5.5rem]">
               El sábado ganaste.
               <br />
               <span className="text-brand-primary">¿Quién se acuerda?</span>
@@ -150,11 +150,11 @@ export default function LandingPage() {
 
       {/* ── Pantallas reales ─────────────────────────────────────────────── */}
       <section className="mx-auto max-w-6xl px-5 py-16 sm:px-8 lg:py-24">
-        <h2 className="font-display max-w-2xl text-4xl leading-[0.95] font-extrabold text-neutral-on-surface uppercase sm:text-6xl">
+        <h2 className="font-display max-w-2xl text-balance text-4xl leading-[0.95] font-extrabold text-neutral-on-surface uppercase sm:text-6xl">
           Lo que pasa en la cancha, <span className="text-brand-primary">queda.</span>
         </h2>
 
-        <div className="-mx-5 mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-4 sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0">
+        <div className="-mx-5 mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain px-5 pb-4 sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0">
           {SHOWCASE.map((item) => (
             <article
               key={item.src}
@@ -184,7 +184,7 @@ export default function LandingPage() {
       <section className="relative isolate overflow-hidden border-t border-neutral-outline-variant bg-surface-lowest">
         <PitchLines />
         <div className="mx-auto flex max-w-3xl flex-col items-center gap-6 px-5 py-20 text-center sm:py-28">
-          <h2 className="font-display text-5xl leading-[0.92] font-extrabold text-neutral-on-surface uppercase sm:text-7xl">
+          <h2 className="font-display text-balance text-5xl leading-[0.92] font-extrabold text-neutral-on-surface uppercase sm:text-7xl">
             La tabla recién <span className="text-brand-primary">arranca</span>
           </h2>
           <p className="max-w-md text-lg text-neutral-on-surface-variant">

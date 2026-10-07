@@ -1,3 +1,4 @@
+import type { Viewport } from "next";
 import { cookies } from "next/headers";
 
 import { requireAdminAuth } from "@/lib/admin-guard";
@@ -21,6 +22,12 @@ import { fetchQueueCounts } from "@/lib/admin-queues-data";
 // requireAdminAuth() ya fuerza renderizado dinámico igual, pero dejarlo
 // declarado evita que un refactor futuro lo pierda en silencio.
 export const dynamic = "force-dynamic";
+
+// Barra del navegador con el fondo de la paleta de cancha (`--pitch`), no el
+// #131313 de la landing que define el layout raíz.
+export const viewport: Viewport = {
+  themeColor: "#0F2419",
+};
 
 export default async function DashboardLayout({
   children,
