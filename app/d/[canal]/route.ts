@@ -14,7 +14,8 @@ import type { Database } from "@/types/supabase";
  * para verlo al día en Crecimiento.
  *
  * - Canales: dm, wpp, story, fb (grupos de Facebook), cancha, x (bio de @tornear_app),
- *   ig y tiktok (bio de @tornear.app en cada red) y equipo (botón
+ *   ig y tiktok (bio de @tornear.app en cada red), meta (anuncios pagos de
+ *   Meta Ads, migración 20261012120000) y equipo (botón
  *   de la invitación a un equipo, /i/<username>?e=<código>). Canal fuera de
  *   la lista: redirige igual, sin `ct` y sin registrar.
  * - Android (desde el 12/10, cuando salió en Play) y `?tienda=play` en
@@ -30,7 +31,7 @@ import type { Database } from "@/types/supabase";
 
 export const dynamic = "force-dynamic";
 
-const CHANNELS = ["dm", "wpp", "story", "fb", "cancha", "equipo", "x", "ig", "tiktok"] as const;
+const CHANNELS = ["dm", "wpp", "story", "fb", "cancha", "equipo", "x", "ig", "tiktok", "meta"] as const;
 type Channel = (typeof CHANNELS)[number];
 
 const PROVIDER_TOKEN = "129423221";
