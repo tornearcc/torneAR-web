@@ -256,7 +256,7 @@ function InstagramSection({
             {
               label: "Clicks registrados en /d/ig",
               value: igClicks,
-              source: "torneAR: llegan a la App Store (o a la web en Android). Las descargas, en App Store Connect",
+              source: "torneAR: llegan a la App Store (o a Google Play en Android). Las descargas, en App Store Connect y Play Console",
             },
           ]}
         />

@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 
+import { APP_STORE_URL, PLAY_STORE_URL } from "@/lib/store-links";
 import type { Database } from "@/types/supabase";
 
 /**
@@ -16,7 +17,12 @@ import type { Database } from "@/types/supabase";
  *   ig y tiktok (bio de @tornear.app en cada red) y equipo (botón
  *   de la invitación a un equipo, /i/<username>?e=<código>). Canal fuera de
  *   la lista: redirige igual, sin `ct` y sin registrar.
- * - Android: la app no está publicada en Play, así que va a la landing.
+ * - Android (desde el 12/10, cuando salió en Play) y `?tienda=play` en
+ *   cualquier dispositivo: van a la ficha de Google Play con
+ *   `referrer=utm_source=tornear_d&utm_campaign=<canal>`. Play Console →
+ *   Adquisición de usuarios muestra las instalaciones por campaña.
+ *   `tienda=play` es para el badge de Google Play de la web: alguien que lo
+ *   toca en una compu quiere ver la ficha de Play, no la de Apple.
  * - Bots de vista previa (WhatsApp, Instagram, X…): redirigen igual pero no
  *   cuentan. Si no, cada link pegado en un chat sumaría un click.
  * - HEAD (`curl -I`, algunos chequeos de links) no cuenta.
@@ -27,7 +33,6 @@ export const dynamic = "force-dynamic";
 const CHANNELS = ["dm", "wpp", "story", "fb", "cancha", "equipo", "x", "ig", "tiktok"] as const;
 type Channel = (typeof CHANNELS)[number];
 
-const APP_STORE_URL = "https://apps.apple.com/ar/app/tornear/id6809490985";
 const PROVIDER_TOKEN = "129423221";
 
 const BOT_UA = /bot|crawler|spider|preview|facebookexternalhit|whatsapp|telegram|slack|discord|embedly|curl|wget/i;
@@ -42,8 +47,17 @@ function platformOf(userAgent: string): "ios" | "android" | "otro" {
   return "otro";
 }
 
+function playDestination(channel: Channel | null): URL {
+  const url = new URL(PLAY_STORE_URL);
+  const referrer = new URLSearchParams({ utm_source: "tornear_d", utm_campaign: channel ?? "sin_canal" });
+  url.searchParams.set("referrer", referrer.toString());
+  return url;
+}
+
 function destination(request: NextRequest, channel: Channel | null, platform: string): URL {
-  if (platform === "android") return new URL("/", request.url);
+  if (platform === "android" || request.nextUrl.searchParams.get("tienda") === "play") {
+    return playDestination(channel);
+  }
   const url = new URL(APP_STORE_URL);
   url.searchParams.set("pt", PROVIDER_TOKEN);
   if (channel) url.searchParams.set("ct", channel);

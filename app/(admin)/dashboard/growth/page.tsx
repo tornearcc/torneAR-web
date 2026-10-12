@@ -140,8 +140,8 @@ export default async function GrowthPage({
           Clicks del período en cada link de la campaña. Cada uno lleva a la App Store con su
           canal marcado, así que las <strong className="text-neutral-on-surface">descargas y
           primeras aperturas</strong> por canal se ven en App Store Connect → Analytics → Campañas
-          (Apple las muestra a partir de 5 instalaciones). Desde Android llevan a la landing,
-          porque la app todavía no está en Play. Las vistas previas de WhatsApp, Instagram o
+          (Apple las muestra a partir de 5 instalaciones). Desde Android llevan a Google Play
+          (desde el 12/10), con la campaña en Play Console → Adquisición de usuarios. Las vistas previas de WhatsApp, Instagram o
           Facebook no cuentan como click.
         </p>
         {linkClicksResult.error ? (

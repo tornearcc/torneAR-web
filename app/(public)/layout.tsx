@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { APP_STORE_URL } from "@/lib/store-links";
 
 // Zona pública: cero sesión, cero cliente de Supabase (§0 de
 // WEB_SPECIFICATION.md) — este layout y todo lo que cuelga de él no debe
@@ -36,9 +35,14 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           </Link>
 
           {/* Sin logo de Apple: las guías de Apple sólo lo permiten dentro del
-              badge oficial (ver components/landing/StoreButtons.tsx). */}
+              badge oficial (ver components/landing/StoreButtons.tsx).
+              `/d/web` elige la tienda según el dispositivo (Android → Play,
+              el resto → App Store). `web` no es un canal medido: no suma
+              clicks en Crecimiento. Es `<a>` y no `<Link>` porque /d/ es un
+              route handler que redirige afuera, no una página. */}
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a
-            href={APP_STORE_URL}
+            href="/d/web"
             className="inline-flex items-center gap-1.5 rounded-lg bg-brand-primary px-3 py-1.5 text-sm font-bold text-surface-lowest transition hover:bg-brand-primary-fixed"
           >
             <svg
