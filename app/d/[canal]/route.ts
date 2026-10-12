@@ -24,6 +24,9 @@ import type { Database } from "@/types/supabase";
  *   Adquisición de usuarios muestra las instalaciones por campaña.
  *   `tienda=play` es para el badge de Google Play de la web: alguien que lo
  *   toca en una compu quiere ver la ficha de Play, no la de Apple.
+ * - iPhone y `?tienda=ios` en cualquier dispositivo: App Store.
+ * - Compu y robots (sin `tienda`): landing, sección «descargar» (12/10, ver
+ *   `destination`).
  * - Bots de vista previa (WhatsApp, Instagram, X…): redirigen igual pero no
  *   cuentan. Si no, cada link pegado en un chat sumaría un click.
  * - HEAD (`curl -I`, algunos chequeos de links) no cuenta.
@@ -56,8 +59,17 @@ function playDestination(channel: Channel | null): URL {
 }
 
 function destination(request: NextRequest, channel: Channel | null, platform: string): URL {
-  if (platform === "android" || request.nextUrl.searchParams.get("tienda") === "play") {
+  const tienda = request.nextUrl.searchParams.get("tienda");
+  if (tienda === "play" || (!tienda && platform === "android")) {
     return playDestination(channel);
+  }
+  // Compu, robots y todo lo que no es iPhone ni Android: a la sección de
+  // descarga de la landing, que tiene los dos badges. Antes iban a la App
+  // Store, y Meta Ads rechazaba /d/meta como destino de una campaña de
+  // tráfico: su robot seguía el redirect, veía la ficha de Apple y lo trataba
+  // como «App Url» (sólo válido en campañas de instalación de apps, 12/10).
+  if (tienda !== "ios" && platform === "otro") {
+    return new URL("/#descargar", request.url);
   }
   const url = new URL(APP_STORE_URL);
   url.searchParams.set("pt", PROVIDER_TOKEN);

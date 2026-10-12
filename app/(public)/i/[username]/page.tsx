@@ -207,7 +207,7 @@ function TeamInviteContent({
         ))}
       </ol>
 
-      <StoreButtons appStoreHref="/d/equipo" playStoreHref="/d/equipo?tienda=play" />
+      <StoreButtons appStoreHref="/d/equipo?tienda=ios" playStoreHref="/d/equipo?tienda=play" />
 
       <div className="w-full max-w-md rounded-xl border border-neutral-outline-variant bg-surface-container p-4">
         <p className="text-xs font-bold tracking-widest text-neutral-outline uppercase">
