@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { APP_STORE_URL } from "@/lib/store-links";
+import { APP_STORE_URL, PLAY_STORE_URL } from "@/lib/store-links";
 
 /*
  * Botones de tienda de la zona pública (landing e invitaciones).
@@ -46,54 +46,48 @@ export function AppStoreBadge({ href = APP_STORE_URL }: { href?: string }) {
   );
 }
 
-function LockIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <rect x="4" y="11" width="16" height="10" rx="2" />
-      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
-    </svg>
-  );
-}
-
 /**
- * Bloqueado a propósito: la app todavía no está publicada en Google Play. Es
- * un `span`, sin href que un tap pueda seguir.
+ * ─── Google Play: badge OFICIAL, publicado desde el 12/10/2026 ─────────────
+ * `public/badges/google-play-es-419.png` es el artwork de Google tal cual,
+ * bajado de play.google.com/intl/en_us/badges (español de Latinoamérica). Las
+ * guías de Google prohíben recrearlo o modificarlo. Mismo alto que el de
+ * Apple, como piden las dos tiendas cuando los badges conviven.
  *
- * Sin el badge ni el ícono de Google Play: sus guías de marca los reservan
- * para apps que ya están disponibles en la tienda. Nombrarla en texto para
- * avisar que viene sí está permitido. Cuando se publique, este componente se
- * reemplaza por el badge oficial de Google, con el mismo alto que el de Apple.
+ * `href` como en el de Apple. Para medir, `/d/<canal>?tienda=play`: sin
+ * `tienda=play`, una compu iría a la App Store.
  */
-export function GooglePlaySoonButton() {
+export function GooglePlayBadge({ href = PLAY_STORE_URL }: { href?: string }) {
   return (
-    <span
-      aria-disabled="true"
-      title="Todavía no está disponible en Google Play"
-      className={`inline-flex ${BADGE_HEIGHT} shrink-0 cursor-not-allowed items-center gap-2.5 rounded-[9px] border border-dashed border-neutral-outline-variant bg-surface-container/60 px-4 text-neutral-outline select-none`}
+    <a
+      href={href}
+      className="inline-flex shrink-0 rounded-[9px] transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-primary"
     >
-      <LockIcon className="size-4 shrink-0 opacity-70" />
-      <span className="flex flex-col text-left leading-none">
-        <span className="text-[11px] font-medium">Próximamente en</span>
-        <span className="font-display text-xl font-extrabold uppercase">Google Play</span>
-      </span>
-    </span>
+      {/* PNG de 646×250 (≈2.6:1) con alto fijado por clase + `w-auto`, igual
+          que el de Apple. */}
+      <Image
+        src="/badges/google-play-es-419.png"
+        alt="Disponible en Google Play"
+        width={134}
+        height={52}
+        className={`${BADGE_HEIGHT} w-auto`}
+      />
+    </a>
   );
 }
 
-export function StoreButtons({ className = "", appStoreHref }: { className?: string; appStoreHref?: string }) {
+export function StoreButtons({
+  className = "",
+  appStoreHref,
+  playStoreHref,
+}: {
+  className?: string;
+  appStoreHref?: string;
+  playStoreHref?: string;
+}) {
   return (
     <div className={`flex flex-wrap items-center gap-4 ${className}`}>
       <AppStoreBadge href={appStoreHref} />
-      <GooglePlaySoonButton />
+      <GooglePlayBadge href={playStoreHref} />
     </div>
   );
 }
