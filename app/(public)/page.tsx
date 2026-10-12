@@ -181,7 +181,11 @@ export default function LandingPage() {
       </section>
 
       {/* ── Cierre ───────────────────────────────────────────────────────── */}
-      <section className="relative isolate overflow-hidden border-t border-neutral-outline-variant bg-surface-lowest">
+      {/* `id="descargar"`: adonde /d/<canal> manda a quien entra desde una compu. */}
+      <section
+        id="descargar"
+        className="relative isolate overflow-hidden border-t border-neutral-outline-variant bg-surface-lowest"
+      >
         <PitchLines />
         <div className="mx-auto flex max-w-3xl flex-col items-center gap-6 px-5 py-20 text-center sm:py-28">
           <h2 className="font-display text-balance text-5xl leading-[0.92] font-extrabold text-neutral-on-surface uppercase sm:text-7xl">
