@@ -12,7 +12,7 @@
 export const SITE_URL = "https://tornear.vercel.app";
 
 export const SITE_DESCRIPTION =
-  "Armá tu equipo, desafiá rivales y subí en el ranking del fútbol amateur. Gratis para iPhone.";
+  "Armá tu equipo, desafiá rivales y subí en el ranking del fútbol amateur. Gratis para iPhone y Android.";
 
 /**
  * Imagen para las previews de WhatsApp, Instagram y X.

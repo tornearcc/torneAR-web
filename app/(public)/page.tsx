@@ -81,7 +81,7 @@ export default function LandingPage() {
 
             <StoreButtons />
 
-            <p className="text-sm text-neutral-outline">Gratis para iPhone · Fútbol 5 a 11</p>
+            <p className="text-sm text-neutral-outline">Gratis para iPhone y Android · Fútbol 5 a 11</p>
           </div>
 
           <div className="relative mx-auto w-full max-w-[19rem] lg:max-w-[21rem]">

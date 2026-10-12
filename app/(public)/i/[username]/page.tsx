@@ -30,10 +30,10 @@ type InvitePageProps = {
 };
 
 const INVITE_DESCRIPTION =
-  "Sumate a torneAR: cargá tus partidos, desafiá rivales y subí en el ranking de tu zona. Gratis para iPhone.";
+  "Sumate a torneAR: cargá tus partidos, desafiá rivales y subí en el ranking de tu zona. Gratis para iPhone y Android.";
 
 const TEAM_INVITE_DESCRIPTION =
-  "Bajate torneAR, pedí entrar al equipo y empezá a jugar partidos que suman en el ranking de tu zona. Gratis para iPhone.";
+  "Bajate torneAR, pedí entrar al equipo y empezá a jugar partidos que suman en el ranking de tu zona. Gratis para iPhone y Android.";
 
 export async function generateMetadata({
   params,
@@ -162,9 +162,9 @@ export default async function ReferralLandingPage({
 
 /**
  * Versión de equipo de la invitación (Tanda 7, P1-11): quien la ve no tiene la
- * app, así que el orden es bajarla, entrar y pedir sumarse con el código. El
- * botón del App Store pasa por `/d/equipo` para contar cuántos invitados
- * llegan a la tienda.
+ * app, así que el orden es bajarla, entrar y pedir sumarse con el código. Los
+ * dos badges pasan por `/d/equipo` para contar cuántos invitados llegan a la
+ * tienda.
  */
 function TeamInviteContent({
   inviter,
@@ -207,7 +207,7 @@ function TeamInviteContent({
         ))}
       </ol>
 
-      <StoreButtons appStoreHref="/d/equipo" />
+      <StoreButtons appStoreHref="/d/equipo" playStoreHref="/d/equipo?tienda=play" />
 
       <div className="w-full max-w-md rounded-xl border border-neutral-outline-variant bg-surface-container p-4">
         <p className="text-xs font-bold tracking-widest text-neutral-outline uppercase">
