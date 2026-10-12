@@ -13,6 +13,9 @@ const CHANNEL_LABELS: Record<string, string> = {
   x: "X / Twitter (bio de @tornear_app)",
   ig: "Instagram (bio de @tornear.app)",
   tiktok: "TikTok (bio de @tornear.app)",
+  // Destino de los anuncios de Meta Ads (pauta paga, P3-15), separado de `ig`
+  // para no mezclar los clicks pagos con los de la bio.
+  meta: "Anuncios de Meta (pauta paga)",
 };
 
 const LINK_BASE = "tornear.vercel.app/d/";
