@@ -35,12 +35,34 @@ const INVITE_DESCRIPTION =
 const TEAM_INVITE_DESCRIPTION =
   "Bajate torneAR, pedí entrar al equipo y empezá a jugar partidos que suman en el ranking de tu zona. Gratis para iPhone y Android.";
 
+// Invitación de un embajador (Programa de Embajadores, 21/10/2026): el link
+// que comparte la app trae `?emb=1`. Sin ese parámetro la página es la de
+// siempre — la app 1.0.0 depende de esta ruta.
+function isAmbassadorInvite(query: { [key: string]: string | string[] | undefined }) {
+  return query.emb === "1";
+}
+
+const AMBASSADOR_INVITE_DESCRIPTION =
+  "Creá tu equipo en torneAR y poné el usuario de quien te invitó. Gratis para iPhone y Android.";
+
+function ambassadorMetadata(username: string): Metadata {
+  const title = `${username} te invita a TorneAR`;
+  const description = AMBASSADOR_INVITE_DESCRIPTION;
+  return {
+    title,
+    description,
+    openGraph: { title, description, siteName: "torneAR", locale: "es_AR", type: "website", images: [OG_IMAGE] },
+    twitter: { card: "summary_large_image", title, description, images: [OG_IMAGE.url] },
+  };
+}
+
 export async function generateMetadata({
   params,
   searchParams,
 }: InvitePageProps): Promise<Metadata> {
   const { username } = await params;
   const query = await searchParams;
+  if (isAmbassadorInvite(query)) return ambassadorMetadata(username);
   const inviter = sanitizeInviteName(query.n) ?? username;
   const teamInvite = resolveTeamInvite(query);
   const teamLabel = teamInvite?.teamName ?? "su equipo";
@@ -87,13 +109,16 @@ export default async function ReferralLandingPage({
   // así que no hay dónde persistirlos del lado del server tampoco.
   const appDeepLink = buildAppDeepLink(username, resolveUtmParams(query));
   const teamInvite = resolveTeamInvite(query);
+  const ambassadorInvite = isAmbassadorInvite(query);
 
   return (
     <section className="relative isolate overflow-hidden">
       <PitchLines />
 
       <div className="mx-auto grid max-w-6xl items-center gap-14 px-5 pt-10 pb-16 sm:px-8 lg:grid-cols-[1.15fr_0.85fr] lg:gap-10 lg:pt-20 lg:pb-24">
-        {teamInvite ? (
+        {ambassadorInvite ? (
+          <AmbassadorInviteContent username={username} />
+        ) : teamInvite ? (
           <TeamInviteContent inviter={inviter} invite={teamInvite} />
         ) : (
           <div className="flex min-w-0 flex-col items-start gap-6">
@@ -231,6 +256,44 @@ function TeamInviteContent({
       >
         ¿Ya tenés la app? Abrila acá
       </a>
+    </div>
+  );
+}
+
+/**
+ * Invitación de un embajador (`?emb=1`): quien la ve baja la app, crea su
+ * equipo y en «¿Quién los invitó?» pone el usuario del embajador. Los badges
+ * pasan por `/d/embajador` para medir cuántos llegan a la tienda.
+ */
+function AmbassadorInviteContent({ username }: { username: string }) {
+  return (
+    <div className="flex min-w-0 flex-col items-start gap-6">
+      <p className="inline-flex items-center gap-2 rounded-full border border-brand-gold/40 bg-brand-gold/10 px-3 py-1 font-display text-sm font-bold tracking-widest text-brand-gold uppercase">
+        Invitación
+      </p>
+
+      <h1 className="font-display w-full text-5xl leading-[0.92] font-extrabold tracking-tight text-neutral-on-surface uppercase [overflow-wrap:anywhere] sm:text-7xl">
+        <span className="text-brand-primary">{username}</span>
+        <br />
+        te invita a TorneAR
+      </h1>
+
+      <p className="max-w-md text-lg text-neutral-on-surface-variant">
+        Creá tu equipo y en «¿Quién los invitó?» poné <strong className="text-neutral-on-surface">{username}</strong>.
+      </p>
+
+      <StoreButtons appStoreHref="/d/embajador?tienda=ios" playStoreHref="/d/embajador?tienda=play" />
+
+      <div className="w-full max-w-md rounded-xl border border-neutral-outline-variant bg-surface-container p-4">
+        <p className="text-xs font-bold tracking-widest text-neutral-outline uppercase">Usuario de quien te invitó</p>
+        <p className="font-display mt-1 text-3xl font-extrabold break-all text-brand-primary">{username}</p>
+        <p className="mt-2 text-sm text-neutral-on-surface-variant">
+          Lo vas a necesitar después de bajar la app, al crear el equipo. Copialo antes de ir a la tienda.
+        </p>
+        <div className="mt-3">
+          <CopyCodeButton code={username} />
+        </div>
+      </div>
     </div>
   );
 }
