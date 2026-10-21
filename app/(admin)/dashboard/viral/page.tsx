@@ -228,6 +228,7 @@ const CONTENT_TYPE_LABEL: Record<string, string> = {
   match: "Tarjeta de partido",
   referral: "Invitación del perfil",
   team_invite: "Código de equipo",
+  ambassador: "Embajadores",
   desconocido: "Sin tipo",
 };
 
