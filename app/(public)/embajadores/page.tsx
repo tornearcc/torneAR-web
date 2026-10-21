@@ -173,7 +173,7 @@ export default function AmbassadorsPage() {
       {/* ── Ranking ──────────────────────────────────────────────────────── */}
       <section className="border-y border-neutral-outline-variant bg-surface-lowest">
         <div className="mx-auto max-w-3xl px-5 py-14 sm:px-8 lg:py-20">
-          <SectionTitle>Los que ya cobraron</SectionTitle>
+          <SectionTitle>Ranking de embajadores</SectionTitle>
           <p className="mt-4 text-sm text-neutral-on-surface-variant">
             Aparecen sólo los embajadores que eligieron mostrarse.
           </p>

@@ -74,9 +74,9 @@ export default async function ViralPage() {
             hint="personas que trajeron al menos a alguien"
           />
           <StatCard
-            label="Embajadores"
+            label="Reclutadores"
             value={summary?.ambassador_count ?? 0}
-            hint="con la insignia otorgada"
+            hint="con la insignia Reclutador otorgada"
           />
         </StatBoard>
       )}

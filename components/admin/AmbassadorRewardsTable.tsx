@@ -235,7 +235,7 @@ export function AmbassadorRewardsTable({ rewards }: { rewards: RewardRow[] }) {
         impact={
           dialog?.status === "PAGADO"
             ? "Confirmá que ya hiciste la transferencia: el estado no se puede cambiar después."
-            : "Libera el lugar. Si es un equipo traído, también cae el debut del mismo partido y los bonos pendientes que ya no alcanzan."
+            : "Libera el lugar. Si es un equipo traído, también cae el debut pendiente contra ese equipo y los bonos pendientes que ya no alcanzan."
         }
         showNotesInput
         notesLabel={dialog?.status === "RECHAZADO" ? "Motivo (obligatorio)" : "Nota (opcional)"}

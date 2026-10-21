@@ -36,14 +36,14 @@ export function AmbassadorBoard() {
   if (!board.enabled) {
     return (
       <p className="rounded-xl border border-dashed border-neutral-outline-variant p-6 text-lg text-neutral-on-surface">
-        El ranking aparece cuando arranque el programa.
+        El ranking aparece mientras el programa esté activo.
       </p>
     );
   }
   if (board.ranking.length === 0) {
     return (
       <p className="rounded-xl border border-dashed border-neutral-outline-variant p-6 text-lg text-neutral-on-surface">
-        Todavía nadie cobró. Podés ser el primero.
+        Todavía nadie sumó premios. Podés ser el primero.
       </p>
     );
   }

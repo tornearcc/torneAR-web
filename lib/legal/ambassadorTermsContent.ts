@@ -49,7 +49,7 @@ export const AMBASSADOR_TERMS_SECTIONS: LegalSection[] = [
   {
     title: "6. Extra de debut",
     paragraphs: [
-      "Si el embajador tiene un equipo propio en la app (se asigna automáticamente cuando integra un solo equipo; si integra varios, lo elige él) y el primer partido válido de ese equipo es contra un equipo traído por él, suma $5.000 más, una sola vez. Si ese primer partido es contra otro equipo, el extra no se paga. El embajador tiene que ser integrante de su equipo al terminar el partido.",
+      "Si el embajador tiene un equipo propio en la app (se asigna automáticamente cuando integra un solo equipo; si integra varios, lo elige él) y el primer partido válido de ese equipo es contra un equipo traído por él, suma $5.000 más, una sola vez. Si ese primer partido es contra otro equipo, el extra no se paga. El embajador tiene que ser integrante de su equipo al terminar el partido. Cuenta el primer partido válido del equipo propio jugado desde el lanzamiento del programa y desde que ese equipo quedó como propio. El rival tiene que ser un equipo traído por el embajador que haya generado su premio por equipo traído.",
     ],
   },
   {
@@ -61,7 +61,7 @@ export const AMBASSADOR_TERMS_SECTIONS: LegalSection[] = [
   {
     title: "8. Partido válido",
     paragraphs: [
-      "Un partido terminado y con resultado cargado en la app, con check-in de los dos equipos, y donde cada equipo tiene como mínimo la cantidad de titulares del formato jugado (5 en Fútbol 5, 6 en Fútbol 6, 7 en Fútbol 7, 8 en Fútbol 8, 9 en Fútbol 9 y 11 en Fútbol 11), integrantes del equipo con cuenta propia.",
+      "Un partido terminado y con resultado cargado en la app, con check-in de los dos equipos, y donde cada equipo tiene como mínimo la cantidad de titulares del formato jugado (5 en Fútbol 5, 6 en Fútbol 6, 7 en Fútbol 7, 8 en Fútbol 8, 9 en Fútbol 9 y 11 en Fútbol 11), integrantes del equipo con cuenta propia. No cuentan los partidos contra los equipos de demostración de las tiendas.",
     ],
   },
   {
