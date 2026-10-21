@@ -3,6 +3,7 @@ import Link from "next/link";
 import { PitchLines } from "@/components/landing/PitchLines";
 import { StoreButtons } from "@/components/landing/StoreButtons";
 import { AmbassadorBoard } from "@/components/embajadores/AmbassadorBoard";
+import { ComoFunciona } from "@/components/embajadores/ComoFunciona";
 import { EarningsCalculator } from "@/components/embajadores/EarningsCalculator";
 import { Faq } from "@/components/embajadores/Faq";
 import { FieldMock } from "@/components/embajadores/FieldMock";
@@ -34,12 +35,6 @@ export const metadata: Metadata = {
   },
   twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION, images: [OG_IMAGE.url] },
 };
-
-const STEPS = [
-  { n: "1", title: "Anotate en la app con tu Instagram" },
-  { n: "2", title: "Pasale tu link a otros equipos" },
-  { n: "3", title: "Cuando juegan su primer partido, cobrás $5.000 por cada uno" },
-];
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
@@ -80,14 +75,7 @@ export default function AmbassadorsPage() {
       <section className="border-y border-neutral-outline-variant bg-surface-lowest">
         <div className="mx-auto max-w-6xl px-5 py-14 sm:px-8 lg:py-20">
           <SectionTitle>Cómo funciona</SectionTitle>
-          <ol className="mt-2 divide-y divide-neutral-outline-variant">
-            {STEPS.map((s) => (
-              <li key={s.n} className="flex items-baseline gap-4 py-5">
-                <span className="font-display text-5xl leading-none font-extrabold text-brand-primary">{s.n}</span>
-                <span className="text-lg font-bold text-neutral-on-surface sm:text-xl">{s.title}</span>
-              </li>
-            ))}
-          </ol>
+          <ComoFunciona />
         </div>
       </section>
 
