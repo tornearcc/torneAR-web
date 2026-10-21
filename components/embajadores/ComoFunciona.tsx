@@ -66,7 +66,7 @@ export function ComoFunciona() {
         onScroll={onScroll}
         tabIndex={0}
         aria-label="Pasos para ser embajador"
-        className="-mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-2 [scrollbar-width:none] sm:-mx-8 sm:px-8 lg:mx-0 lg:grid lg:grid-cols-3 lg:gap-8 lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden"
+        className="relative -mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-2 [scrollbar-width:none] sm:-mx-8 sm:px-8 lg:mx-0 lg:grid lg:grid-cols-3 lg:gap-8 lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden"
       >
         {STEPS.map((s) => (
           <li key={s.n} className="w-[82%] shrink-0 snap-center flex-col sm:w-[60%] lg:w-auto flex">
