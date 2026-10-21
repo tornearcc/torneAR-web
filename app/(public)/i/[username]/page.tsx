@@ -291,7 +291,7 @@ function AmbassadorInviteContent({ username }: { username: string }) {
           Lo vas a necesitar después de bajar la app, al crear el equipo. Copialo antes de ir a la tienda.
         </p>
         <div className="mt-3">
-          <CopyCodeButton code={username} />
+          <CopyCodeButton code={username} label="Copiar usuario" />
         </div>
       </div>
     </div>

@@ -33,6 +33,13 @@ export function AmbassadorBoard() {
   if (!board) {
     return <div aria-busy="true" className="h-40 animate-pulse rounded-xl bg-surface-container" />;
   }
+  if (!board.enabled) {
+    return (
+      <p className="rounded-xl border border-dashed border-neutral-outline-variant p-6 text-lg text-neutral-on-surface">
+        El ranking aparece cuando arranque el programa.
+      </p>
+    );
+  }
   if (board.ranking.length === 0) {
     return (
       <p className="rounded-xl border border-dashed border-neutral-outline-variant p-6 text-lg text-neutral-on-surface">
