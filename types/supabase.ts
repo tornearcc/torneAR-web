@@ -3080,7 +3080,7 @@ export type Database = {
         Returns: undefined
       }
       admin_set_ambassador_status: {
-        Args: { p_note?: string; p_profile_id: string; p_status: string }
+        Args: { p_note: string | null; p_profile_id: string; p_status: string }
         Returns: undefined
       }
       admin_verify_ambassador_follow: {

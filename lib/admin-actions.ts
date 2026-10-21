@@ -720,7 +720,7 @@ export async function setAmbassadorStatusAction(input: {
   const { error } = await supabase.rpc("admin_set_ambassador_status", {
     p_profile_id: input.profileId,
     p_status: input.status,
-    p_note: input.note.trim() || undefined,
+    p_note: input.note.trim() || null,
   });
 
   if (error) {
