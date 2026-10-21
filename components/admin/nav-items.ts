@@ -2,6 +2,7 @@ import {
   Activity,
   CalendarRange,
   Flag,
+  Handshake,
   HeartPulse,
   ImageIcon,
   LayoutDashboard,
@@ -53,6 +54,7 @@ export const NAV_GROUPS: readonly NavGroup[] = [
     items: [
       { href: "/dashboard/growth", label: "Crecimiento", icon: TrendingUp },
       { href: "/dashboard/viral", label: "Viralidad", icon: Share2 },
+      { href: "/dashboard/ambassadors", label: "Embajadores", icon: Handshake },
       { href: "/dashboard/social", label: "Redes", icon: Radar },
       { href: "/dashboard/content", label: "Contenido", icon: ImageIcon },
       { href: "/dashboard/activity", label: "Actividad", icon: Activity },

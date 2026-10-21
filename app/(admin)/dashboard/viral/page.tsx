@@ -74,9 +74,9 @@ export default async function ViralPage() {
             hint="personas que trajeron al menos a alguien"
           />
           <StatCard
-            label="Embajadores"
+            label="Reclutadores"
             value={summary?.ambassador_count ?? 0}
-            hint="con la insignia otorgada"
+            hint="con la insignia Reclutador otorgada"
           />
         </StatBoard>
       )}
@@ -228,6 +228,7 @@ const CONTENT_TYPE_LABEL: Record<string, string> = {
   match: "Tarjeta de partido",
   referral: "Invitación del perfil",
   team_invite: "Código de equipo",
+  ambassador: "Embajadores",
   desconocido: "Sin tipo",
 };
 

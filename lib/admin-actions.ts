@@ -593,6 +593,16 @@ export async function updateVersionAction(input: {
  */
 function humanizeRpcError(message: string): string {
   if (message.includes("NOT_AUTHORIZED")) return "No tenés permisos para esta acción.";
+  if (message.includes("FOLLOW_NOT_VERIFIED")) {
+    return "Falta verificar que sigue a @tornear.app: verificalo antes de marcar el pago.";
+  }
+  if (message.includes("NOTE_REQUIRED")) return "Rechazar un premio exige una nota con el motivo.";
+  if (message.includes("ALREADY_PAID")) return "Ese premio ya estaba pagado.";
+  if (message.includes("ALREADY_REJECTED")) return "Ese premio ya estaba rechazado.";
+  if (message.includes("NOT_FOUND") && (message.includes("REWARD") || message.includes("AMBASSADOR"))) {
+    return "El premio o el embajador ya no existe.";
+  }
+  if (message.includes("INVALID_STATUS")) return "Estado inválido.";
   if (message.includes("PROFILE_NOT_FOUND")) return "El perfil no existe.";
   if (message.includes("CANNOT_SUSPEND_SELF")) return "No podés suspenderte a vos mismo.";
   if (message.includes("CANNOT_DELETE_SELF")) {
@@ -620,4 +630,111 @@ function humanizeRpcError(message: string): string {
     return "La foto registrada en la denuncia no es de la carpeta del perfil denunciado. No se borró nada: revisá la denuncia a mano.";
   }
   return message;
+}
+
+// ─── Programa de embajadores ─────────────────────────────────────────────────
+
+/**
+ * Pago o rechazo de un premio. Las reglas (follow verificado para pagar, nota
+ * para rechazar, arrastre de debut y bonos) viven en la RPC
+ * `admin_set_ambassador_reward_status`; acá sólo se traducen sus errores.
+ */
+export async function setAmbassadorRewardStatusAction(input: {
+  id: string;
+  status: "PAGADO" | "RECHAZADO";
+  note?: string;
+}): Promise<ActionResult> {
+  const auth = await requireAdminAction();
+  if (!auth.ok) return { ok: false, error: auth.error };
+
+  if (input.status !== "PAGADO" && input.status !== "RECHAZADO") {
+    return { ok: false, error: "Estado inválido." };
+  }
+  const note = input.note?.trim() || undefined;
+  if (input.status === "RECHAZADO" && !note) {
+    return { ok: false, error: "Rechazar un premio exige una nota con el motivo." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_set_ambassador_reward_status", {
+    p_id: input.id,
+    p_status: input.status,
+    p_note: note,
+  });
+
+  if (error) {
+    console.error("[admin] premio de embajador falló:", error.message);
+    return { ok: false, error: humanizeRpcError(error.message) };
+  }
+
+  console.info(
+    `[admin] premio ${input.id} -> ${input.status} por ${auth.session.profile.username}`,
+  );
+  revalidatePath("/dashboard/ambassadors");
+
+  return {
+    ok: true,
+    message: input.status === "PAGADO" ? "Premio marcado como pagado." : "Premio rechazado.",
+  };
+}
+
+export async function verifyAmbassadorFollowAction(input: {
+  profileId: string;
+  verified: boolean;
+}): Promise<ActionResult> {
+  const auth = await requireAdminAction();
+  if (!auth.ok) return { ok: false, error: auth.error };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_verify_ambassador_follow", {
+    p_profile_id: input.profileId,
+    p_verified: input.verified,
+  });
+
+  if (error) {
+    console.error("[admin] verificación de follow falló:", error.message);
+    return { ok: false, error: humanizeRpcError(error.message) };
+  }
+
+  revalidatePath("/dashboard/ambassadors");
+
+  return {
+    ok: true,
+    message: input.verified ? "Follow verificado." : "Verificación del follow quitada.",
+  };
+}
+
+export async function setAmbassadorStatusAction(input: {
+  profileId: string;
+  status: "ACTIVO" | "SUSPENDIDO";
+  note: string;
+}): Promise<ActionResult> {
+  const auth = await requireAdminAction();
+  if (!auth.ok) return { ok: false, error: auth.error };
+
+  if (input.status !== "ACTIVO" && input.status !== "SUSPENDIDO") {
+    return { ok: false, error: "Estado inválido." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_set_ambassador_status", {
+    p_profile_id: input.profileId,
+    p_status: input.status,
+    p_note: input.note.trim() || null,
+  });
+
+  if (error) {
+    console.error("[admin] estado de embajador falló:", error.message);
+    return { ok: false, error: humanizeRpcError(error.message) };
+  }
+
+  revalidatePath("/dashboard/ambassadors");
+
+  return {
+    ok: true,
+    message:
+      input.status === "SUSPENDIDO"
+        ? "Embajador suspendido: no genera premios nuevos."
+        : "Embajador reactivado. Lo jugado durante la suspensión no se paga.",
+  };
 }
