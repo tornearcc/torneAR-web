@@ -14,7 +14,7 @@ import { useEffect, useState } from "react";
  * el lector de pantalla. Si el navegador no deja escribir en el portapapeles
  * (algunos navegadores internos de apps), se avisa en vez de fallar callado.
  */
-export function CopyCodeButton({ code }: { code: string }) {
+export function CopyCodeButton({ code, label = "Copiar código" }: { code: string; label?: string }) {
   const [status, setStatus] = useState<"idle" | "copied" | "failed">("idle");
 
   useEffect(() => {
@@ -52,7 +52,7 @@ export function CopyCodeButton({ code }: { code: string }) {
           <rect x="9" y="9" width="11" height="11" rx="2" />
           <path d="M5 15V5a2 2 0 0 1 2-2h10" />
         </svg>
-        Copiar código
+        {label}
       </button>
       <span aria-live="polite" className="text-sm text-neutral-on-surface-variant">
         {status === "copied" && "¡Copiado!"}

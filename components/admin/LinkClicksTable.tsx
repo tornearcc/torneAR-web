@@ -16,6 +16,8 @@ const CHANNEL_LABELS: Record<string, string> = {
   // Destino de los anuncios de Meta Ads (pauta paga, P3-15), separado de `ig`
   // para no mezclar los clicks pagos con los de la bio.
   meta: "Anuncios de Meta (pauta paga)",
+  // Botones de /embajadores y de la invitación de un embajador (/i/<username>?emb=1).
+  embajador: "Programa de embajadores",
 };
 
 const LINK_BASE = "tornear.vercel.app/d/";

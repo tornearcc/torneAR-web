@@ -3075,6 +3075,18 @@ export type Database = {
         Args: { p_is_admin: boolean; p_profile_id: string }
         Returns: undefined
       }
+      admin_set_ambassador_reward_status: {
+        Args: { p_id: string; p_note?: string; p_status: string }
+        Returns: undefined
+      }
+      admin_set_ambassador_status: {
+        Args: { p_note: string | null; p_profile_id: string; p_status: string }
+        Returns: undefined
+      }
+      admin_verify_ambassador_follow: {
+        Args: { p_profile_id: string; p_verified: boolean }
+        Returns: undefined
+      }
       admin_set_profile_gender: {
         Args: { p_gender: string; p_profile_id: string; p_reason: string }
         Returns: Json
@@ -3191,6 +3203,62 @@ export type Database = {
           matches_created: number
           matches_finished: number
           matches_scheduled: number
+        }[]
+      }
+      dashboard_ambassador_rewards: {
+        Args: never
+        Returns: {
+          ambassador_full_name: string
+          ambassador_profile_id: string
+          ambassador_username: string
+          amount: number
+          counted_members: number
+          created_at: string
+          finished_at: string
+          follow_verified: boolean
+          format: string
+          id: string
+          instagram: string
+          kind: string
+          match_id: string
+          note: string
+          paid_at: string
+          payout_alias: string
+          rival_team_name: string
+          status: string
+          team_name: string
+        }[]
+      }
+      dashboard_ambassador_summary: {
+        Args: never
+        Returns: {
+          ambassadors: number
+          committed: number
+          enabled: boolean
+          paid: number
+          pending_follow_checks: number
+          slots_total: number
+          slots_used: number
+        }[]
+      }
+      dashboard_ambassadors: {
+        Args: never
+        Returns: {
+          accepted_at: string
+          debut_state: string
+          earned: number
+          email: string
+          follow_verified_at: string
+          full_name: string
+          instagram: string
+          own_team_name: string
+          paid: number
+          payout_alias: string
+          profile_id: string
+          show_in_ranking: boolean
+          status: string
+          teams_brought: number
+          username: string
         }[]
       }
       dashboard_attribution_stats: {
