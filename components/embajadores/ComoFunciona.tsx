@@ -22,11 +22,11 @@ const STEPS = [
   {
     n: 2,
     title: "Pasale tu link a otros equipos",
-    line: "Compartilo por WhatsApp. Ellos ponen tu usuario cuando crean el equipo.",
+    line: "Mandáselo a otros equipos. Ellos ponen tu usuario cuando crean el equipo.",
     Mock: ShareMock,
-    alt: "Tarjeta para invitar a un equipo y mensaje de WhatsApp con tu link",
+    alt: "Tarjeta para invitar a un equipo y un mensaje con tu link",
     description:
-      "Tarjeta «Invitá a un equipo» y un mensaje de WhatsApp: «Creá tu equipo y en ¿Quién los invitó? poné mi usuario jose», con el link tornear.vercel.app/i/jose?emb=1.",
+      "Tarjeta «Invitá a un equipo» y un mensaje: «Creá tu equipo y en ¿Quién los invitó? poné mi usuario jose», con el link tornear.vercel.app/i/jose?emb=1.",
   },
   {
     n: 3,

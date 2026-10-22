@@ -87,16 +87,16 @@ export function ShareMock(props: StepMockProps) {
         <p className="font-display text-xl leading-none font-extrabold text-neutral-on-surface uppercase">Embajador</p>
         <div className="mt-3 rounded-xl border border-neutral-outline-variant bg-surface-container p-3">
           <p className="text-[0.85rem] font-bold text-neutral-on-surface">Invitá a un equipo</p>
-          <p className="mt-0.5 text-[0.7rem] text-neutral-on-surface-variant">Mandales tu link por WhatsApp.</p>
+          <p className="mt-0.5 text-[0.7rem] text-neutral-on-surface-variant">Mandales tu link por mensaje.</p>
           <div className="mt-2.5 rounded-lg bg-brand-primary py-2 text-center text-[0.8rem] font-bold text-surface-lowest">
             Compartir mi link
           </div>
         </div>
         <div className="mt-4 flex justify-end">
-          <div className="max-w-[88%] rounded-xl rounded-tr-sm bg-[#005c4b] px-3 py-2 text-[0.75rem] leading-snug text-[#e9edef]">
+          <div className="max-w-[88%] rounded-xl rounded-tr-sm bg-surface-high px-3 py-2 text-[0.75rem] leading-snug text-neutral-on-surface">
             <p>Creá tu equipo y en &quot;¿Quién los invitó?&quot; poné mi usuario jose</p>
-            <p className="mt-1.5 break-all text-[#53bdeb] underline">tornear.vercel.app/i/jose?emb=1</p>
-            <p className="mt-1 text-right text-[0.6rem] text-[#8696a0]">21:04 ✓✓</p>
+            <p className="mt-1.5 break-all text-info-secondary underline">tornear.vercel.app/i/jose?emb=1</p>
+            <p className="mt-1 text-right text-[0.6rem] text-neutral-outline">21:04</p>
           </div>
         </div>
       </div>
