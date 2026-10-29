@@ -30,7 +30,7 @@ const STEPS = [
   },
   {
     n: 3,
-    title: "Cuando juegan su primer partido, cobrás $5.000 por cada uno",
+    title: "Cuando juegan su primer partido por ranking, cobrás $5.000 por cada uno",
     line: "Te avisamos al instante y lo ves sumado en tus ganancias.",
     Mock: EarningsMock,
     alt: "Notificación de que sumaste $5.000 y panel de ganancias",

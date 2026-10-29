@@ -12,7 +12,7 @@ import { SlotsCounter } from "@/components/embajadores/SlotsCounter";
 import { OG_IMAGE } from "@/lib/site-metadata";
 
 /*
- * Programa de Embajadores (v2, 21/10/2026). Estática: lo único que viene de la
+ * Programa de Embajadores (v2, 21/10/2026; bases v2 del 29/10/2026). Estática: lo único que viene de la
  * base (cupos y ranking) se pide desde el navegador a /api/embajadores/tablero,
  * así la zona pública no importa lib/supabase. Se diseña para 390px: la letra
  * chica va visible al final y las reglas completas están en /legal/embajadores.
@@ -20,7 +20,7 @@ import { OG_IMAGE } from "@/lib/site-metadata";
 
 const TITLE = "¿Querés ganar plata jugando al fútbol? — Embajadores de torneAR";
 const DESCRIPTION =
-  "$5.000 por cada equipo que traigas a torneAR y juegue su primer partido. Anotate como embajador desde la app.";
+  "$5.000 por cada equipo nuevo que traigas a torneAR y juegue su primer partido por ranking. Anotate como embajador desde la app.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -55,8 +55,8 @@ export default function AmbassadorsPage() {
             ¿Querés ganar plata jugando al fútbol?
           </h1>
           <p className="mt-6 max-w-xl text-xl text-neutral-on-surface">
-            <strong className="font-extrabold text-brand-gold">$5.000</strong> por cada equipo que traigas a torneAR y
-            juegue su primer partido.
+            <strong className="font-extrabold text-brand-gold">$5.000</strong> por cada equipo nuevo que traigas a
+            torneAR y juegue su primer partido por ranking.
           </p>
           <div className="mt-8 flex flex-col items-start gap-3">
             {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
@@ -87,8 +87,8 @@ export default function AmbassadorsPage() {
               Extra de debut
             </h2>
             <p className="mt-4 text-lg text-neutral-on-surface">
-              ¿Tenés equipo? Si su primer partido es contra un equipo que trajiste, sumás $5.000 más: ese partido te
-              deja $10.000.
+              ¿Tenés equipo? Si su primer partido por ranking es contra un equipo que trajiste, sumás $5.000 más: ese
+              partido te deja $10.000.
             </p>
           </div>
           <div className="rounded-2xl border border-brand-primary/40 bg-brand-primary/10 p-6">
@@ -186,7 +186,14 @@ export default function AmbassadorsPage() {
         <div className="mx-auto max-w-3xl px-5 py-12 sm:px-8">
           <h2 className="font-display text-2xl font-bold text-neutral-on-surface uppercase">La letra chica</h2>
           <ul className="mt-4 flex list-disc flex-col gap-2 pl-5 text-base text-neutral-on-surface-variant">
-            <li>Cada equipo traído paga una sola vez: $5.000 cuando juega su primer partido válido.</li>
+            <li>
+              Cada equipo traído paga una sola vez: $5.000 cuando juega su primer partido válido, que tiene que ser
+              por ranking. Los amistosos no cuentan.
+            </li>
+            <li>
+              Todos los jugadores del equipo traído tienen que ser nuevos: que no hayan jugado antes con otro equipo
+              en torneAR.
+            </li>
             <li>
               El programa termina cuando 100 equipos traídos jugaron su primer partido válido. No tiene fecha de fin.
             </li>
@@ -196,8 +203,8 @@ export default function AmbassadorsPage() {
             </li>
             <li>Los bonos de 5 y 10 equipos se pagan una vez cada uno.</li>
             <li>
-              Cada jugador cuenta para un solo equipo por embajador, y un equipo traído no genera premio si estás en
-              su plantel.
+              Cada jugador cuenta una sola vez en todo el programa, y un equipo traído no genera premio si estás en su
+              plantel.
             </li>
             <li>
               Revisamos cada premio antes de pagarlo y podemos rechazarlo o suspender al embajador si detectamos
