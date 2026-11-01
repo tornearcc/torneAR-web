@@ -13,16 +13,17 @@
  * Scopes: `instagram_business_basic` para `followers_count`/`follows_count`/
  * `media_count` del propio perfil, e `instagram_business_manage_insights`
  * (desde el 04/10) para las estadísticas: vistas, alcance, visitas al perfil,
- * toques en el link y métricas por publicación. No se pide nada de
- * `instagram_business_content_publish` ni `_manage_comments`: no hace falta
- * para el termómetro, y pedir permisos de más sólo hace más lento el review
- * de Meta el día que la app deje de ser de uso interno.
+ * toques en el link y métricas por publicación. Desde el 01/11 también
+ * `instagram_business_manage_comments`, para leer los comentarios de los reels
+ * de la serie «Del potrero al estadio» (los nombres que van a la tribuna).
+ * No se pide `instagram_business_content_publish`: pedir permisos de más sólo
+ * hace más lento el review de Meta el día que la app deje de ser de uso interno.
  */
 
 const AUTHORIZE_URL = "https://api.instagram.com/oauth/authorize";
 const SHORT_LIVED_TOKEN_URL = "https://api.instagram.com/oauth/access_token";
 const GRAPH_BASE = "https://graph.instagram.com";
-const SCOPES = "instagram_business_basic,instagram_business_manage_insights";
+const SCOPES = "instagram_business_basic,instagram_business_manage_insights,instagram_business_manage_comments";
 
 function requireEnv(name: string): string {
   const value = process.env[name];
