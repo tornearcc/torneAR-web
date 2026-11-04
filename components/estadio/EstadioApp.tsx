@@ -516,7 +516,7 @@ function desdeParametro(d: Datos, b: string): Seleccion | null {
     return i >= 0 ? { tipo: "equipo", i } : null;
   }
   if (b.startsWith("@")) {
-    const i = d.hinchas.findIndex((h) => h && igual(h[0], b));
+    const i = d.hinchas.findIndex((h) => h && (igual(h[0], b) || (h[2] ?? []).some((a) => igual(a, b))));
     if (i >= 0) return { tipo: "hincha", i };
   }
   const i = d.platea.findIndex((p) => p && igual(p[0], b));

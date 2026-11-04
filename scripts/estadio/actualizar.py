@@ -105,30 +105,46 @@ def ordenar_estable(previos, nuevos, sacados):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--capitulo", type=int, required=True, help="capítulo que la web muestra como actual")
-    ap.add_argument("--comentarios", help="comentarios.json (por defecto, el del último potrero-epN)")
+    ap.add_argument("--comentarios", nargs="*", help="comentarios.json, del más viejo al más nuevo (por defecto, los de todos los potrero-epN)")
     ap.add_argument("--escudos", action="store_true", help="volver a bajar todos los escudos")
     a = ap.parse_args()
 
-    ruta_com = a.comentarios or sorted(glob.glob(os.path.join(RAIZ, "contenido", "2-proyectos", "potrero-ep*", "datos", "comentarios.json")),
-                                       key=lambda p: int(re.search(r"ep(\d+)", p).group(1)))[-1]
+    # todos los capítulos: así nadie que ya apareció se cae porque borró el comentario
+    rutas_com = a.comentarios or sorted(glob.glob(os.path.join(RAIZ, "contenido", "2-proyectos", "potrero-ep*", "datos", "comentarios.json")),
+                                        key=lambda p: int(re.search(r"ep(\d+)", p).group(1)))
     previo = json.load(open(SALIDA, encoding="utf-8")) if os.path.exists(SALIDA) else {}
     sacados = set()
     if os.path.exists(SACAR):
         sacados = {l.strip().lstrip("@").lower() for l in open(SACAR, encoding="utf-8") if l.strip() and not l.startswith("#")}
 
     # ── hinchada: primer comentario de cada uno ──
+    # Cada comentario se identifica por su id: el archivo más nuevo manda el @ actual y los anteriores quedan como
+    # alias (gente que se cambió el usuario de Instagram y se busca con el de antes).
     cap_de = {sc: c for c, scs in CAPITULOS.items() for sc in scs}
-    primero = {}
-    for c in json.load(open(ruta_com, encoding="utf-8")):
-        u = (c.get("usuario") or "").strip()
-        if not u or u == PROPIA or not limpio(u):
+    por_id = {}
+    for ruta in rutas_com:
+        for c in json.load(open(ruta, encoding="utf-8")):
+            u = (c.get("usuario") or "").strip()
+            if not u:
+                continue
+            viejo = por_id.get(c["id"])
+            por_id[c["id"]] = dict(c, usuario=u, alias=(viejo["alias"] | {viejo["usuario"]}) - {u} if viejo else set())
+    primero, alias = {}, {}
+    for c in por_id.values():
+        u = c["usuario"]
+        if u == PROPIA or not limpio(u):
             continue
         cap = cap_de.get(c.get("media"), 0)
         if u not in primero or c["fecha"] < primero[u][0]:
             primero[u] = (c["fecha"], cap)
+        alias.setdefault(u, set()).update(x for x in c["alias"] if limpio(x))
+    # un alias que es el @ actual de otra persona no sirve para buscar a esta
+    for u in alias:
+        alias[u] = sorted(x for x in alias[u] if x not in primero)
     hinchas = ordenar_estable([h[0] if h else None for h in previo.get("hinchas", [])], [(u, f) for u, (f, _) in primero.items()], sacados)
     cap_previo = {h[0]: h[1] for h in previo.get("hinchas", []) if h}
-    hinchas = [[u, primero[u][1] if u in primero else cap_previo.get(u, 0)] if u else None for u in hinchas]
+    hinchas = [([u, primero[u][1] if u in primero else cap_previo.get(u, 0)] + ([alias[u]] if alias.get(u) else [])) if u else None
+               for u in hinchas]
 
     # ── equipos ──
     equipos = sql("""
