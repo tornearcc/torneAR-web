@@ -78,10 +78,21 @@ export async function armarTarjeta(d: Datos, s: Seleccion, foto: Blob | null): P
   g.fillStyle = VERDE;
   g.font = `800 60px ${fd}`;
   g.fillText(recortar(g, t.lugar.toUpperCase(), W - 128), 64, y);
-  y += 62;
+  // el detalle va en hasta dos líneas (cortado por palabras, no a la mitad)
   g.fillStyle = "rgba(255,255,255,.72)";
   g.font = `500 36px ${fu}`;
-  g.fillText(recortar(g, t.detalle, W - 128), 64, y);
+  const lineas: string[] = [];
+  for (const palabra of t.detalle.split(" ")) {
+    const ult = lineas.length - 1, prueba = ult >= 0 ? `${lineas[ult]} ${palabra}` : palabra;
+    if (ult >= 0 && g.measureText(prueba).width <= W - 128) lineas[ult] = prueba;
+    else lineas.push(palabra);
+  }
+  if (lineas.length > 2) lineas.splice(1, lineas.length - 1, recortar(g, lineas.slice(1).join(" "), W - 128));
+  for (const l of lineas) {
+    y += 50;
+    g.fillText(l, 64, y);
+  }
+  y += 12;
 
   // equipo con escudo
   const eqs =
