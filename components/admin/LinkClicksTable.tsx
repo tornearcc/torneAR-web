@@ -18,6 +18,8 @@ const CHANNEL_LABELS: Record<string, string> = {
   meta: "Anuncios de Meta (pauta paga)",
   // Botones de /embajadores y de la invitación de un embajador (/i/<username>?emb=1).
   embajador: "Programa de embajadores",
+  // Botones de la web del estadio (/estadio, serie «Del potrero al estadio»).
+  estadio: "Web del estadio",
 };
 
 const LINK_BASE = "tornear.vercel.app/d/";

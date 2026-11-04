@@ -1,0 +1,1 @@
+# Quienes pidieron no aparecer en /estadio (uno por línea, sin @). Lo lee actualizar.py.
