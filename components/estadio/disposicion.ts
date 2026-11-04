@@ -7,7 +7,8 @@
  * platea de adelante hacia atrás. Si cambian las constantes de acá, todos cambian de lugar: no tocarlas a la ligera.
  */
 
-export type Hincha = [usuario: string, capitulo: number] | null;
+/** [@ actual, capítulo del primer comentario, @ anteriores si se cambió el usuario] */
+export type Hincha = [usuario: string, capitulo: number, alias?: string[]] | null;
 export type Platea = [usuario: string, equipos: number[]] | null;
 export type Equipo = { nombre: string; n: number; escudo: string | null; jugados: number; ejemplo: boolean };
 export type Meta = { n: number; txt: string; ok: boolean };
@@ -174,7 +175,12 @@ export function buscar(d: Datos, q: string, max = 8): Resultado[] {
   d.hinchas.forEach((h, i) => {
     if (!h) return;
     const sc = puntuar(h[0]);
-    if (sc >= 0) out.push({ tipo: "hincha", i, texto: "@" + h[0], sub: "Instagram · Hinchada", score: sc + 0.1 });
+    if (sc >= 0) return void out.push({ tipo: "hincha", i, texto: "@" + h[0], sub: "Instagram · Hinchada", score: sc + 0.1 });
+    // se cambió el @: también lo encuentra el de antes
+    for (const a of h[2] ?? []) {
+      const sa = puntuar(a);
+      if (sa >= 0) return void out.push({ tipo: "hincha", i, texto: "@" + h[0], sub: `Instagram · antes @${a} · Hinchada`, score: sa + 0.15 });
+    }
   });
   d.equipos.forEach((e, i) => {
     const sc = puntuar(e.nombre);
