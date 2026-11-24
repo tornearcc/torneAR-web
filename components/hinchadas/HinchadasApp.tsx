@@ -126,7 +126,7 @@ export function HinchadasApp() {
                 </li>
               ))}
             </ol>
-            <p className="mt-2 text-xs text-white/50">★ Tribuna nueva: los clubes que no eran de los cinco grandes con más hinchas.</p>
+            <p className="mt-2 text-xs text-white/50">★ Tribuna nueva: Rosario se ganó dos. El ranking es el del conteo del video (23/11, 20:35); los que comentaron después también están en el buscador.</p>
           </section>
         )}
 
@@ -164,7 +164,7 @@ function Tarjeta({ h }: { h: Hallado }) {
       </div>
       <p className="mt-3 font-semibold">
         {h.tribuna
-          ? `Sos el hincha n.º ${fmt(h.numero)} de ${fmt(h.total)} en la tribuna. 🏟️`
+          ? `Sos el hincha n.º ${fmt(h.numero)} de la tribuna. 🏟️`
           : `${h.club} no llegó a tener tribuna esta vez (${fmt(h.total)} hinchas). En el próximo estadio, que comente toda la hinchada.`}
       </p>
     </div>
