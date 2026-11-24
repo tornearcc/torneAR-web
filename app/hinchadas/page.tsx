@@ -6,7 +6,7 @@ import { OG_IMAGE } from "@/lib/site-metadata";
 /*
  * «¿Qué hinchada llena primero su tribuna?» (reels del estadio de clubes de @tornear.app): el resultado y el buscador
  * para encontrar tu @ en la tribuna de tu club. Datos fijos en public/hinchadas/datos.json, que arma
- * contenido/2-proyectos/estadio-clubes/final/armar_web.py; la página no consulta la base.
+ * contenido/2-proyectos/estadio-clubes/final/armar_web.py; la página no consulta la base (link de la bio de @tornear.app).
  */
 
 const TITLE = "Buscate en la tribuna de tu club · TorneAR";
