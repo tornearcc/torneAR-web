@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 /*
  * Resultado del estadio de clubes y buscador de @. Los datos (public/hinchadas/datos.json) son fijos: el ranking es
- * el del corte del video y la lista de @ suma a todos los que comentaron en Instagram, TikTok y YouTube.
+ * el del conteo completo del video (Instagram, TikTok y YouTube) y la lista de @ suma a todos los que comentaron.
  */
 
 type Club = { id: string; nombre: string; hinchas: number; grande: boolean; escudo: string | null; color: string; usuarios: string[] };
@@ -126,7 +126,7 @@ export function HinchadasApp() {
                 </li>
               ))}
             </ol>
-            <p className="mt-2 text-xs text-white/50">★ Tribuna nueva: Rosario se ganó dos. El ranking es el del conteo del video (23/11, 20:35); los que comentaron después también están en el buscador.</p>
+            <p className="mt-2 text-xs text-white/50">★ Tribuna nueva: los dos clubes que no son de los cinco grandes con más hinchas. Conteo completo de Instagram, TikTok y YouTube (24/11).</p>
           </section>
         )}
 
