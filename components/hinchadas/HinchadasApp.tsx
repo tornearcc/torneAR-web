@@ -3,14 +3,23 @@
 import { useEffect, useMemo, useState } from "react";
 
 /*
- * Resultado del estadio de clubes y buscador de @. Los datos (public/hinchadas/datos.json) son fijos: el ranking es
- * el del conteo completo del video (Instagram, TikTok y YouTube) y la lista de @ suma a todos los que comentaron.
+ * Resultado de los estadios de clubes y buscador de @. Dos estadios, cada uno con sus datos fijos en public/hinchadas/:
+ * el del ascenso (ascenso.json, contenido/2-proyectos/estadio-clubes/final-c/armar_web.py) y el de los 5 grandes
+ * (datos.json, final/armar_web.py). El ranking es el del conteo completo de cada video y el buscador busca en los dos.
  */
 
 type Club = { id: string; nombre: string; hinchas: number; grande: boolean; escudo: string | null; color: string; usuarios: string[] };
 type Otro = { id: string; nombre: string; usuarios: string[] };
-type Datos = { comentarios: string; contados: number; clubes: Club[]; otros: Otro[] };
-type Hallado = { usuario: string; club: string; escudo: string | null; color: string; numero: number; total: number; tribuna: boolean };
+type Datos = { nombre?: string; comentarios: string; contados: number; clubes: Club[]; otros: Otro[]; nota?: string };
+type Hallado = { usuario: string; club: string; escudo: string | null; color: string; numero: number; total: number; tribuna: boolean; estadio: string };
+
+// El primero es el que se ve al entrar: el del último video.
+const ESTADIOS = [
+  { id: "ascenso", nombre: "Ascenso", url: "/hinchadas/ascenso.json" },
+  { id: "grandes", nombre: "Los 5 grandes", url: "/hinchadas/datos.json" },
+] as const;
+type EstadioId = (typeof ESTADIOS)[number]["id"];
+const NOTA_GRANDES = "★ Tribuna nueva: los dos clubes que no son de los cinco grandes con más hinchas. Conteo completo de Instagram, TikTok y YouTube (24/11).";
 
 const APP_URL = "/d/estadio";
 const IG_URL = "https://www.instagram.com/tornear.app/";
@@ -18,32 +27,43 @@ const fmt = (n: number) => n.toLocaleString("es-AR");
 const norm = (s: string) => s.trim().toLowerCase().replace(/^@+/, "");
 
 export function HinchadasApp() {
-  const [datos, setDatos] = useState<Datos | null>(null);
+  const [todos, setTodos] = useState<Partial<Record<EstadioId, Datos>>>({});
   const [error, setError] = useState(false);
   const [q, setQ] = useState("");
+  const [estadio, setEstadio] = useState<EstadioId>(ESTADIOS[0].id);
+  const datos = todos[estadio] ?? null;
 
   useEffect(() => {
-    fetch("/hinchadas/datos.json")
-      .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then(setDatos)
-      .catch(() => setError(true));
+    for (const e of ESTADIOS)
+      fetch(e.url)
+        .then((r) => (r.ok ? r.json() : Promise.reject()))
+        .then((d: Datos) => setTodos((prev) => ({ ...prev, [e.id]: d })))
+        .catch(() => setError(true));
   }, []);
 
-  // índice: @ → dónde está
+  // índice: @ → dónde está (en cualquiera de los dos estadios; si comentó en los dos, gana el del último video)
   const indice = useMemo(() => {
     const m = new Map<string, Hallado>();
-    if (!datos) return m;
-    for (const c of datos.clubes)
-      c.usuarios.forEach((u, i) =>
-        m.set(u.toLowerCase(), { usuario: u, club: c.nombre, escudo: c.escudo, color: c.color, numero: i + 1, total: c.usuarios.length, tribuna: true }),
-      );
-    for (const c of datos.otros)
-      c.usuarios.forEach((u, i) => {
-        if (!m.has(u.toLowerCase()))
-          m.set(u.toLowerCase(), { usuario: u, club: c.nombre, escudo: null, color: "#53E076", numero: i + 1, total: c.usuarios.length, tribuna: false });
-      });
+    for (const e of ESTADIOS) {
+      const d = todos[e.id];
+      if (!d) continue;
+      for (const c of d.clubes)
+        c.usuarios.forEach((u, i) => {
+          if (!m.has(u.toLowerCase()))
+            m.set(u.toLowerCase(), { usuario: u, club: c.nombre, escudo: c.escudo, color: c.color, numero: i + 1, total: c.usuarios.length, tribuna: true, estadio: e.nombre });
+        });
+    }
+    for (const e of ESTADIOS) {
+      const d = todos[e.id];
+      if (!d) continue;
+      for (const c of d.otros)
+        c.usuarios.forEach((u, i) => {
+          if (!m.has(u.toLowerCase()))
+            m.set(u.toLowerCase(), { usuario: u, club: c.nombre, escudo: null, color: "#53E076", numero: i + 1, total: c.usuarios.length, tribuna: false, estadio: e.nombre });
+        });
+    }
     return m;
-  }, [datos]);
+  }, [todos]);
 
   const consulta = norm(q);
   const exacto = consulta ? indice.get(consulta) : undefined;
@@ -68,6 +88,19 @@ export function HinchadasApp() {
         <h1 className="font-display text-5xl leading-[0.95] font-extrabold uppercase">
           ¿Qué hinchada llenó <span className="text-brand-primary">primero su tribuna?</span>
         </h1>
+        <div role="tablist" aria-label="Estadio" className="mt-5 grid grid-cols-2 gap-1 rounded-2xl bg-white/10 p-1">
+          {ESTADIOS.map((e) => (
+            <button
+              key={e.id}
+              role="tab"
+              aria-selected={estadio === e.id}
+              onClick={() => setEstadio(e.id)}
+              className={`rounded-xl py-2.5 font-display text-lg font-extrabold uppercase ${estadio === e.id ? "bg-brand-primary text-surface-lowest" : "text-white/70"}`}
+            >
+              {e.nombre}
+            </button>
+          ))}
+        </div>
         <p className="mt-3 text-white/70">
           {datos ? `${datos.comentarios} comentarios en Instagram, TikTok y YouTube. ` : ""}Buscá tu @ y fijate en qué tribuna quedaste.
         </p>
@@ -126,7 +159,7 @@ export function HinchadasApp() {
                 </li>
               ))}
             </ol>
-            <p className="mt-2 text-xs text-white/50">★ Tribuna nueva: los dos clubes que no son de los cinco grandes con más hinchas. Conteo completo de Instagram, TikTok y YouTube (24/11).</p>
+            <p className="mt-2 text-xs text-white/50">{datos.nota ?? NOTA_GRANDES}</p>
           </section>
         )}
 
@@ -160,6 +193,7 @@ function Tarjeta({ h }: { h: Hallado }) {
           <div className="font-display text-lg font-extrabold uppercase">
             {h.tribuna ? `Tribuna de ${h.club}` : `Hincha de ${h.club}`}
           </div>
+          <div className="text-sm font-semibold opacity-80">Estadio: {h.estadio}</div>
         </div>
       </div>
       <p className="mt-3 font-semibold">
