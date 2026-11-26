@@ -5,12 +5,12 @@ import { OG_IMAGE } from "@/lib/site-metadata";
 
 /*
  * «¿Qué hinchada llena primero su tribuna?» (reels del estadio de clubes de @tornear.app): el resultado y el buscador
- * para encontrar tu @ en la tribuna de tu club. Datos fijos en public/hinchadas/datos.json, que arma
- * contenido/2-proyectos/estadio-clubes/final/armar_web.py; la página no consulta la base (link de la bio de @tornear.app).
+ * para encontrar tu @ en la tribuna de tu club. Datos fijos en public/hinchadas/ (ascenso.json y datos.json), que arman
+ * contenido/2-proyectos/estadio-clubes/final-c/ y final/armar_web.py; la página no consulta la base (link de la bio de @tornear.app).
  */
 
 const TITLE = "Buscate en la tribuna de tu club · TorneAR";
-const DESCRIPTION = "Más de 130.000 comentarios llenaron el estadio. Buscá tu @ en la tribuna de tu club.";
+const DESCRIPTION = "Los estadios del ascenso y de los 5 grandes, llenos de comentarios. Buscá tu @ en la tribuna de tu club.";
 
 export const metadata: Metadata = {
   title: TITLE,
